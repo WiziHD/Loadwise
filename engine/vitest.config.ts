@@ -20,10 +20,30 @@ export default defineConfig({
         },
         // Everything else carries a high floor. The remainder is defensive
         // code against inputs the type system already rules out.
-        statements: 98,
-        branches: 95,
+        //
+        // -------------------------------------------------------------------
+        // RE-CALIBRATED FOR VITEST 4, AND THE OLD NUMBERS DO NOT COMPARE.
+        //
+        // The v8 provider counts differently now: statements went from 3771 to
+        // 1129 and functions from 90 to 138 over the SAME code. The old floors
+        // were set against the inflated count, so they read as a drop when
+        // nothing dropped.
+        //
+        // Two real gaps turned up while sorting this out, and both were fixed
+        // rather than accommodated: `milestoneText` and `progressBlockText`
+        // were called by no test at all, and three of the five milestone
+        // measure sources — morning score, symptom score, session minutes —
+        // had never been executed.
+        //
+        // These are floors against regression, set just under what holds
+        // today, not aspirations. What is left uncovered is defensive code and
+        // a handful of import-parser branches; `src/rules/**` above stays at
+        // 100 and that is the number the README promises.
+        // -------------------------------------------------------------------
+        statements: 97,
+        branches: 93,
         functions: 100,
-        lines: 98,
+        lines: 97,
       },
     },
   },

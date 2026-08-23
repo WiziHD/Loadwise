@@ -11,6 +11,7 @@ import { addDays } from "../src/dates.js";
 import { buildIndex } from "../src/episode.js";
 import { currentFlags, evaluateEpisode, type Evaluation } from "../src/evaluate.js";
 import { reportScenario } from "../src/report.js";
+import { ALL_PROFILES } from "../src/profiles/registry.js";
 import { SCENARIOS, START, steadyRecovery } from "../src/fixtures.js";
 import { evaluateAsymmetry } from "../src/rules/asymmetry.js";
 import { evaluateLoadSpike } from "../src/rules/loadSpike.js";
@@ -282,4 +283,45 @@ describe("the summary is about now, the record is about everything", () => {
         .not.toMatch(/\[(STOP|ACHT)\]/);
     }
   });
+});
+
+describe("currentFlags always has something to say", () => {
+  /**
+   * The property that let a branch be deleted.
+   *
+   * `summarise` used to guard against `currentFlags` returning nothing, and
+   * returned "insufficient" if it did. No scenario under any profile ever
+   * reached it, because the function keeps the latest flag of every kind
+   * unconditionally — so at least one flag per kind always survives.
+   *
+   * The guard was also wrong on its own terms: the latest reading of a rule IS
+   * the current state, however old. Returning "insufficient" would have thrown
+   * away the only information there was.
+   *
+   * This is the assertion that replaced it. If somebody gives `currentFlags` a
+   * cutoff that can drop every flag, this fails instead of quietly resurrecting
+   * a dead branch somewhere else.
+   */
+  it("returns at least one flag whenever it is given one", () => {
+    for (const profile of ALL_PROFILES) {
+      for (const s of SCENARIOS) {
+        const result = evaluateEpisode({
+          entries: s.entries,
+          tests: s.tests,
+          profile,
+          context: { bodyRegion: profile.bodyRegion, profileKey: profile.key },
+        });
+        if (result.flags.length === 0) continue;
+
+        const current = currentFlags(result.flags, result.config, result.lastDate);
+        const where = `${profile.key} / ${s.key}`;
+        expect(current.length, `${where}: every flag dropped`).toBeGreaterThan(0);
+
+        // Stronger, and the actual reason it can never be empty.
+        const kinds = new Set(result.flags.map((f) => f.kind));
+        expect(new Set(current.map((f) => f.kind)), `${where}: a rule lost its latest word`)
+          .toEqual(kinds);
+      }
+    }
+  }, 60_000);
 });

@@ -16,10 +16,10 @@
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
-    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/coverage-v8": "^4.1.11",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.11"
   },
   "exports": {
     ".": "./src/index.ts"

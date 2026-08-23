@@ -114,7 +114,10 @@ export default async function EpisodePage({
       <section>
         <h2 style={{ fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--muted)", margin: "0 0 0.75rem" }}>
           {s.diary.history}
-          {entries.length > 0 && ` — ${entries.length} ${s.entry.entriesSoFar}`}
+          {entries.length > 0 &&
+            ` — ${entries.length} ${
+              entries.length === 1 ? s.entry.daysRecordedOne : s.entry.daysRecordedMany
+            }`}
         </h2>
 
         {entries.length === 0 ? (

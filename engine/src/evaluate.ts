@@ -391,12 +391,17 @@ function summarise(
   // changed is that a finding from seven weeks ago no longer sets today's
   // status — and it is not hidden either: every flag stays in `flags` and the
   // report lists it. Only the one-word summary became a statement about now.
+  // Never empty here, and that is a property rather than a coincidence:
+  // `currentFlags` keeps the latest flag of every kind unconditionally, so for
+  // any non-empty input at least one flag per kind survives. The empty case had
+  // a branch guarding it — returning "insufficient" — which no scenario under
+  // any profile could ever reach, and which would have been wrong if it had:
+  // the latest reading of a rule IS the current state, however old it is.
+  //
+  // Removed rather than kept as defence, because a branch that cannot run is a
+  // branch nobody maintains. The guarantee is asserted in test/invariants.test.ts
+  // instead, where a change to `currentFlags` would break it loudly.
   const current = currentFlags(flags, config, lastDate);
-
-  // Nothing recent enough to speak about. That is not an all-clear.
-  if (current.length === 0) {
-    return { status: "insufficient", blocking: [...new Set(pending.map((p) => p.reason))] };
-  }
 
   const worst = worstSeverity(current);
 

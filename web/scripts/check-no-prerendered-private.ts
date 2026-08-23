@@ -24,9 +24,17 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-/** Routes with no per-person content. Adding to this list is a decision. */
+/**
+ * Routes with no per-person content. Adding to this list is a decision.
+ *
+ * `/_global-error` arrived with Next 16 and the check caught it on the first
+ * build after the upgrade — which is the point of having it. It is the
+ * framework's own last-resort error page: it renders a fixed sentence, reads
+ * nothing, and cannot reach a database.
+ */
 const PUBLIC_ROUTES = new Set([
   "/_not-found",
+  "/_global-error",
   "/en/signin",
   "/de/signin",
 ]);

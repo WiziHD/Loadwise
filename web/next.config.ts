@@ -19,10 +19,6 @@ const config: NextConfig = {
     ignoreBuildErrors: false,
   },
 
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
-
   webpack: (config) => {
     /**
      * The engine writes `import { x } from "./tissue.js"` — the correct form
@@ -33,6 +29,26 @@ const config: NextConfig = {
      * Fixed here rather than in the engine. Rewriting 30 imports to drop the
      * extension would break `tsx`, the test runner and `npm run tagebuch` —
      * bending the source of truth to suit one consumer's bundler.
+     *
+     * -----------------------------------------------------------------------
+     * NEXT 16 MAKES TURBOPACK THE DEFAULT, AND THIS IS WHY WE OPT OUT.
+     *
+     * Turbopack has no equivalent of `extensionAlias`. It applies Node's ESM
+     * rules literally, so `./tissue.js` means a file called tissue.js, and the
+     * build fails on every one of the engine's internal imports.
+     *
+     * The two ways out are dropping the extensions in the engine, or staying on
+     * webpack. Dropping them is the same trade the paragraph above already
+     * refused, and it would cost more now than it did then: it would make the
+     * engine unrunnable under plain Node, closing off a standalone use — a CLI,
+     * a report generator — for the sake of one bundler.
+     *
+     * So: webpack, declared with `--webpack` in package.json rather than left
+     * to be inferred. Next 16 refuses to guess, which is right of it.
+     *
+     * Revisit if webpack support is withdrawn. The decision to reopen then is
+     * whether the engine stays portable ESM or becomes bundler-only.
+     * -----------------------------------------------------------------------
      */
     config.resolve.extensionAlias = {
       ".js": [".ts", ".tsx", ".js"],

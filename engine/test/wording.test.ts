@@ -14,12 +14,14 @@ import { describe, expect, it } from "vitest";
 import { ALL_PROFILES } from "../src/profiles/registry.js";
 import { evaluateEpisode } from "../src/evaluate.js";
 import { steadyRecovery } from "../src/fixtures.js";
-import type { Milestone } from "../src/progress.js";
+import { ALL_MILESTONE_STATES, ALL_PROGRESS_BLOCKS, type Milestone } from "../src/progress.js";
 import {
   BLOCKED_WORDING,
   DISCLAIMER,
   VERDICT_WORDING,
   blockedText,
+  milestoneText,
+  progressBlockText,
   verdictText,
   type Locale,
   type Phrase,
@@ -301,5 +303,55 @@ describe("lookup helpers", () => {
     expect(verdictText("steady", "en")).toBe(VERDICT_WORDING.steady.en);
     expect(blockedText("no-tests")).toBe(BLOCKED_WORDING["no-tests"].de);
     expect(blockedText("no-tests", "en")).toBe(BLOCKED_WORDING["no-tests"].en);
+  });
+});
+
+describe("every state a person can be shown has words for it", () => {
+  /**
+   * `milestoneText` and `progressBlockText` were reached by no test at all.
+   *
+   * The ban lists above walk the wording RECORDS directly, so a forbidden
+   * sentence would have been caught — but the two functions that look a state
+   * up in those records were never called. A typo in either, or a record
+   * missing an entry the union allows, would have shipped and only failed in
+   * front of somebody using the app.
+   *
+   * Walking the exhaustive lists rather than a handful of examples: adding a
+   * tenth milestone state without wording is then a failing test, not a blank
+   * line on a screen.
+   */
+  it("gives every milestone state a sentence in both languages", () => {
+    for (const state of ALL_MILESTONE_STATES) {
+      for (const locale of ["de", "en"] as const) {
+        const text = milestoneText(state, locale);
+        expect(text, `${state}/${locale}`).toBeTruthy();
+        expect(text.trim(), `${state}/${locale} is blank`).not.toBe("");
+      }
+      // Two languages that returned the same string would mean one of them was
+      // never translated — every one of these sentences is prose, not a symbol.
+      expect(milestoneText(state, "de"), `${state} is untranslated`)
+        .not.toBe(milestoneText(state, "en"));
+    }
+  });
+
+  it("gives every progress block a sentence in both languages", () => {
+    for (const reason of ALL_PROGRESS_BLOCKS) {
+      for (const locale of ["de", "en"] as const) {
+        const text = progressBlockText(reason, locale);
+        expect(text, `${reason}/${locale}`).toBeTruthy();
+        expect(text.trim(), `${reason}/${locale} is blank`).not.toBe("");
+      }
+      expect(progressBlockText(reason, "de"), `${reason} is untranslated`)
+        .not.toBe(progressBlockText(reason, "en"));
+    }
+  });
+
+  it("defaults to German, the language the wording was written in", () => {
+    expect(milestoneText(ALL_MILESTONE_STATES[0]!)).toBe(
+      milestoneText(ALL_MILESTONE_STATES[0]!, "de"),
+    );
+    expect(progressBlockText(ALL_PROGRESS_BLOCKS[0]!)).toBe(
+      progressBlockText(ALL_PROGRESS_BLOCKS[0]!, "de"),
+    );
   });
 });

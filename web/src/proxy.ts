@@ -22,12 +22,15 @@ const LOCALE_EXEMPT = new Set(["auth"]);
  * Two jobs on every request: keep the session alive, and make sure the URL
  * carries a language.
  *
- * The session part has to happen in middleware rather than in a page. Supabase
- * refresh tokens rotate, and a server component cannot write cookies — so
- * without this the session would quietly expire mid-use and somebody would be
- * signed out while typing a diary entry.
+ * The session part has to happen here rather than in a page. Supabase refresh
+ * tokens rotate, and a server component cannot write cookies — so without this
+ * the session would quietly expire mid-use and somebody would be signed out
+ * while typing a diary entry.
+ *
+ * Called `proxy` and not `middleware`: Next 16 renamed the convention and
+ * deprecated the old name. Same file, same position in the request, same job.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const first = request.nextUrl.pathname.split("/")[1] ?? "";
   const wanted = isLocale(first)
     ? first

@@ -3,11 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build && npm run check:prerender",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack && npm run check:prerender",
     "start": "next start",
     "typecheck": "tsc --noEmit && npm run check:boundary",
-    "lint": "next lint",
     "check:boundary": "tsx scripts/check-wording-boundary.ts",
     "check:prerender": "tsx scripts/check-no-prerendered-private.ts",
     "check:rls": "tsx scripts/check-rls.ts"
@@ -16,7 +15,7 @@
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "loadwise-engine": "*",
-    "next": "^15.1.0",
+    "next": "^16.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

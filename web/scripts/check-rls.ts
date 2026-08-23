@@ -170,7 +170,11 @@ async function main(): Promise<void> {
   const { error: bWrite } = await b.client
     .from("entries")
     .insert({ episode_id: episodeId, entry_date: "2026-09-01", morning_score: 3 });
-  record("B cannot write into A's episode", bWrite !== null, bWrite?.code ?? "the insert SUCCEEDED");
+  record(
+    "B cannot write into A's episode",
+    bWrite?.code === "42501",
+    bWrite === null ? "the insert SUCCEEDED" : `${bWrite.code}: ${bWrite.message}`,
+  );
 
   const { error: bSteal } = await b.client.from("episodes").insert({
     user_id: a.userId,
@@ -179,18 +183,35 @@ async function main(): Promise<void> {
     side: "right",
     label: "stolen",
   });
-  record("B cannot create a row owned by A", bSteal !== null, bSteal?.code ?? "the insert SUCCEEDED");
+  record(
+    "B cannot create a row owned by A",
+    bSteal?.code === "42501",
+    bSteal === null ? "the insert SUCCEEDED" : `${bSteal.code}: ${bSteal.message}`,
+  );
 
   // --- Verdicts come from the engine, never from a client.
+  //
+  // The payload has to match the table exactly. The first version of this
+  // check sent a column that does not exist and got PGRST204 back — "column
+  // not found" — which is an error, so the check went green. It would have
+  // gone green with no policy on `flags` at all. A guard that passes for the
+  // wrong reason is worse than no guard, so the code is asserted, not just the
+  // presence of an error.
   const { error: aFlag } = await a.client.from("flags").insert({
     episode_id: episodeId,
     for_date: "2026-01-01",
     kind: "response24h",
     severity: "green",
-    reason_code: "settled-within-24h",
+    reason: "settled-within-24h",
+    detail: {},
     rule_version: "probe",
+    profile_version: "probe",
   });
-  record("A cannot write its own verdict", aFlag !== null, aFlag?.code ?? "the insert SUCCEEDED");
+  record(
+    "A cannot write its own verdict",
+    aFlag?.code === "42501",
+    aFlag === null ? "the insert SUCCEEDED" : `${aFlag.code}: ${aFlag.message}`,
+  );
 
   const failed = checks.filter((c) => !c.ok);
   if (failed.length > 0) {

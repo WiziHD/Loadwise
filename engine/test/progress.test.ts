@@ -108,7 +108,11 @@ describe("a milestone can never influence a verdict", () => {
         expect(with_.pending, where).toEqual(without.pending);
       }
     }
-  });
+    // Every scenario against every profile, evaluated twice and compared.
+    // That is genuinely expensive and sat just inside the 5s default until
+    // the vitest 4 upgrade tipped it over. Raised here rather than globally:
+    // a global floor would also hide a test that had actually hung.
+  }, 60_000);
 
   it("would notice if a milestone did leak into the verdict", () => {
     // Proof the assertion above constrains something. It would pass unchanged

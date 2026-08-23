@@ -68,7 +68,9 @@ interface Strings {
     note: string;
     noteHint: string;
     saved: string;
-    entriesSoFar: string;
+    /** Both forms, because "1 Tage erfasst" shipped once and read as a bug. */
+    daysRecordedOne: string;
+    daysRecordedMany: string;
   };
   diary: {
     day: string;
@@ -183,7 +185,8 @@ export const DICTIONARY: Record<Locale, Strings> = {
       note: "Note",
       noteHint: "For you. No rule reads this, in any language, at any time.",
       saved: "Saved.",
-      entriesSoFar: "days recorded",
+      daysRecordedOne: "day recorded",
+      daysRecordedMany: "days recorded",
     },
     diary: {
       day: "Day",
@@ -298,7 +301,8 @@ export const DICTIONARY: Record<Locale, Strings> = {
       note: "Notiz",
       noteHint: "Für dich. Keine Regel liest das, in keiner Sprache, zu keinem Zeitpunkt.",
       saved: "Gespeichert.",
-      entriesSoFar: "Tage erfasst",
+      daysRecordedOne: "Tag erfasst",
+      daysRecordedMany: "Tage erfasst",
     },
     diary: {
       day: "Tag",
