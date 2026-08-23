@@ -1,0 +1,26 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment — never committed. Supabase keys and the service role key in
+# particular: the service role bypasses Row Level Security entirely.
+.env
+.env.local
+.env*.local
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Your own diary. Health data, and nobody else's business.
+tagebuch.csv
+selbsttests.csv
+!tagebuch-achilles.csv
+
+# Supabase CLI-Artefakte
+supabase/.temp/
+supabase/.branches/

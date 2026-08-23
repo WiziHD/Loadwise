@@ -1,0 +1,770 @@
+
+============================================================================
+Sauberer Verlauf: langsame Steigerung, Beschwerden gehen zurück
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: green   (grün 31, gelb 0, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 160, Ausgangswert 3, am Morgen danach 3)
+
+============================================================================
+Eine Woche mit dreifachem Umfang
+============================================================================
+Einträge: 35   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (grün 17, gelb 0, rot 1)
+Beurteilt: 15 von 22 erwarteten Tagen, 4 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 22 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-04-05  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen stark gestiegen. (Woche 4200 gegen Norm 600, Verhältnis 7.00)
+
+============================================================================
+Maßvolle Steigerung um gut vierzig Prozent
+============================================================================
+Einträge: 35   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 15, gelb 1, rot 0)
+Beurteilt: 13 von 20 erwarteten Tagen, 4 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 20 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-04-05  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen spürbar gestiegen. (Woche 840 gegen Norm 600, Verhältnis 1.40)
+
+============================================================================
+Eine Einheit, die das Gewebe nicht verträgt
+============================================================================
+Einträge: 24   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (grün 7, gelb 1, rot 1)
+Beurteilt: 6 von 13 erwarteten Tagen, 4 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 13 erwarteten Tagen
+  · Belastungsverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-03-22  24-Stunden-Reaktion — Am Morgen danach deutlich stärker als sonst. (Last 540, Ausgangswert 2, am Morgen danach 7, 48 h: 6)
+  [ACHT] 2026-03-25  Lastverteilung — Die Wochenlast liegt auf sehr wenigen Tagen. (effektiv 1,4 Trainingstage bei 2 Einheiten, schwerster Tag 84 % der Wochenlast)
+
+============================================================================
+Mittlere Reaktion, die nach 48 Stunden noch da ist
+============================================================================
+Einträge: 24   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (grün 6, gelb 1, rot 1)
+Beurteilt: 6 von 13 erwarteten Tagen, 3 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 13 erwarteten Tagen
+  · Belastungsverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-03-22  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 270, Ausgangswert 2, am Morgen danach 5, 48 h: 5)
+  [ACHT] 2026-03-25  Lastverteilung — Die Wochenlast liegt auf sehr wenigen Tagen. (effektiv 1,7 Trainingstage bei 2 Einheiten, schwerster Tag 73 % der Wochenlast)
+
+============================================================================
+Mittlere Reaktion, die sich wieder legt
+============================================================================
+Einträge: 23   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 7, gelb 1, rot 0)
+Beurteilt: 6 von 13 erwarteten Tagen, 3 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 13 erwarteten Tagen
+  · Belastungsverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-22  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 270, Ausgangswert 2, am Morgen danach 5, 48 h: 2)
+
+============================================================================
+Training abrupt eingestellt
+============================================================================
+Einträge: 28   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 13, gelb 1, rot 0)
+Beurteilt: 11 von 21 erwarteten Tagen, 4 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 10 von 21 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-29  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 0 gegen Norm 1890, Verhältnis 0.00)
+
+============================================================================
+Umfang um ein Drittel zurückgefahren
+============================================================================
+Einträge: 28   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 11, gelb 1, rot 0)
+Beurteilt: 9 von 16 erwarteten Tagen, 4 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 16 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-29  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 400 gegen Norm 600, Verhältnis 0.67)
+
+============================================================================
+Tagebuch geführt, nie trainiert
+============================================================================
+Einträge: 30   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: green   (grün 3, gelb 0, rot 0)
+Beurteilt: 0 von 0 erwarteten Tagen, 3 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-31  Belastungsverlauf — In diesem Zeitraum wurde keine Belastung erfasst. (Woche 0 gegen Norm 0, Verhältnis nicht berechenbar)
+
+============================================================================
+Nach völliger Ruhe direkt zurück ins Training
+============================================================================
+Einträge: 28   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (grün 1, gelb 1, rot 1)
+Beurteilt: 0 von 0 erwarteten Tagen, 3 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-03-29  Belastungsverlauf — Nach einem Zeitraum ohne erfasste Belastung wurde wieder trainiert. (Woche 420 gegen Norm 0, Verhältnis nicht berechenbar)
+  [ACHT] 2026-03-29  Lastverteilung — Die Wochenlast liegt auf sehr wenigen Tagen. (die gesamte Wochenlast lag auf einem einzigen Tag)
+
+============================================================================
+Der Dauerläufer: nie ein schlechter Tag, nie eine gute Woche
+============================================================================
+Einträge: 70   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 36, gelb 2, rot 0)
+Beurteilt: 33 von 40 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 40 erwarteten Tagen
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-05-10  Ausgangswert — Der Ausgangswert am Morgen ist über mehrere Wochen langsam gestiegen. (vorletzte 14 Tage 4, letzte 14 Tage 5 (+1))
+  [ACHT] 2026-05-10  Langzeitverlauf — Der Ausgangswert liegt höher als zu Beginn des Verlaufs. (erste 14 Tage 1, letzte 14 Tage 5, nach 10 Wochen)
+
+============================================================================
+Deutliche Verschlechterung über Wochen
+============================================================================
+Einträge: 56   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (aktueller Stand — im ganzen Verlauf: grün 15, gelb 1, rot 13)
+Beurteilt: 25 von 32 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-04-13  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 5, am Morgen danach 7, 48 h: 7)
+  [STOP] 2026-04-14  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 5, am Morgen danach 7, 48 h: 7)
+  [STOP] 2026-04-15  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 5, am Morgen danach 7, 48 h: 7)
+  [STOP] 2026-04-16  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 5, am Morgen danach 7, 48 h: 7)
+  [STOP] 2026-04-26  Ausgangswert — Der Ausgangswert am Morgen ist über die letzten Wochen deutlich gestiegen. (vorletzte 14 Tage 5, letzte 14 Tage 7 (+2))
+  [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt höher als zu Beginn des Verlaufs. (erste 14 Tage 1, letzte 14 Tage 7, nach 8 Wochen)
+----------------------------------------------------------------------------
+Früher im Verlauf, inzwischen zurückliegend:
+  [STOP] 2026-03-16  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 1, am Morgen danach 3, 48 h: 3)
+  [STOP] 2026-03-17  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 1, am Morgen danach 3, 48 h: 3)
+  [STOP] 2026-03-18  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 1, am Morgen danach 3, 48 h: 3)
+  [STOP] 2026-03-19  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 1, am Morgen danach 3, 48 h: 3)
+  [STOP] 2026-03-30  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 3, am Morgen danach 5, 48 h: 5)
+  [STOP] 2026-03-31  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 3, am Morgen danach 5, 48 h: 5)
+  [STOP] 2026-04-01  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 3, am Morgen danach 5, 48 h: 5)
+  [STOP] 2026-04-02  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 175, Ausgangswert 3, am Morgen danach 5, 48 h: 5)
+
+============================================================================
+Einmalige Verschlechterung, die dann bleibt
+============================================================================
+Einträge: 56   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 25, gelb 4, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-04-13  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 175, Ausgangswert 2, am Morgen danach 4, 48 h: 3)
+  [ACHT] 2026-04-15  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 175, Ausgangswert 2, am Morgen danach 4, 48 h: 3)
+  [ACHT] 2026-04-26  Ausgangswert — Der Ausgangswert am Morgen ist über mehrere Wochen langsam gestiegen. (vorletzte 14 Tage 2, letzte 14 Tage 3.5 (+1.5))
+  [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt höher als zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 3.5, nach 8 Wochen)
+
+============================================================================
+Es läuft sich ein — gute Einheiten, schlechter werdende Morgen
+============================================================================
+Einträge: 70   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 36, gelb 2, rot 0)
+Beurteilt: 33 von 40 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 40 erwarteten Tagen
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-05-10  Ausgangswert — Der Ausgangswert am Morgen ist über mehrere Wochen langsam gestiegen. (vorletzte 14 Tage 5, letzte 14 Tage 6 (+1))
+  [ACHT] 2026-05-10  Langzeitverlauf — Der Ausgangswert liegt höher als zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 6, nach 10 Wochen)
+
+============================================================================
+Rückschlag mit Erholung — meldet der Motor Entwarnung, wenn es vorbei ist?
+============================================================================
+Einträge: 84   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: green   (aktueller Stand — im ganzen Verlauf: grün 41, gelb 1, rot 4)
+Beurteilt: 41 von 48 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 48 erwarteten Tagen
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 150, Ausgangswert 6, am Morgen danach 5)
+----------------------------------------------------------------------------
+Früher im Verlauf, inzwischen zurückliegend:
+  [STOP] 2026-03-30  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 972, Ausgangswert 3.5, am Morgen danach 6, 48 h: 6)
+  [STOP] 2026-03-31  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 150, Ausgangswert 3.5, am Morgen danach 6, 48 h: 6)
+  [STOP] 2026-04-01  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 150, Ausgangswert 3.5, am Morgen danach 6, 48 h: 6)
+  [STOP] 2026-04-02  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 150, Ausgangswert 3.5, am Morgen danach 6, 48 h: 6)
+  [ACHT] 2026-04-06  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 150, Ausgangswert 4.5, am Morgen danach 6, 48 h: 5)
+
+============================================================================
+Zehn Wochen bei 1 von 10 — nichts mehr zu verbessern
+============================================================================
+Einträge: 70   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: green   (grün 37, gelb 0, rot 0)
+Beurteilt: 33 von 40 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 40 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 200, Ausgangswert 1, am Morgen danach 1)
+
+============================================================================
+Kaum merklicher Anstieg: ein halber Punkt je vierzehn Tage
+============================================================================
+Einträge: 70   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 35, gelb 2, rot 0)
+Beurteilt: 33 von 40 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 40 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-05-10  Ausgangswert — Der Ausgangswert am Morgen ist über mehrere Wochen langsam gestiegen. (vorletzte 14 Tage 3.5, letzte 14 Tage 4 (+0.5))
+  [ACHT] 2026-05-10  Langzeitverlauf — Der Ausgangswert liegt höher als zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 4, nach 10 Wochen)
+
+============================================================================
+Langsame Besserung: ein Punkt in zehn Wochen
+============================================================================
+Einträge: 84   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: green   (grün 45, gelb 0, rot 0)
+Beurteilt: 41 von 48 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 48 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 175, Ausgangswert 4, am Morgen danach 4)
+
+============================================================================
+Festgefahren: seit zehn Wochen unverändert bei 8 von 10
+============================================================================
+Einträge: 84   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 44, gelb 1, rot 0)
+Beurteilt: 41 von 48 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 48 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-05-24  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 8, letzte 14 Tage 8, nach 12 Wochen)
+
+============================================================================
+Schmerz wandert vom Abend hin zur Belastung
+============================================================================
+Einträge: 56   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 28, gelb 2, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-04-26  Schmerzmuster — Die Beschwerden treten näher an der Belastung auf als zuvor. (Lage 1.67 → 3.00 (+1.33) auf der Skala Abend 1 / danach 2 / während 3)
+  [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 8 Wochen)
+
+============================================================================
+Schmerz zieht sich von der Belastung zurück
+============================================================================
+Einträge: 56   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 29, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 8 Wochen)
+
+============================================================================
+Schmerzmuster verschiebt sich nur um einen halben Schritt
+============================================================================
+Einträge: 42   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 20, gelb 2, rot 0)
+Beurteilt: 17 von 24 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 24 erwarteten Tagen
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-04-12  Schmerzmuster — Die Beschwerden treten näher an der Belastung auf als zuvor. (Lage 1.00 → 1.50 (+0.50) auf der Skala Abend 1 / danach 2 / während 3)
+  [ACHT] 2026-04-12  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 6 Wochen)
+
+============================================================================
+Der Ungeduldige: kehrt immer wieder zu früh zurück
+============================================================================
+Einträge: 56   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (aktueller Stand — im ganzen Verlauf: grün 8, gelb 2, rot 3)
+Beurteilt: 9 von 12 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 3 von 12 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-04-15  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 480, Ausgangswert 3, am Morgen danach 6, 48 h: 6)
+  [ACHT] 2026-04-26  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 0 gegen Norm 960, Verhältnis 0.00)
+  [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 3, letzte 14 Tage 3, nach 8 Wochen)
+----------------------------------------------------------------------------
+Früher im Verlauf, inzwischen zurückliegend:
+  [STOP] 2026-03-18  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 480, Ausgangswert 3, am Morgen danach 6, 48 h: 6)
+  [STOP] 2026-04-01  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 480, Ausgangswert 3, am Morgen danach 6, 48 h: 6)
+
+============================================================================
+Sechzig Tage Achillessehne — realistischer Verlauf, nicht aus einer Formel
+============================================================================
+Einträge: 60   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (aktueller Stand — im ganzen Verlauf: grün 40, gelb 3, rot 0)
+Beurteilt: 38 von 46 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 8 von 46 erwarteten Tagen
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-08-11  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 378, Ausgangswert 1, am Morgen danach 3, 48 h: 2)
+  [ACHT] 2026-08-20  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen spürbar gestiegen. (Woche 1231 gegen Norm 846, Verhältnis 1.45 — dein Gesamttraining hat sich dabei um Faktor 1.24 verändert; der Unterschied liegt in der Wahl der Aktivität)
+----------------------------------------------------------------------------
+Früher im Verlauf, inzwischen zurückliegend:
+  [ACHT] 2026-07-14  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 150, Ausgangswert 2, am Morgen danach 4, 48 h: 3)
+
+============================================================================
+Vier Wochen Rad statt Laufen, dann zurück — gleiches Training, andere Sehne
+============================================================================
+Einträge: 63   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (grün 31, gelb 1, rot 1)
+Beurteilt: 29 von 36 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 36 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-05-03  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen stark gestiegen. (Woche 800 gegen Norm 160, Verhältnis 5.00 — dein Gesamttraining ist dabei praktisch gleich geblieben; der Unterschied liegt in der Wahl der Aktivität)
+  [ACHT] 2026-05-03  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 9 Wochen)
+
+============================================================================
+Der Wochenendkrieger: unter der Woche nichts, samstags alles
+============================================================================
+Einträge: 56   Selbsttests: 0   Profil: Patellasehne (patellar_tendinopathy.2026-08-21)
+Gesamtbild: amber   (grün 9, gelb 2, rot 0)
+Beurteilt: 7 von 8 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 1 von 8 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 8 Wochen)
+  [ACHT] 2026-04-26  Lastverteilung — Die Wochenlast liegt auf sehr wenigen Tagen. (die gesamte Wochenlast lag auf einem einzigen Tag)
+
+============================================================================
+Nach Operation: lange Pause, dann sehr vorsichtiger Aufbau
+============================================================================
+Einträge: 70   Selbsttests: 0   Profil: Patellasehne (patellar_tendinopathy.2026-08-21)
+Gesamtbild: green   (grün 25, gelb 0, rot 0)
+Beurteilt: 21 von 21 erwarteten Tagen, 5 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-23  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 45, Ausgangswert 5, am Morgen danach 5)
+
+============================================================================
+Die Kaskade: Werte sehen brauchbar aus, Schere öffnet sich
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Die betroffene Seite liegt im Selbsttest unter der anderen. (calf_raise: 92% → 88% → 84%)
+
+============================================================================
+Noch im grünen Bereich, aber fallend: 98 auf 92 Prozent
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Der Abstand zwischen den Seiten hat sich über mehrere Messungen vergrößert. (calf_raise: 98% → 94% → 92%)
+
+============================================================================
+Auch die gesunde Seite verliert — der Quotient täuscht
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Auch die Vergleichsseite hat nachgelassen — der Seitenvergleich ist hier wenig aussagekräftig. (single_hop: 88% → 88% → 88%, Vergleichsseite 150 → 138 → 126)
+
+============================================================================
+Selbsttests seit zwei Monaten nicht wiederholt
+============================================================================
+Einträge: 84   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: green   (grün 46, gelb 0, rot 0)
+Beurteilt: 41 von 48 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 48 erwarteten Tagen
+  · Seitenvergleich: Die letzten Selbsttests liegen zu lange zurück.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 160, Ausgangswert 3, am Morgen danach 3)
+
+============================================================================
+Beweglichkeit ausgeglichen — Schulter
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Rotatorenmanschette (rotator_cuff.2026-08-21)
+Gesamtbild: green   (grün 31, gelb 0, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 16, Ausgangswert 3, am Morgen danach 3)
+
+============================================================================
+Beweglichkeit, leichte Einschränkung — Schulter
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Rotatorenmanschette (rotator_cuff.2026-08-21)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Die betroffene Seite liegt im Selbsttest unter der anderen. (rom: 85% → 85% → 85%)
+
+============================================================================
+Beweglichkeit, deutliche Einschränkung — Schulter
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Rotatorenmanschette (rotator_cuff.2026-08-21)
+Gesamtbild: red   (grün 30, gelb 0, rot 1)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-03-30  Seitenvergleich — Die betroffene Seite liegt im Selbsttest deutlich unter der anderen. (rom: 70% → 69% → 70%)
+
+============================================================================
+Beweglichkeit, die Schere öffnet sich — Schulter
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Rotatorenmanschette (rotator_cuff.2026-08-21)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Der Abstand zwischen den Seiten hat sich über mehrere Messungen vergrößert. (rom: 98% → 94% → 92%)
+
+============================================================================
+Beide Schultern werden steifer — der Quotient täuscht
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Rotatorenmanschette (rotator_cuff.2026-08-21)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Auch die Vergleichsseite hat nachgelassen — der Seitenvergleich ist hier wenig aussagekräftig. (rom: 90% → 91% → 90%, Vergleichsseite 175 → 162 → 150)
+
+============================================================================
+Beweglichkeit seit zwei Monaten nicht gemessen — Schulter
+============================================================================
+Einträge: 84   Selbsttests: 3   Profil: Rotatorenmanschette (rotator_cuff.2026-08-21)
+Gesamtbild: green   (grün 46, gelb 0, rot 0)
+Beurteilt: 41 von 48 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 48 erwarteten Tagen
+  · Seitenvergleich: Die letzten Selbsttests liegen zu lange zurück.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 16, Ausgangswert 3, am Morgen danach 3)
+
+============================================================================
+Auch die gesunde Seite verliert — als Fersenheber gemessen
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Plantarfaszie (plantar_fasciopathy.2026-08-21)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Auch die Vergleichsseite hat nachgelassen — der Seitenvergleich ist hier wenig aussagekräftig. (calf_raise: 88% → 87% → 86%, Vergleichsseite 25 → 23 → 21)
+
+============================================================================
+Sprungtests seit zwei Monaten nicht wiederholt — Patellasehne
+============================================================================
+Einträge: 84   Selbsttests: 3   Profil: Patellasehne (patellar_tendinopathy.2026-08-21)
+Gesamtbild: green   (grün 46, gelb 0, rot 0)
+Beurteilt: 41 von 48 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 48 erwarteten Tagen
+  · Seitenvergleich: Die letzten Selbsttests liegen zu lange zurück.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 144, Ausgangswert 3, am Morgen danach 3)
+
+============================================================================
+Sprungtest ausgeglichen — Patellasehne
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Patellasehne (patellar_tendinopathy.2026-08-21)
+Gesamtbild: green   (grün 31, gelb 0, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 144, Ausgangswert 3, am Morgen danach 3)
+
+============================================================================
+Sprungtest, leichtes Defizit — Patellasehne
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Patellasehne (patellar_tendinopathy.2026-08-21)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Die betroffene Seite liegt im Selbsttest unter der anderen. (single_hop: 85% → 84% → 85%)
+
+============================================================================
+Sprungtest, deutliches Defizit — Patellasehne
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Patellasehne (patellar_tendinopathy.2026-08-21)
+Gesamtbild: red   (grün 30, gelb 0, rot 1)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-03-30  Seitenvergleich — Die betroffene Seite liegt im Selbsttest deutlich unter der anderen. (single_hop: 70% → 68% → 70%)
+
+============================================================================
+Sprungtest, die Schere öffnet sich — Patellasehne
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Patellasehne (patellar_tendinopathy.2026-08-21)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Der Abstand zwischen den Seiten hat sich über mehrere Messungen vergrößert. (single_hop: 98% → 94% → 92%)
+
+============================================================================
+Echte Besserung im Seitenvergleich
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: green   (grün 31, gelb 0, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 160, Ausgangswert 3, am Morgen danach 3)
+
+============================================================================
+Stabiles leichtes Defizit im Seitenvergleich
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 30, gelb 1, rot 0)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-03-30  Seitenvergleich — Die betroffene Seite liegt im Selbsttest unter der anderen. (calf_raise: 85% → 80% → 85%)
+
+============================================================================
+Stabiles deutliches Defizit im Seitenvergleich
+============================================================================
+Einträge: 56   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: red   (grün 30, gelb 0, rot 1)
+Beurteilt: 25 von 32 erwarteten Tagen, 7 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 32 erwarteten Tagen
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [STOP] 2026-03-30  Seitenvergleich — Die betroffene Seite liegt im Selbsttest deutlich unter der anderen. (calf_raise: 70% → 65% → 70%)
+
+============================================================================
+Der Aussteiger: drei Wochen ohne Einträge, dann zurück
+============================================================================
+Einträge: 42   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: amber   (grün 11, gelb 1, rot 0)
+Beurteilt: 10 von 24 erwarteten Tagen, 3 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 14 von 24 erwarteten Tagen
+  · Belastungsverlauf: Im betrachteten Zeitraum fehlen zu viele Tage.
+  · Ausgangswert: Der Verlauf ist dafür noch zu kurz.
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Auffälligkeiten:
+  [ACHT] 2026-05-03  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2.5, letzte 14 Tage 3, nach 9 Wochen)
+
+============================================================================
+Zwei Lücken mitten im Tagebuch
+============================================================================
+Einträge: 33   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: nicht genug beurteilt   (grün 12, gelb 0, rot 0)
+Beurteilt: 9 von 18 erwarteten Tagen, 4 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 18 erwarteten Tagen
+  · 24-Stunden-Reaktion: Für den übernächsten Tag fehlt ein Eintrag. — betrifft 1 von 18 erwarteten Tagen
+  · 24-Stunden-Reaktion: Für den Folgetag fehlt ein Eintrag. — betrifft 1 von 18 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 100, Ausgangswert 2, am Morgen danach 2)
+
+============================================================================
+Lückenhaftes Tagebuch
+============================================================================
+Einträge: 30   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: nicht genug beurteilt   (grün 3, gelb 0, rot 0)
+Beurteilt: 0 von 18 erwarteten Tagen, 3 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 18 von 18 erwarteten Tagen
+  · Belastungsverlauf: Im betrachteten Zeitraum fehlen zu viele Tage.
+  · Langzeitverlauf: Im betrachteten Zeitraum fehlen zu viele Tage.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-04-26  Ausgangswert — Der Ausgangswert am Morgen ist über die letzten Wochen unverändert. (vorletzte 14 Tage 2, letzte 14 Tage 1 (-1))
+
+============================================================================
+Gerade erst angefangen
+============================================================================
+Einträge: 5   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: noch keine Aussage möglich   (grün 0, gelb 0, rot 0)
+Beurteilt: 0 von 2 erwarteten Tagen, 0 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 2 von 2 erwarteten Tagen
+  · Belastungsverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Ausgangswert: Der Verlauf ist dafür noch zu kurz.
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · Langzeitverlauf: Der Verlauf ist dafür noch zu kurz.
+  · Lastverteilung: Der Verlauf ist dafür noch zu kurz.
+  · Seitenvergleich: Es liegen noch keine Selbsttests vor.
+
+============================================================================
+Loadwise dokumentiert und ordnet. Es behandelt nicht und gibt keine Empfehlungen. Bei anhaltenden, neuen oder ungewöhnlichen Beschwerden gehört die Einschätzung zu einer Fachperson.
+============================================================================

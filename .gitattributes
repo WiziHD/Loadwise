@@ -1,0 +1,15 @@
+# Ein Zeilenende im Repository, egal auf welchem System gearbeitet wird.
+#
+# Ohne das erzeugt jeder Wechsel zwischen Windows und Linux einen Diff über die
+# gesamte Datei — und ein Diff, in dem alles geändert aussieht, ist ein Diff,
+# den niemand liest.
+* text=auto eol=lf
+
+# Die Golden-Datei wird zeichenweise verglichen. Ein umgestelltes Zeilenende
+# würde 900 Zeilen Unterschied melden, wo sich nichts geändert hat.
+engine/test/__golden__/report.txt text eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary

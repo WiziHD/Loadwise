@@ -1,0 +1,20 @@
+{
+  "name": "loadwise",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Loadwise — load management for the time between physiotherapy appointments.",
+  "workspaces": [
+    "engine",
+    "web"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=web",
+    "build": "npm run build --workspace=web",
+    "test": "npm run test --workspace=engine",
+    "typecheck": "npm run typecheck --workspace=engine && npm run typecheck --workspace=web",
+    "check": "npm run typecheck && npm run test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

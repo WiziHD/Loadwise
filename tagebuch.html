@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loadwise Tagebuch (Testwerkzeug)</title>
+<style>
+  :root {
+    --ground: #F6F8F7;
+    --surface: #fff;
+    --ink: #131C1B;
+    --soft: #52615E;
+    --faint: #7C8A87;
+    --rule: #DCE4E1;
+    --accent: #0D5C63;
+    --accent-soft: #E0EFF0;
+    --warn: #A8560D;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0E1516; --surface: #151E1F; --ink: #E4EDEB; --soft: #A3B2AF;
+      --faint: #788784; --rule: #263234; --accent: #5FBCC2; --accent-soft: #16302F;
+      --warn: #E0A05A;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 1rem 1rem 4rem;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 1.35rem; margin: .5rem 0 .2rem; letter-spacing: -.02em; }
+  .sub { color: var(--soft); font-size: .9rem; margin: 0 0 1.25rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem; margin-bottom: 1rem;
+  }
+  label { display: block; font-size: .82rem; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--faint); margin: 0 0 .4rem; }
+  .field { margin-bottom: 1rem; }
+  .field:last-child { margin-bottom: 0; }
+  input[type=date], input[type=number], input[type=text], select, textarea {
+    width: 100%; padding: .6rem .7rem; font: inherit; color: var(--ink);
+    background: var(--ground); border: 1px solid var(--rule); border-radius: 7px;
+  }
+  .scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; }
+  .scale button {
+    padding: .55rem 0; font: inherit; font-variant-numeric: tabular-nums;
+    background: var(--ground); color: var(--soft);
+    border: 1px solid var(--rule); border-radius: 6px; cursor: pointer;
+  }
+  .scale button[aria-pressed="true"] {
+    background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .chips { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .chips button {
+    padding: .5rem .85rem; font: inherit; background: var(--ground); color: var(--soft);
+    border: 1px solid var(--rule); border-radius: 20px; cursor: pointer;
+  }
+  .chips button[aria-pressed="true"] {
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600;
+  }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .25rem; }
+  .btn {
+    padding: .7rem 1.1rem; font: inherit; font-weight: 600; border-radius: 8px;
+    border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer;
+  }
+  .btn.ghost { background: transparent; color: var(--accent); }
+  .btn.small { padding: .45rem .8rem; font-weight: 500; font-size: .9rem; }
+  .toggle {
+    display: flex; align-items: center; gap: .6rem; padding: .7rem;
+    background: var(--ground); border: 1px solid var(--rule); border-radius: 8px; cursor: pointer;
+  }
+  .toggle input { width: 1.15rem; height: 1.15rem; accent-color: var(--accent); }
+  .hidden { display: none; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem;
+    font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--faint); padding: .45rem .4rem; border-bottom: 1px solid var(--rule); }
+  td { padding: .45rem .4rem; border-bottom: 1px solid var(--rule); }
+  tr:last-child td { border-bottom: none; }
+  .del { background: none; border: none; color: var(--warn); cursor: pointer; font: inherit; }
+  .note-line { color: var(--faint); font-size: .85rem; margin-top: .75rem; }
+  .flash { color: var(--accent); font-weight: 600; font-size: .9rem; min-height: 1.4em; }
+  .timer { color: var(--faint); font-size: .8rem; font-variant-numeric: tabular-nums; }
+  .scroll { overflow-x: auto; }
+  textarea { resize: vertical; min-height: 2.6rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Loadwise Tagebuch</h1>
+  <p class="sub">Testwerkzeug. Läuft komplett lokal, speichert im Browser dieses Geräts.
+    Hat nichts mit der späteren App zu tun — es dient nur dazu, echte Daten zu sammeln
+    und zu messen, wie lange ein Eintrag wirklich dauert.</p>
+
+  <div class="card">
+    <div class="field">
+      <label for="datum">Datum</label>
+      <input type="date" id="datum">
+    </div>
+
+    <div class="field">
+      <label for="morgen">Zustand beim Aufstehen — 0 nichts, 10 schlimmst</label>
+      <div class="scale" id="morgen" role="group" aria-label="Morgenwert"></div>
+    </div>
+
+    <div class="field">
+      <label class="toggle" for="ruhetag">
+        <input type="checkbox" id="ruhetag">
+        <span>Ruhetag — heute nicht trainiert</span>
+      </label>
+    </div>
+
+    <div id="training">
+      <div class="field">
+        <label for="aktivitaet">Aktivität</label>
+        <select id="aktivitaet">
+          <option value="laufen">Laufen</option>
+          <option value="gehen">Gehen</option>
+          <option value="wandern">Wandern</option>
+          <option value="rad">Rad</option>
+          <option value="schwimmen">Schwimmen</option>
+          <option value="rudern">Rudern</option>
+          <option value="kraft_beine">Kraft Beine</option>
+          <option value="kraft_oben">Kraft Oberkörper</option>
+          <option value="spruenge">Sprünge</option>
+          <option value="ballsport">Ballsport</option>
+          <option value="anderes">Anderes</option>
+        </select>
+      </div>
+
+      <div class="field row">
+        <div>
+          <label for="minuten">Minuten</label>
+          <input type="number" id="minuten" min="1" step="5" inputmode="numeric">
+        </div>
+        <div>
+          <label for="anstrengung">Anstrengung 1–10</label>
+          <input type="number" id="anstrengung" min="1" max="10" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="beschwerden">Beschwerden zur Einheit — 0 keine</label>
+        <div class="scale" id="beschwerden" role="group" aria-label="Beschwerden"></div>
+      </div>
+
+      <div class="field" id="zeitpunkt-feld">
+        <label>Wann waren die Beschwerden?</label>
+        <div class="chips" id="zeitpunkt" role="group" aria-label="Zeitpunkt">
+          <button type="button" data-v="waehrend">während</button>
+          <button type="button" data-v="danach">danach</button>
+          <button type="button" data-v="abends">abends</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="notiz">Notiz — freiwillig, geht nie in die Rechnung ein</label>
+      <textarea id="notiz" rows="1"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="speichern">Eintrag speichern</button>
+      <span class="flash" id="flash"></span>
+    </div>
+    <div class="timer" id="timer"></div>
+  </div>
+
+  <div class="card">
+    <div class="actions" style="margin-bottom:.9rem">
+      <button class="btn small" id="download">CSV herunterladen</button>
+      <button class="btn small ghost" id="copy">In Zwischenablage</button>
+      <button class="btn small ghost" id="load">CSV einlesen</button>
+      <input type="file" id="file" accept=".csv,text/csv" class="hidden">
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Datum</th><th>Morgen</th><th>Aktivität</th><th>Min</th><th>Anstr.</th><th>Beschw.</th><th></th></tr></thead>
+        <tbody id="liste"></tbody>
+      </table>
+    </div>
+    <p class="note-line" id="zaehler"></p>
+  </div>
+
+  <p class="note-line">
+    Auch an Ruhetagen eintragen — ohne sie gibt es keinen Vergleichswert, und ohne
+    Vergleichswert kann die wichtigste Regel gar nichts sagen.
+  </p>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY = "loadwise-tagebuch-v1";
+  var HEADER = "datum,morgen,aktivitaet,minuten,anstrengung,beschwerden,zeitpunkt,notiz";
+
+  var state = { morgen: null, beschwerden: 0, zeitpunkt: null };
+  var started = null;
+
+  function el(id) { return document.getElementById(id); }
+
+  /**
+   * Some browsers refuse localStorage for files opened straight off the disk.
+   * A diary that silently forgets everything on refresh would be worse than no
+   * diary at all, so this is checked up front and said out loud.
+   */
+  var storageOk = (function () {
+    try {
+      localStorage.setItem(KEY + "-probe", "1");
+      localStorage.removeItem(KEY + "-probe");
+      return true;
+    } catch (e) { return false; }
+  })();
+
+  var memory = [];
+  var entries = load();
+
+  /** Local calendar date. Never derived from UTC — the engine's whole date model
+      depends on this being the day the person actually lived. */
+  function today(offset) {
+    var d = new Date();
+    d.setDate(d.getDate() + (offset || 0));
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+
+  function load() {
+    if (!storageOk) return memory;
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+    catch (e) { return []; }
+  }
+  function save() {
+    memory = entries;
+    if (!storageOk) return;
+    try { localStorage.setItem(KEY, JSON.stringify(entries)); }
+    catch (e) { storageOk = false; warnNoStorage(); }
+  }
+
+  function warnNoStorage() {
+    if (el("no-storage")) return;
+    var d = document.createElement("div");
+    d.id = "no-storage";
+    d.className = "card";
+    d.style.borderColor = "var(--warn)";
+    d.style.color = "var(--warn)";
+    d.innerHTML = "<strong>Dieser Browser speichert hier nichts dauerhaft.</strong><br>" +
+      "Die Einträge leben nur, solange die Seite offen ist. Lade die CSV herunter, " +
+      "bevor du den Tab schließt — oder öffne die Datei in einem anderen Browser.";
+    document.querySelector(".wrap").insertBefore(d, document.querySelector(".card"));
+  }
+
+  function buildScale(container, initial, onPick) {
+    container.innerHTML = "";
+    for (var i = 0; i <= 10; i++) {
+      (function (v) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = v;
+        b.setAttribute("aria-pressed", v === initial ? "true" : "false");
+        b.addEventListener("click", function () {
+          Array.prototype.forEach.call(container.children, function (c) {
+            c.setAttribute("aria-pressed", "false");
+          });
+          b.setAttribute("aria-pressed", "true");
+          onPick(v);
+          tick();
+        });
+        container.appendChild(b);
+      })(i);
+    }
+  }
+
+  function pickChip(group, value) {
+    Array.prototype.forEach.call(group.children, function (c) {
+      c.setAttribute("aria-pressed", c.dataset.v === value ? "true" : "false");
+    });
+  }
+
+  function tick() { if (started === null) started = Date.now(); }
+
+  function refreshTraining() {
+    el("training").classList.toggle("hidden", el("ruhetag").checked);
+  }
+
+  function reset(nextDate) {
+    el("datum").value = nextDate;
+    state.morgen = null;
+    state.beschwerden = 0;
+    state.zeitpunkt = null;
+    buildScale(el("morgen"), null, function (v) { state.morgen = v; });
+    buildScale(el("beschwerden"), 0, function (v) { state.beschwerden = v; });
+    pickChip(el("zeitpunkt"), null);
+    el("minuten").value = "";
+    el("anstrengung").value = "";
+    el("notiz").value = "";
+    el("ruhetag").checked = false;
+    refreshTraining();
+    started = null;
+    el("timer").textContent = "";
+  }
+
+  function render() {
+    var body = el("liste");
+    body.innerHTML = "";
+    entries.slice().sort(function (a, b) { return a.datum < b.datum ? 1 : -1; })
+      .forEach(function (e) {
+        var tr = document.createElement("tr");
+        [e.datum, e.morgen, e.aktivitaet || "—", e.minuten || "", e.anstrengung || "", e.beschwerden === "" ? "" : e.beschwerden]
+          .forEach(function (v) {
+            var td = document.createElement("td");
+            td.textContent = v;
+            tr.appendChild(td);
+          });
+        var td = document.createElement("td");
+        var b = document.createElement("button");
+        b.className = "del";
+        b.textContent = "löschen";
+        b.addEventListener("click", function () {
+          entries = entries.filter(function (x) { return x.datum !== e.datum; });
+          save(); render();
+        });
+        td.appendChild(b);
+        tr.appendChild(td);
+        body.appendChild(tr);
+      });
+
+    var n = entries.length;
+    var msg = n + (n === 1 ? " Eintrag" : " Einträge");
+    if (n > 0 && n < 14) msg += " — ab 14 bekommt die 24-Stunden-Regel ihren Vergleichswert";
+    else if (n >= 14 && n < 28) msg += " — ab 28 kommen Belastungsspitzen und Drift dazu";
+    else if (n >= 28 && n < 42) msg += " — ab 42 auch das Schmerzmuster";
+    else if (n >= 42) msg += " — alle Regeln können sprechen";
+    el("zaehler").textContent = msg;
+  }
+
+  function csvCell(v) {
+    var s = String(v === null || v === undefined ? "" : v);
+    return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function toCsv() {
+    var rows = [HEADER];
+    entries.slice().sort(function (a, b) { return a.datum < b.datum ? -1 : 1; })
+      .forEach(function (e) {
+        rows.push([e.datum, e.morgen, e.aktivitaet, e.minuten, e.anstrengung, e.beschwerden, e.zeitpunkt, e.notiz]
+          .map(csvCell).join(","));
+      });
+    return rows.join("\n") + "\n";
+  }
+
+  function fromCsv(text) {
+    var lines = text.replace(/^﻿/, "").split(/\r?\n/).filter(function (l) { return l.trim(); });
+    if (!lines.length) return [];
+    var sep = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ";" : ",";
+    var head = lines[0].split(sep).map(function (h) { return h.trim().toLowerCase(); });
+    var idx = {};
+    ["datum", "morgen", "aktivitaet", "minuten", "anstrengung", "beschwerden", "zeitpunkt", "notiz"]
+      .forEach(function (k) { idx[k] = head.indexOf(k); });
+    var out = [];
+    for (var i = 1; i < lines.length; i++) {
+      var c = lines[i].split(sep);
+      var get = function (k) { return idx[k] >= 0 ? (c[idx[k]] || "").trim().replace(/^"|"$/g, "") : ""; };
+      if (!get("datum")) continue;
+      out.push({
+        datum: get("datum"), morgen: get("morgen"), aktivitaet: get("aktivitaet"),
+        minuten: get("minuten"), anstrengung: get("anstrengung"),
+        beschwerden: get("beschwerden"), zeitpunkt: get("zeitpunkt"), notiz: get("notiz")
+      });
+    }
+    return out;
+  }
+
+  // ---- wiring -----------------------------------------------------------
+
+  buildScale(el("morgen"), null, function (v) { state.morgen = v; });
+  buildScale(el("beschwerden"), 0, function (v) { state.beschwerden = v; });
+  el("datum").value = today(0);
+  refreshTraining();
+  render();
+  if (!storageOk) warnNoStorage();
+
+  el("ruhetag").addEventListener("change", function () { refreshTraining(); tick(); });
+  ["minuten", "anstrengung", "notiz", "aktivitaet", "datum"].forEach(function (id) {
+    el(id).addEventListener("input", tick);
+  });
+
+  Array.prototype.forEach.call(el("zeitpunkt").children, function (b) {
+    b.addEventListener("click", function () {
+      state.zeitpunkt = state.zeitpunkt === b.dataset.v ? null : b.dataset.v;
+      pickChip(el("zeitpunkt"), state.zeitpunkt);
+      tick();
+    });
+  });
+
+  el("speichern").addEventListener("click", function () {
+    var datum = el("datum").value;
+    if (!datum) { flash("Datum fehlt", true); return; }
+    if (state.morgen === null) { flash("Morgenwert fehlt — das ist das wichtigste Feld", true); return; }
+
+    var rest = el("ruhetag").checked;
+    var entry = {
+      datum: datum,
+      morgen: state.morgen,
+      aktivitaet: rest ? "" : el("aktivitaet").value,
+      minuten: rest ? "" : el("minuten").value,
+      anstrengung: rest ? "" : el("anstrengung").value,
+      beschwerden: rest ? "" : state.beschwerden,
+      zeitpunkt: rest || state.beschwerden === 0 ? "" : (state.zeitpunkt || ""),
+      notiz: el("notiz").value.trim()
+    };
+
+    if (!rest && (!entry.minuten || !entry.anstrengung)) {
+      flash("Minuten und Anstrengung gehören zusammen", true); return;
+    }
+    if (!rest && state.beschwerden > 0 && !entry.zeitpunkt) {
+      flash("Wann waren die Beschwerden?", true); return;
+    }
+
+    entries = entries.filter(function (x) { return x.datum !== datum; });
+    entries.push(entry);
+    save();
+    render();
+
+    var secs = started ? Math.round((Date.now() - started) / 1000) : null;
+    flash("Gespeichert" + (secs !== null ? " — " + secs + " s" : ""), false);
+    reset(today(0) === datum ? today(1) : nextDay(datum));
+  });
+
+  function nextDay(d) {
+    var p = d.split("-");
+    var x = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    x.setDate(x.getDate() + 1);
+    var m = String(x.getMonth() + 1).padStart(2, "0");
+    var day = String(x.getDate()).padStart(2, "0");
+    return x.getFullYear() + "-" + m + "-" + day;
+  }
+
+  function flash(msg, warn) {
+    var f = el("flash");
+    f.textContent = msg;
+    f.style.color = warn ? "var(--warn)" : "var(--accent)";
+    setTimeout(function () { if (f.textContent === msg) f.textContent = ""; }, 4000);
+  }
+
+  el("download").addEventListener("click", function () {
+    var blob = new Blob([toCsv()], { type: "text/csv;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tagebuch.csv";
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+
+  el("copy").addEventListener("click", function () {
+    navigator.clipboard.writeText(toCsv())
+      .then(function () { flash("CSV kopiert", false); })
+      .catch(function () { flash("Kopieren nicht möglich — nimm den Download", true); });
+  });
+
+  el("load").addEventListener("click", function () { el("file").click(); });
+  el("file").addEventListener("change", function (ev) {
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var incoming = fromCsv(String(r.result));
+      var byDate = {};
+      entries.concat(incoming).forEach(function (e) { byDate[e.datum] = e; });
+      entries = Object.keys(byDate).map(function (k) { return byDate[k]; });
+      save(); render();
+      flash(incoming.length + " Zeilen eingelesen", false);
+    };
+    r.readAsText(f);
+    ev.target.value = "";
+  });
+})();
+</script>
+</body>
+</html>
