@@ -41,3 +41,12 @@ export function isLocale(value: string): value is Locale {
 export function localeFrom(value: string | undefined): Locale {
   return value !== undefined && isLocale(value) ? value : DEFAULT_LOCALE;
 }
+
+/**
+ * The header the middleware uses to tell a page which language it is in.
+ *
+ * Only the not-found boundary needs it: every other page reads the locale
+ * from its route params. A not-found boundary has none, because Next renders
+ * it outside the segment that failed.
+ */
+export const LOCALE_HEADER = "x-loadwise-locale";

@@ -1,28 +1,35 @@
 /**
- * The scaffold page.
+ * The list of episodes, and the way to start one.
  *
- * Its only job is to prove card 1.1's acceptance criterion in a way that means
- * something: the engine is imported from the workspace — not copied, not
- * rebuilt — and the registry it exposes is the same one the 306 tests run
- * against. If this page renders nine researched profiles, the wiring is real.
+ * Replaces the scaffold page, whose job — proving the engine imports from the
+ * workspace rather than from a copy — is now done by every page here.
  *
- * It will be replaced by the diary as soon as there is a database behind it.
+ * Signed out, it says what the app is and offers the door. It does NOT list
+ * profiles to a stranger: the set of injuries somebody is looking at is the
+ * most sensitive thing this product holds.
  */
 
-import { ALL_PROFILES, DEFAULT_PROFILE_FOR, TEST_UNIT } from "loadwise-engine";
-import type { Profile } from "loadwise-engine";
+import Link from "next/link";
 import { localeFrom } from "@/i18n/config";
 import { t } from "@/i18n/dictionary";
+import { currentUser } from "@/lib/supabase/server";
+import { listEpisodes, profileOf } from "@/lib/db/episodes";
 
-const isResearched = (p: Profile): boolean =>
-  Object.values(p.evidence).some((e) => e.grade !== "D");
+const primaryButton: React.CSSProperties = {
+  display: "inline-block",
+  padding: "0.6rem 1rem",
+  fontSize: "1rem",
+  borderRadius: "0.375rem",
+  border: "1px solid var(--fg)",
+  background: "var(--fg)",
+  color: "var(--bg)",
+  textDecoration: "none",
+};
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const locale = localeFrom((await params).locale);
   const s = t(locale);
-
-  const researched = ALL_PROFILES.filter(isResearched);
-  const generic = ALL_PROFILES.filter((p) => !isResearched(p));
+  const user = await currentUser();
 
   return (
     <main>
@@ -31,46 +38,65 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <p style={{ color: "var(--muted)", margin: 0 }}>{s.tagline}</p>
       </header>
 
-      <section
-        style={{
-          border: "1px solid var(--line)",
-          borderRadius: "0.5rem",
-          padding: "1.25rem",
-          background: "var(--card)",
-        }}
-      >
-        <h2 style={{ fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--muted)", margin: "0 0 0.75rem" }}>
-          {s.scaffold.heading}
-        </h2>
-
-        <p style={{ margin: "0 0 1rem" }}>{s.scaffold.engineLoaded}</p>
-
-        <p style={{ margin: "0 0 1.5rem", color: "var(--muted)" }}>
-          {ALL_PROFILES.length} {s.scaffold.profilesAvailable} — {researched.length}{" "}
-          {s.scaffold.researched}, {generic.length} {s.scaffold.generic}
-        </p>
-
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.6rem" }}>
-          {researched.map((p) => (
-            <li key={p.key} style={{ display: "flex", justifyContent: "space-between", gap: "1rem", borderTop: "1px solid var(--line)", paddingTop: "0.6rem" }}>
-              <span>
-                <strong>{p.label[locale]}</strong>
-                <span style={{ color: "var(--muted)" }}> · {p.bodyRegion}</span>
-                {DEFAULT_PROFILE_FOR[p.bodyRegion] !== p.key && (
-                  <span style={{ color: "var(--muted)" }}> (kein Standard)</span>
-                )}
-              </span>
-              <span style={{ color: "var(--muted)", whiteSpace: "nowrap", fontSize: "0.9rem" }}>
-                {p.tests.map((type) => `${type} (${TEST_UNIT[type]})`).join(" · ")}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <p style={{ color: "var(--muted)", marginTop: "1.5rem", fontSize: "0.9rem" }}>
-        {s.scaffold.nothingYet}
-      </p>
+      {user === null ? (
+        <Link href={`/${locale}/signin`} style={primaryButton}>
+          {s.actions.signIn}
+        </Link>
+      ) : (
+        <EpisodeList locale={locale} s={s} />
+      )}
     </main>
+  );
+}
+
+async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof t> }) {
+  const episodes = await listEpisodes();
+
+  if (episodes.length === 0) {
+    return (
+      <section>
+        <p style={{ margin: "0 0 0.4rem" }}>{s.episode.none}</p>
+        <p style={{ color: "var(--muted)", margin: "0 0 1.5rem" }}>{s.episode.noneHint}</p>
+        <Link href={`/${locale}/episodes/new`} style={primaryButton}>
+          {s.episode.newEpisode}
+        </Link>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.75rem", display: "grid", gap: "0.75rem" }}>
+        {episodes.map((episode) => {
+          const profile = profileOf(episode);
+          return (
+            <li key={episode.id}>
+              <Link
+                href={`/${locale}/episodes/${episode.id}`}
+                style={{
+                  display: "block",
+                  border: "1px solid var(--line)",
+                  borderRadius: "0.5rem",
+                  padding: "0.9rem 1rem",
+                  background: "var(--card)",
+                  color: "inherit",
+                  textDecoration: "none",
+                }}
+              >
+                <strong>{episode.label ?? profile.label[localeFrom(locale)]}</strong>
+                <span style={{ display: "block", color: "var(--muted)", fontSize: "0.88rem", marginTop: "0.15rem" }}>
+                  {profile.label[localeFrom(locale)]}
+                  {episode.started_on !== null && ` · ${episode.started_on}`}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+
+      <Link href={`/${locale}/episodes/new`} style={primaryButton}>
+        {s.episode.newEpisode}
+      </Link>
+    </section>
   );
 }

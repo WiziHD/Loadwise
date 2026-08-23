@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npm run check:prerender",
     "start": "next start",
     "typecheck": "tsc --noEmit && npm run check:boundary",
     "lint": "next lint",
-    "check:boundary": "tsx scripts/check-wording-boundary.ts"
+    "check:boundary": "tsx scripts/check-wording-boundary.ts",
+    "check:prerender": "tsx scripts/check-no-prerendered-private.ts",
+    "check:rls": "tsx scripts/check-rls.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

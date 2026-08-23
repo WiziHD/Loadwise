@@ -199,6 +199,36 @@ const _reasonCodesExhaustive: Exhaustive<ReasonCode, typeof ALL_REASON_CODES> = 
 void _reasonCodesExhaustive;
 
 /**
+ * Every activity a person can record, in the order a form should offer them.
+ *
+ * Exists because the union alone is not enumerable at runtime, and anything
+ * that renders a list of activities would otherwise keep its own copy. A copy
+ * drifts silently: add a twelfth kind here and the form keeps offering eleven,
+ * with nothing to notice. Same discipline as ALL_REASON_CODES.
+ *
+ * Ordered by how commonly they appear, not alphabetically — "other" last
+ * because it is the fallback, never the choice.
+ */
+export const ALL_ACTIVITY_KINDS = [
+  "run",
+  "walk",
+  "hike",
+  "cycle",
+  "swim",
+  "row",
+  "strength_lower",
+  "strength_upper",
+  "plyometric",
+  "court_sport",
+  "other",
+] as const satisfies readonly ActivityKind[];
+
+// Compile error if any ActivityKind is missing from the array above.
+const _activityKindsExhaustive: Exhaustive<ActivityKind, typeof ALL_ACTIVITY_KINDS> =
+  ALL_ACTIVITY_KINDS;
+void _activityKindsExhaustive;
+
+/**
  * "Nothing to judge here, and that is entirely normal."
  *
  * A rest day carries no reaction to assess; a date with no entry is simply not

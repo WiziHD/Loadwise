@@ -1,6 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { DEFAULT_LOCALE, LOCALES, isLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE, LOCALES, isLocale, LOCALE_HEADER } from "@/i18n/config";
+
+/**
+ * Path prefixes that must NOT be given a language.
+ *
+ * `/auth/callback` is deliberately outside `[locale]` — its address is baked
+ * into an email that may be opened days later, so it cannot depend on which
+ * language the browser was set to at the time. Without this exemption the
+ * redirect below rewrote it to `/de/auth/callback`, which does not exist, and
+ * EVERY sign-in link in the product 404'd. The route's own comment said it was
+ * outside `[locale]` on purpose; the middleware quietly undid that, and
+ * nothing failed loudly enough to say so.
+ *
+ * The session refresh above still runs for these paths. Only the language
+ * redirect is skipped.
+ */
+const LOCALE_EXEMPT = new Set(["auth"]);
 
 /**
  * Two jobs on every request: keep the session alive, and make sure the URL
@@ -12,14 +28,25 @@ import { DEFAULT_LOCALE, LOCALES, isLocale } from "@/i18n/config";
  * signed out while typing a diary entry.
  */
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request });
-
-  response = await refreshSession(request, response);
-
   const first = request.nextUrl.pathname.split("/")[1] ?? "";
-  if (isLocale(first)) return response;
+  const wanted = isLocale(first)
+    ? first
+    : preferredLocale(request.headers.get("accept-language"));
 
-  const wanted = preferredLocale(request.headers.get("accept-language"));
+  // Carried as a header so the not-found boundary can speak the right
+  // language. A `not-found.tsx` never receives route params — Next renders it
+  // outside the segment that failed — so without this the 404 page is the only
+  // page in the product that cannot know which language it is in.
+  const headers = new Headers(request.headers);
+  headers.set(LOCALE_HEADER, wanted);
+
+  let response = NextResponse.next({ request: { headers } });
+
+  response = await refreshSession(request, headers, response);
+
+  if (isLocale(first)) return response;
+  if (LOCALE_EXEMPT.has(first)) return response;
+
   const url = request.nextUrl.clone();
   url.pathname = `/${wanted}${request.nextUrl.pathname === "/" ? "" : request.nextUrl.pathname}`;
 
@@ -40,7 +67,11 @@ export async function middleware(request: NextRequest) {
  * actually tries to read data (see lib/env.ts), not on every request for the
  * front page.
  */
-async function refreshSession(request: NextRequest, response: NextResponse) {
+async function refreshSession(
+  request: NextRequest,
+  headers: Headers,
+  response: NextResponse,
+) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return response;
@@ -54,7 +85,7 @@ async function refreshSession(request: NextRequest, response: NextResponse) {
       },
       setAll(toSet) {
         for (const { name, value } of toSet) request.cookies.set(name, value);
-        result = NextResponse.next({ request });
+        result = NextResponse.next({ request: { headers } });
         for (const { name, value, options } of toSet) result.cookies.set(name, value, options);
       },
     },
