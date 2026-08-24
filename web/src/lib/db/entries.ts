@@ -7,6 +7,8 @@ export type EntryInput = {
   morningScore: number;
   sessions: Session[];
   everydayLoad: EverydayLoad | null;
+  morningStiffnessMin: number | null;
+  painMedication: boolean | null;
   symptomScore: number | null;
   symptomTiming: SymptomTiming | null;
   note: string | null;
@@ -90,6 +92,8 @@ export async function saveEntry(episodeId: string, input: EntryInput): Promise<v
         entry_date: input.date,
         morning_score: input.morningScore,
         everyday_load: input.everydayLoad,
+        morning_stiffness_min: input.morningStiffnessMin,
+        pain_medication: input.painMedication,
         symptom_score: input.symptomScore,
         symptom_timing: input.symptomTiming,
         note: input.note,

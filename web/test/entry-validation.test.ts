@@ -19,6 +19,8 @@ const tag = (over: Partial<EntryPayload> = {}): EntryPayload => ({
   morningScore: 3,
   sessions: [],
   everydayLoad: null,
+  morningStiffnessMin: null,
+  painMedication: null,
   symptomScore: null,
   symptomTiming: null,
   note: null,
@@ -141,6 +143,34 @@ describe("die Alltagsbelastung", () => {
 
   it("lehnt eine erfundene Stufe ab", () => {
     expect(validateEntry(tag({ everydayLoad: "sehr sportlich" }), HEUTE)).toBe("invalid");
+  });
+});
+
+describe("die beiden Signale", () => {
+  it("nimmt eine Steifigkeitsdauer in Minuten an", () => {
+    expect(validateEntry(tag({ morningStiffnessMin: 25 }), HEUTE)).toBeNull();
+    expect(validateEntry(tag({ morningStiffnessMin: 0 }), HEUTE)).toBeNull();
+  });
+
+  it("laesst eine ganze Nacht zu, aber keinen Unsinn", () => {
+    // Der VISA-A saettigt bei hundert Minuten. Wer laenger steif ist, darf das
+    // trotzdem eintragen — die Grenze ist ein Tag.
+    expect(validateEntry(tag({ morningStiffnessMin: 600 }), HEUTE)).toBeNull();
+    expect(validateEntry(tag({ morningStiffnessMin: 1441 }), HEUTE)).toBe("invalid");
+    expect(validateEntry(tag({ morningStiffnessMin: -5 }), HEUTE)).toBe("invalid");
+  });
+
+  it("nimmt beim Schmerzmittel ja, nein UND keine Angabe an", () => {
+    // Dreiwertig mit Absicht. Wer die App vor dieser Aenderung benutzt hat, hat
+    // fuer jeden alten Tag keine Angabe — daraus ein Nein zu machen waere eine
+    // erfundene Auskunft, ausgerechnet dort, wo es um eine Entwarnung geht.
+    expect(validateEntry(tag({ painMedication: true }), HEUTE)).toBeNull();
+    expect(validateEntry(tag({ painMedication: false }), HEUTE)).toBeNull();
+    expect(validateEntry(tag({ painMedication: null }), HEUTE)).toBeNull();
+  });
+
+  it("lehnt etwas ab, das kein Ja oder Nein ist", () => {
+    expect(validateEntry(tag({ painMedication: "ja" as unknown as boolean }), HEUTE)).toBe("invalid");
   });
 });
 

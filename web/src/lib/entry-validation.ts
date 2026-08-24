@@ -44,6 +44,17 @@ export type EntryPayload = {
   /** Null bis mehrere Einheiten. Leer heisst Ruhetag. */
   sessions: SessionInput[];
   everydayLoad: string | null;
+  /** Minuten Morgensteifigkeit. Siehe Entry.morningStiffnessMin im Motor. */
+  morningStiffnessMin: number | null;
+  /**
+   * Dreiwertig, und das ist Absicht: ja, nein, keine Angabe.
+   *
+   * Eine fehlende Angabe darf nicht zu einem »nein« werden. Wer die App vor
+   * dieser Änderung benutzt hat, hat für jeden alten Tag keine — und daraus ein
+   * Nein zu machen wäre eine erfundene Auskunft, ausgerechnet dort, wo es um
+   * eine Entwarnung geht.
+   */
+  painMedication: boolean | null;
   symptomScore: number | null;
   symptomTiming: SymptomTiming | null;
   note: string | null;
@@ -133,6 +144,15 @@ export function validateEntry(input: EntryPayload, hostToday: string): EntryProb
   }
 
   if (input.everydayLoad !== null && !ALL_EVERYDAY_LOADS.includes(input.everydayLoad as never)) {
+    return "invalid";
+  }
+
+  // Der VISA-A sättigt bei hundert Minuten; wer eine ganze Nacht steif ist,
+  // darf das trotzdem eintragen. Die Obergrenze ist deshalb ein Tag.
+  if (input.morningStiffnessMin !== null && !wholeNumberInRange(input.morningStiffnessMin, 0, 1440)) {
+    return "invalid";
+  }
+  if (input.painMedication !== null && typeof input.painMedication !== "boolean") {
     return "invalid";
   }
 

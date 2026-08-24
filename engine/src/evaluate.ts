@@ -16,7 +16,7 @@
 
 import { assertConfig } from "./config.js";
 import { addDays, compareDates, diffDays } from "./dates.js";
-import { buildIndex, type EntryIndex } from "./episode.js";
+import { buildIndex, entriesBetween, type EntryIndex } from "./episode.js";
 import { evaluateAsymmetry } from "./rules/asymmetry.js";
 import { evaluateBaselineDrift } from "./rules/baselineDrift.js";
 import { evaluateLoadSpike } from "./rules/loadSpike.js";
@@ -285,7 +285,14 @@ export function evaluateEpisode(input: EvaluationInput): Evaluation {
     rulesTotal: RULE_KINDS.length,
   };
 
-  const overall = summarise(flags, coverage, pending, config, index.last);
+  const overall = summarise(
+    flags,
+    coverage,
+    pending,
+    config,
+    index.last,
+    medicationInWindow(index, config, index.last),
+  );
 
   // Deliberately after the verdict, and the ordering is the design rather than
   // an accident of where the line sits. Nothing below can reach anything above.
@@ -367,12 +374,31 @@ export function currentFlags(flags: Flag[], config: Config, lastDate: DateStr | 
   );
 }
 
+/**
+ * Wurde im betrachteten Zeitraum ein Schmerzmittel genommen?
+ *
+ * Derselbe Zeitraum, den auch `currentFlags` benutzt: die Spanne, in der dieser
+ * Motor definiert, was für eine Person »normal« ist. Eine zweite Zahl dafür zu
+ * erfinden hiesse, dieselbe Frage zweimal verschieden zu beantworten.
+ *
+ * `null` und `undefined` zählen NICHT als »kein Schmerzmittel«. Wer die App vor
+ * dieser Änderung benutzt hat, hat für jeden alten Tag keine Angabe, und daraus
+ * ein »nein« zu machen wäre eine erfundene Auskunft — ausgerechnet an der
+ * Stelle, an der es um eine Entwarnung geht.
+ */
+function medicationInWindow(index: EntryIndex, config: Config, lastDate: DateStr | null): boolean {
+  if (lastDate === null) return false;
+  const von = addDays(lastDate, -(config.baseline.windowDays - 1));
+  return entriesBetween(index, von, lastDate).some((e) => e.painMedication === true);
+}
+
 function summarise(
   flags: Flag[],
   coverage: Coverage,
   pending: Pending[],
   config: Config,
   lastDate: DateStr | null,
+  medicated: boolean,
 ): Overall {
   if (flags.length === 0) return { status: "no-data" };
 
@@ -420,8 +446,18 @@ function summarise(
   const enoughDays = coverage.responseRatio >= config.coverage.minResponseRatio;
   const enoughRules = coverage.rulesReporting >= config.coverage.minRulesReporting;
 
-  if (!enoughDays || !enoughRules) {
+  // Ein Schmerzmittel senkt den Morgenwert chemisch, und vier der sieben Regeln
+  // lesen genau diesen Wert. »Alles in Ordnung« wäre dann eine Aussage über
+  // etwas, das gedämpft gemessen wurde.
+  //
+  // Beachte, wo diese Zeile steht: NACH der Warnung. Eine Warnung geht
+  // weiterhin durch, denn sie steht auf eigenen Füssen — dass jemand ein
+  // Schmerzmittel genommen hat, macht eine Reaktion nicht ungeschehen. Nur die
+  // Entwarnung wird verweigert. Dieselbe Asymmetrie wie bei der Abdeckung, aus
+  // demselben Grund.
+  if (!enoughDays || !enoughRules || medicated) {
     const blocking = [...new Set(pending.map((p) => p.reason))];
+    if (medicated) blocking.push("medication-in-window");
     return { status: "insufficient", blocking };
   }
 

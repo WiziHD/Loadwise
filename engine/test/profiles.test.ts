@@ -302,7 +302,12 @@ describe("no verdict goes dark under a profile", () => {
         skipValidation: true,
       });
       for (const f of r.flags) reasons.add(f.reason);
+      // Beide Kanäle — siehe invariants.test.ts. `pending` gehört immer einer
+      // Regel; Gründe ohne Regel stehen nur in `overall.blocking`.
       for (const p of r.pending) blocking.add(p.reason);
+      if (r.overall.status === "insufficient") {
+        for (const reason of r.overall.blocking) blocking.add(reason);
+      }
       if (r.overall.status === "insufficient") for (const b of r.overall.blocking) blocking.add(b);
     }
     return { reasons, blocking };

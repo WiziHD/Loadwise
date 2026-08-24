@@ -142,6 +142,60 @@ export interface Entry {
   sessions: Session[];
   /** Siehe EverydayLoad: erfasst, von keiner Regel gelesen. */
   everydayLoad?: EverydayLoad | null;
+  /**
+   * Wie lange die Steifigkeit am Morgen anhielt, in Minuten.
+   *
+   * -------------------------------------------------------------------------
+   * DER STANDARDMARKER FÜR SEHNEN, DEN DIESER MOTOR BISHER NICHT KANNTE.
+   *
+   * Erfasst war nur die STÄRKE der Beschwerden am Morgen. Bei einer Sehne ist
+   * die DAUER der Steifigkeit der klassische Verlaufsmarker: Sehnenschmerz
+   * bessert sich beim Einlaufen, und wie lange die Steifigkeit anhält, bildet
+   * den Reizzustand oft besser ab als eine Zahl auf einer Skala.
+   *
+   * Beleg: Der VISA-A, das Standardinstrument für die Achillessehne, stellt
+   * genau das als ERSTE seiner acht Fragen — »For how many minutes do you have
+   * stiffness in the Achilles region on first getting up?«, mit 0 Minuten als
+   * bestem und 100 Minuten als schlechtestem Wert.
+   * Robinson et al., Br J Sports Med 2001. Evidenzgrad A.
+   *
+   * GRENZE DER ÜBERTRAGBARKEIT: Das gilt für die Achillessehne. Der VISA-P für
+   * die Patellasehne fragt an erster Stelle nach etwas anderem. Das Feld steht
+   * allen Profilen offen, seine klinische Verankerung aber nicht.
+   *
+   * KEINE REGEL LIEST ES. Eine Regel bräuchte eine Schwelle — »ab wie vielen
+   * Minuten Veränderung bedeutet das etwas« —, und genau dort steckt dasselbe
+   * Problem, das dieses Projekt beim VISA-A schon dokumentiert hat: Der
+   * kleinste messbare Unterschied liegt ÜBER dem kleinsten bedeutsamen. Eine
+   * Schwelle zu erfinden hiesse, Genauigkeit zu behaupten, die die Messung
+   * nicht hergibt.
+   * -------------------------------------------------------------------------
+   */
+  morningStiffnessMin?: number | null;
+  /**
+   * Ob an diesem Tag ein Schmerzmittel genommen wurde.
+   *
+   * -------------------------------------------------------------------------
+   * DER EINZIGE WERT HIER, DER EIN URTEIL VERÄNDERT — UND ZWAR NUR IN EINE
+   * RICHTUNG.
+   *
+   * Wer ein entzündungshemmendes Schmerzmittel nimmt, hat einen chemisch
+   * gesenkten Morgenwert. VIER der sieben Regeln lesen diesen Wert:
+   * 24-Stunden-Reaktion, Basisdrift, Schmerzmuster, Stagnation. Der Motor kann
+   * das nicht wissen und hat keine Möglichkeit, es zu bemerken — »Schmerz
+   * sinkt« bei gleichzeitig steigender Medikation ist keine Besserung, und die
+   * App sagte bisher das Gegenteil.
+   *
+   * Was daraus folgt, ist bewusst KEINE Deutung. »Deine Besserung könnte an den
+   * Tabletten liegen« wäre eine klinische Aussage und damit auf der Linie, die
+   * dieses Projekt sonst überall meidet.
+   *
+   * Stattdessen wirken Tage mit Medikation wie eine Abdeckungslücke: Der Motor
+   * verweigert die ENTWARNUNG, statt sie zu erklären. Eine Warnung geht
+   * weiterhin durch — Abdeckung begrenzt die Entwarnung, nie die Warnung.
+   * -------------------------------------------------------------------------
+   */
+  painMedication?: boolean | null;
   /** Symptoms felt in connection with the session itself, 0-10. */
   symptomScore?: number | null;
   symptomTiming?: SymptomTiming | null;
@@ -322,7 +376,8 @@ export type BlockingReason =
   | "history-too-sparse"
   | "no-tests"
   | "tests-stale"
-  | "too-few-symptom-reports";
+  | "too-few-symptom-reports"
+  | "medication-in-window";
 
 export type InsufficientReason = BenignReason | BlockingReason;
 
@@ -337,6 +392,7 @@ export const ALL_BLOCKING_REASONS = [
   "no-tests",
   "tests-stale",
   "too-few-symptom-reports",
+  "medication-in-window",
 ] as const satisfies readonly BlockingReason[];
 
 export const ALL_INSUFFICIENT_REASONS: readonly InsufficientReason[] = [

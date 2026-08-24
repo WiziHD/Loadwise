@@ -44,6 +44,10 @@ export interface EntryRow {
   morning_score: number;
   /** Siehe EverydayLoad im Motor: erfasst, von keiner Regel gelesen. */
   everyday_load: EverydayLoad | null;
+  /** Minuten. Siehe Entry.morningStiffnessMin — VISA-A, Frage 1. */
+  morning_stiffness_min: number | null;
+  /** Dreiwertig: ja, nein, keine Angabe. Eine fehlende Angabe ist kein Nein. */
+  pain_medication: boolean | null;
   symptom_score: number | null;
   symptom_timing: SymptomTiming | null;
   note: string | null;
@@ -121,6 +125,8 @@ export function toEntry(row: EntryRow, sessions: SessionRow[] = []): Entry {
         rpe: s.rpe,
       })),
     everydayLoad: row.everyday_load,
+    morningStiffnessMin: row.morning_stiffness_min,
+    painMedication: row.pain_medication,
     symptomScore: row.symptom_score,
     symptomTiming: row.symptom_timing,
     note: row.note,

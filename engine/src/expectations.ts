@@ -63,6 +63,18 @@ export const EXPECTATIONS: Record<string, ScenarioExpectation> = {
     mustSay: ["settled-within-24h", "steady", "symmetric"],
     mustNotSay: ["sharp-increase", "baseline-rising", "no-progress-since-start"],
   },
+  medicated: {
+    about:
+      "The same quiet course, but a painkiller was taken on the last few days. " +
+      "The single most important expectation here is the NEGATIVE one: this must " +
+      "NOT reassure. Four of the seven rules read the morning score, and a " +
+      "painkiller lowers it chemically — an all-clear would then be a statement " +
+      "about numbers that were measured through a dampener. The engine must " +
+      "still report what it saw, and it must decline to call it fine.",
+    mustReassure: false,
+    mustSay: ["settled-within-24h", "steady"],
+    mustNotSay: ["sharp-increase", "baseline-rising"],
+  },
   slowImprovement: {
     about: "One point better over ten weeks. Slow, but it is progress.",
     mustReassure: true,

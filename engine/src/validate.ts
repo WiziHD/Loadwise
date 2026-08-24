@@ -18,6 +18,7 @@ export type ProblemCode =
   | "invalid-date"
   | "duplicate-date"
   | "morning-out-of-range"
+  | "stiffness-out-of-range"
   | "rpe-out-of-range"
   | "duration-not-positive"
   | "load-incomplete"
@@ -57,6 +58,7 @@ export const ALL_PROBLEM_CODES = [
   "invalid-date",
   "duplicate-date",
   "morning-out-of-range",
+  "stiffness-out-of-range",
   "rpe-out-of-range",
   "duration-not-positive",
   "load-incomplete",
@@ -130,6 +132,21 @@ export function validateEntries(entries: Entry[]): ValidationResult {
         date: at,
         field: "morningScore",
         message: `morningScore must be between 0 and 10, got ${entry.morningScore}`,
+      });
+    }
+
+    // Die Dauer der Morgensteifigkeit. Keine Regel liest sie — aber sie wird
+    // ANGEZEIGT, und minus fünfzig Minuten auf einem Bildschirm ist Unsinn, den
+    // niemand mehr einordnen kann. Die Obergrenze ist ein Tag: Der VISA-A
+    // sättigt schon bei hundert Minuten, alles darüber unterscheidet er nicht
+    // mehr, aber wer eine ganze Nacht steif ist, darf das eintragen.
+    const steif = entry.morningStiffnessMin;
+    if (steif !== null && steif !== undefined && !inRange(steif, 0, 1440)) {
+      problems.push({
+        code: "stiffness-out-of-range",
+        date: at,
+        field: "morningStiffnessMin",
+        message: `morningStiffnessMin must be between 0 and 1440, got ${steif}`,
       });
     }
 

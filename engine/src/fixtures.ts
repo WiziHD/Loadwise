@@ -113,6 +113,37 @@ export function steadyRecovery(days = 56, seed = 1): Entry[] {
 }
 
 /** Four normal weeks, then one week at roughly triple the volume. */
+/**
+ * Ein ruhiger Verlauf — mit einem Schmerzmittel in den letzten Tagen.
+ *
+ * ---------------------------------------------------------------------------
+ * DAS SZENARIO, DAS DEN UNTERSCHIED ZWISCHEN »GUT« UND »GEDÄMPFT GEMESSEN«
+ * VORFÜHRT.
+ *
+ * Von `steadyRecovery` nicht zu unterscheiden, ausser in einem Feld: An den
+ * letzten Tagen wurde ein Schmerzmittel genommen. Ohne diese Angabe würde der
+ * Motor Entwarnung geben, und sie wäre eine Aussage über Werte, die chemisch
+ * gesenkt wurden — vier der sieben Regeln lesen den Morgenwert.
+ *
+ * Mit ihr sagt er »noch nicht genug beurteilt« und nennt den Grund. Er DEUTET
+ * nichts: dass die Besserung an den Tabletten liegen könnte, wäre eine
+ * klinische Aussage. Er verweigert nur die Entwarnung.
+ *
+ * Warum ein eigenes Szenario und nicht ein Feld in einem bestehenden: Die
+ * anderen fünfzig behalten damit ihre Bedeutung, und die Golden-Datei zeigt den
+ * Unterschied als eigenen Abschnitt statt als verschobenes Urteil.
+ */
+export function onMedication(days = 70, seed = 1): Entry[] {
+  // Auf einem Verlauf aufgebaut, der unter JEDEM Profil ruhig bleibt — auch
+  // unter dem Schienbein-Profil, das strenger ist als die anderen. Sonst greift
+  // dort eine Warnung, und die geht der Entwarnung korrekt vor: Dann käme die
+  // Medikationssperre gar nicht zur Sprache, und der Grund waere unter diesem
+  // Profil unerreichbar.
+  const entries = settledNearZero(days);
+  // Die letzten drei Tage. Sie liegen im Fenster, das die Entwarnung betrifft.
+  return entries.map((e, i) => (i >= days - 3 ? { ...e, painMedication: true } : e));
+}
+
 export function overloadWeek(seed = 2): Entry[] {
   const rnd = seeded(seed);
   const plans: DayPlan[] = [];
@@ -924,6 +955,7 @@ export interface Scenario {
 
 export const SCENARIOS: Scenario[] = [
   { key: "steady", title: "Sauberer Verlauf: langsame Steigerung, Beschwerden gehen zurück", entries: steadyRecovery(56), tests: symmetricTests(), context: ACHILLES_CTX },
+  { key: "medicated", title: "Ein zur Ruhe gekommener Verlauf, aber mit Schmerzmittel in den letzten Tagen", entries: onMedication(70), tests: symmetricTests(), context: ACHILLES_CTX },
   { key: "overload", title: "Eine Woche mit dreifachem Umfang", entries: overloadWeek(), tests: [], context: ACHILLES_CTX },
   { key: "gentleRise", title: "Maßvolle Steigerung um gut vierzig Prozent", entries: gentleIncrease(), tests: [], context: ACHILLES_CTX },
   { key: "poorSession", title: "Eine Einheit, die das Gewebe nicht verträgt", entries: poorResponse(), tests: symmetricTests(), context: ACHILLES_CTX },

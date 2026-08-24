@@ -27,6 +27,10 @@ type Strings = {
   everydayNormal: string;
   everydayOnFeet: string;
   everydayVeryActive: string;
+  stiffness: string;
+  stiffnessHint: string;
+  medication: string;
+  medicationHint: string;
   loadIncomplete: string;
   symptomIncomplete: string;
   futureDate: string;
@@ -49,6 +53,8 @@ type SessionDraft = { activityKind: string; durationMin: string; rpe: string };
 type Draft = {
   date: string;
   morningScore: string;
+  morningStiffnessMin: string;
+  painMedication: boolean;
   sessions: SessionDraft[];
   everydayLoad: string;
   symptomScore: string;
@@ -60,6 +66,8 @@ const LEERE_EINHEIT: SessionDraft = { activityKind: "", durationMin: "", rpe: ""
 
 const BLANK = {
   morningScore: "",
+  morningStiffnessMin: "",
+  painMedication: false,
   sessions: [] as SessionDraft[],
   everydayLoad: "",
   symptomScore: "",
@@ -77,6 +85,8 @@ function draftFor(entry: Entry | undefined, date: string): Draft {
   return {
     date,
     morningScore: asText(entry.morningScore),
+    morningStiffnessMin: asText(entry.morningStiffnessMin),
+    painMedication: entry.painMedication === true,
     sessions: entry.sessions.map((s) => ({
       activityKind: s.activityKind,
       durationMin: String(s.durationMin),
@@ -231,6 +241,11 @@ export function EntryForm({
     if (state !== "idle") setState("idle");
   };
 
+  const setMedication = (value: boolean) => {
+    setDraft((d) => ({ ...d, painMedication: value }));
+    if (state !== "idle") setState("idle");
+  };
+
   const setSession = (index: number, key: keyof SessionDraft, value: string) => {
     setDraft((d) => ({
       ...d,
@@ -310,6 +325,10 @@ export function EntryForm({
             result = await saveEntryAction(locale, episodeId, {
               date: draft.date,
               morningScore: asNumber(draft.morningScore),
+              morningStiffnessMin: asNumber(draft.morningStiffnessMin),
+              // false heisst hier »nein«, nicht »keine Angabe«: Wer das Formular
+              // vor sich hat, hat die Frage gesehen und nicht angekreuzt.
+              painMedication: draft.painMedication,
               // Leere Zeilen fliegen raus: Wer auf »Einheit hinzufügen« tippt
               // und es sich anders überlegt, hat keine halbe Einheit gemeint.
               sessions: draft.sessions
@@ -369,6 +388,35 @@ export function EntryForm({
           style={field}
         />
         <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.morningHint}</span>
+      </div>
+
+      <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
+        <label htmlFor="stiffness" style={{ fontWeight: 600 }}>{strings.stiffness}</label>
+        <input
+          id="stiffness"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={1440}
+          step={1}
+          value={draft.morningStiffnessMin}
+          onChange={(e) => set("morningStiffnessMin", e.target.value)}
+          style={{ ...field, maxWidth: "12rem" }}
+        />
+        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.stiffnessHint}</span>
+      </div>
+
+      <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontWeight: 600, minHeight: "2.75rem" }}>
+          <input
+            type="checkbox"
+            checked={draft.painMedication}
+            onChange={(e) => setMedication(e.target.checked)}
+            style={{ width: "1.25rem", height: "1.25rem" }}
+          />
+          {strings.medication}
+        </label>
+        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.medicationHint}</span>
       </div>
 
       <fieldset style={{ border: "1px solid var(--line)", borderRadius: "0.5rem", padding: "0.9rem" }}>

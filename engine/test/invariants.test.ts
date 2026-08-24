@@ -65,7 +65,21 @@ describe("every verdict is reachable", () => {
     // judge this" was not.
     const seen = new Set<BlockingReason>();
     for (const { result } of runAll()) {
+      // BEIDE Kanäle, und das ist der Punkt.
+      //
+      // Bis vor kurzem war `pending` der einzige Weg, auf dem ein Grund den
+      // Aufrufer erreichte, und dieser Test las nur ihn. `pending` gehört aber
+      // immer zu EINER Regel — es trägt deren Namen. Gründe, die zu keiner
+      // Regel gehören, etwa dass ein Schmerzmittel genommen wurde, stehen nur
+      // in `overall.blocking`.
+      //
+      // Ein Test, der nur einen Kanal kennt, prüft die Umsetzung statt der
+      // Absicht. Die Absicht ist: Jeder Grund, den dieser Motor benennen kann,
+      // muss auch bei jemandem ankommen.
       for (const p of result.pending) seen.add(p.reason);
+      if (result.overall.status === "insufficient") {
+        for (const reason of result.overall.blocking) seen.add(reason);
+      }
     }
 
     const missing = ALL_BLOCKING_REASONS.filter((r) => !seen.has(r));

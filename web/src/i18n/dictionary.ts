@@ -68,6 +68,10 @@ interface Strings {
     everydayNormal: string;
     everydayOnFeet: string;
     everydayVeryActive: string;
+    stiffness: string;
+    stiffnessHint: string;
+    medication: string;
+    medicationHint: string;
     loadIncomplete: string;
     symptomIncomplete: string;
     futureDate: string;
@@ -203,6 +207,13 @@ export const DICTIONARY: Record<Locale, Strings> = {
       everydayNormal: "Normal",
       everydayOnFeet: "A lot on my feet",
       everydayVeryActive: "On my feet all day",
+      stiffness: "Morning stiffness (minutes)",
+      // Names the instrument rather than claiming authority of its own.
+      stiffnessHint: "How long the stiffness lasted after getting up. This is the first question of the VISA-A, the standard questionnaire for the Achilles tendon. No rule reads it yet — what change in minutes means something is not established.",
+      medication: "Painkiller taken?",
+      // Says what it does BEFORE it does it. Somebody who is told afterwards
+      // that their all-clear was withheld will read it as the app being coy.
+      medicationHint: "If you ticked this, no all-clear is given for those days — a painkiller lowers the morning score, and four of the seven rules read that score. A warning still comes through.",
       loadIncomplete: "Effort and minutes belong together — either fill in both or leave both empty.",
       symptomIncomplete: "A time on its own says nothing — either give a symptom score too, or leave the time blank.",
       futureDate: "That day has not happened yet.",
@@ -341,6 +352,10 @@ export const DICTIONARY: Record<Locale, Strings> = {
       everydayNormal: "Normal",
       everydayOnFeet: "Viel auf den Beinen",
       everydayVeryActive: "Den ganzen Tag auf den Beinen",
+      stiffness: "Morgensteifigkeit (Minuten)",
+      stiffnessHint: "Wie lange die Steifigkeit nach dem Aufstehen angehalten hat. Das ist die erste Frage des VISA-A, des Standardfragebogens für die Achillessehne. Noch liest keine Regel es — welche Veränderung in Minuten etwas bedeutet, ist nicht belegt.",
+      medication: "Schmerzmittel genommen?",
+      medicationHint: "Wenn das angekreuzt ist, gibt es für diese Tage keine Entwarnung — ein Schmerzmittel senkt den Morgenwert, und vier der sieben Regeln lesen ihn. Eine Warnung kommt trotzdem durch.",
       loadIncomplete: "Anstrengung und Minuten gehören zusammen — entweder beides ausfüllen oder beides leer lassen.",
       symptomIncomplete: "Ein Zeitpunkt allein sagt nichts — entweder auch einen Beschwerdewert eintragen oder den Zeitpunkt leer lassen.",
       futureDate: "Dieser Tag war noch nicht.",

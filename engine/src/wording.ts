@@ -201,6 +201,13 @@ export const BLOCKED_WORDING: Record<BlockingReason, Phrase> = {
     de: "Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.",
     en: "Too few entries include the timing of symptoms.",
   },
+  // Beschreibt, was der Fall ist, und deutet ihn nicht. »Deine Besserung könnte
+  // an den Tabletten liegen« wäre eine klinische Aussage; »in diesen Tagen
+  // wurde ein Schmerzmittel genommen« ist eine Tatsache aus dem Tagebuch.
+  "medication-in-window": {
+    de: "In den betrachteten Tagen wurde ein Schmerzmittel genommen.",
+    en: "A painkiller was taken on some of the days in question.",
+  },
 };
 
 /**

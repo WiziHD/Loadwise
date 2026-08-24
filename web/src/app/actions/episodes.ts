@@ -81,6 +81,8 @@ export async function saveEntryAction(
       morningScore: input.morningScore as number,
       sessions: input.sessions as unknown as Session[],
       everydayLoad: input.everydayLoad as EverydayLoad | null,
+      morningStiffnessMin: input.morningStiffnessMin,
+      painMedication: input.painMedication,
       symptomScore: input.symptomScore,
       symptomTiming: input.symptomTiming,
       note: input.note,

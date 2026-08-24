@@ -13,6 +13,21 @@ Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
   [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 160, Ausgangswert 3, am Morgen danach 3)
 
 ============================================================================
+Ein zur Ruhe gekommener Verlauf, aber mit Schmerzmittel in den letzten Tagen
+============================================================================
+Einträge: 70   Selbsttests: 3   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)
+Gesamtbild: nicht genug beurteilt   (grün 38, gelb 0, rot 0)
+Beurteilt: 33 von 40 erwarteten Tagen, 6 von 7 Regeln haben gesprochen
+----------------------------------------------------------------------------
+Noch nicht beurteilbar:
+  · 24-Stunden-Reaktion: Für einen Vergleichswert fehlen noch Einträge. — betrifft 7 von 40 erwarteten Tagen
+  · Schmerzmuster: Es liegen zu wenige Angaben zum Zeitpunkt der Beschwerden vor.
+  · In den betrachteten Tagen wurde ein Schmerzmittel genommen.
+----------------------------------------------------------------------------
+Keine Auffälligkeiten. Beispiel eines unauffälligen Tages:
+  [OK  ] 2026-03-12  24-Stunden-Reaktion — Die Belastung hat sich über Nacht wieder gelegt. (Last 200, Ausgangswert 1, am Morgen danach 1)
+
+============================================================================
 Eine Woche mit dreifachem Umfang
 ============================================================================
 Einträge: 35   Selbsttests: 0   Profil: Achillessehne, mittlerer Abschnitt (achilles_midportion.2026-08-20)

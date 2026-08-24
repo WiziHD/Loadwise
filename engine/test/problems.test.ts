@@ -36,6 +36,11 @@ const PROVOCATIONS: { code: ProblemCode; produce: () => ProblemCode[] }[] = [
     produce: () => codes([{ date: "2026-03-02", morningScore: 47, sessions: [] }]),
   },
   {
+    code: "stiffness-out-of-range",
+    produce: () =>
+      codes([{ date: "2026-03-02", morningScore: 2, sessions: [], morningStiffnessMin: -5 }]),
+  },
+  {
     code: "rpe-out-of-range",
     produce: () => codes([{ date: "2026-03-02", morningScore: 2, sessions: [session(20, 30)] }]),
   },

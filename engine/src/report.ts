@@ -207,6 +207,30 @@ export function reportScenario(scenario: Scenario): string {
     for (const p of result.pending) out.push(`  · ${describePending(p)}`);
   }
 
+  // ---------------------------------------------------------------------
+  // Gründe, die keiner Regel gehören.
+  //
+  // `pending` sammelt, was eine EINZELNE Regel nicht beurteilen konnte, und
+  // trägt deshalb den Namen der Regel. Es gibt aber Gründe, die keine Regel
+  // haben: dass an den betrachteten Tagen ein Schmerzmittel genommen wurde,
+  // gehört zu keiner der sieben und hält trotzdem die Entwarnung zurück.
+  //
+  // Bis hierher standen die ausschliesslich in `overall.blocking` — gesetzt und
+  // nie gezeigt. Ein Grund, der den Bildschirm nicht erreicht, ist für die
+  // lesende Person kein Grund, sondern ein Urteil ohne Begründung.
+  // ---------------------------------------------------------------------
+  if (result.overall.status === "insufficient") {
+    const schonGenannt = new Set(result.pending.map((p) => p.reason));
+    const weitere = result.overall.blocking.filter((r) => !schonGenannt.has(r));
+    if (weitere.length > 0) {
+      if (result.pending.length === 0) {
+        out.push(line());
+        out.push("Noch nicht beurteilbar:");
+      }
+      for (const reason of weitere) out.push(`  · ${blockedText(reason)}`);
+    }
+  }
+
   const notable = result.flags.filter((f) => f.severity !== "green" && current.has(f));
   if (notable.length > 0) {
     out.push(line());
