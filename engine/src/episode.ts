@@ -167,16 +167,36 @@ export function rawLoadBetween(index: EntryIndex, from: DateStr, to: DateStr): n
  * the strength of a recollection. test/invariants.test.ts enforces it.
  * ---------------------------------------------------------------------------
  */
+export interface EpisodeAnchor {
+  date: DateStr;
+  kind: "declared" | "first-entry";
+}
+
+/**
+ * The day the count runs from, and which of the two things it is.
+ *
+ * Split out of `episodeDay` so a caller that cannot supply a date — a browser
+ * that has to ask its own clock what today is — can still count correctly
+ * without rebuilding this choice from parts. The alternative was for the page
+ * to write `startedOn ?? first` again, and a rule that lives in two places
+ * lives in one and a half.
+ */
+export function episodeAnchor(index: EntryIndex): EpisodeAnchor | null {
+  const declared = index.context.startedOn;
+  const date = declared ?? index.first;
+  if (date === null || date === undefined) return null;
+  return { date, kind: declared === undefined ? "first-entry" : "declared" };
+}
+
 export function episodeDay(
   index: EntryIndex,
   date: DateStr,
 ): { day: number; anchor: "declared" | "first-entry" } | null {
-  const declared = index.context.startedOn;
-  const anchor = declared ?? index.first;
-  if (anchor === null || anchor === undefined) return null;
+  const anchor = episodeAnchor(index);
+  if (anchor === null) return null;
 
-  const day = diffDays(anchor, date) + 1;
+  const day = diffDays(anchor.date, date) + 1;
   if (day < 1) return null;
 
-  return { day, anchor: declared === undefined ? "first-entry" : "declared" };
+  return { day, anchor: anchor.kind };
 }

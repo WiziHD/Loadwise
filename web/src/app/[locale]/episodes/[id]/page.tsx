@@ -12,19 +12,41 @@
 
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { buildIndex, episodeDay, type Entry, type EpisodeContext } from "loadwise-engine";
+import { buildIndex, episodeAnchor, episodeDay, type Entry, type EpisodeContext } from "loadwise-engine";
 import { localeFrom } from "@/i18n/config";
 import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
 import { getEpisode, profileOf } from "@/lib/db/episodes";
 import { listEntries } from "@/lib/db/entries";
+import { DayCount } from "@/components/DayCount";
 import { EntryForm } from "@/components/EntryForm";
 
-/** Today in the browser's calendar sense, not in UTC. */
-function todayIso(): string {
+/**
+ * The host's date — a starting guess, and nothing more.
+ *
+ * ---------------------------------------------------------------------------
+ * THIS FUNCTION USED TO CLAIM TO KNOW WHAT DAY IT IS FOR THE PERSON. IT CANNOT.
+ *
+ * It ran `new Date()` and `getTimezoneOffset()` inside a server component, so
+ * both belong to the HOST. On a host in UTC, somebody in Zurich recording at
+ * 00:30 was handed the previous day — and 00:30 is when a training day gets
+ * written down.
+ *
+ * The engine's own date arithmetic is timezone-safe by construction (dates.ts
+ * treats YYYY-MM-DD as calendar parts and never touches local time). The
+ * mistake was at the boundary: deciding WHICH day today is. Only the device
+ * where the person is standing can answer that, so EntryForm corrects this
+ * value on mount.
+ *
+ * Worse than being wrong, it was invisible: in development the server and the
+ * browser are the same machine, so the two always agreed. It would have gone
+ * wrong for the first time in production.
+ * ---------------------------------------------------------------------------
+ */
+function hostToday(): string {
   const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
-  return local.toISOString().slice(0, 10);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 export default async function EpisodePage({
@@ -54,8 +76,9 @@ export default async function EpisodePage({
   };
   const index = buildIndex(entries, context);
 
-  const today = todayIso();
-  const dayToday = episodeDay(index, today);
+  const today = hostToday();
+  const anchor = episodeAnchor(index);
+  const serverDay = episodeDay(index, today)?.day ?? null;
 
   return (
     <main>
@@ -72,18 +95,14 @@ export default async function EpisodePage({
         <p style={{ color: "var(--muted)", margin: 0, fontSize: "0.9rem" }}>
           {profile.label[locale]}
           {episode.side !== "n/a" && ` · ${sideLabel(episode.side, s)}`}
-          {dayToday !== null && (
-            <>
-              {" · "}
-              {s.diary.day} {dayToday.day}{" "}
-              <span style={{ fontSize: "0.85em" }}>
-                (
-                {dayToday.anchor === "declared"
-                  ? s.diary.anchorDeclared
-                  : s.diary.anchorFirstEntry}
-                )
-              </span>
-            </>
+          {anchor !== null && (
+            <DayCount
+              anchor={anchor}
+              serverDay={serverDay}
+              dayLabel={s.diary.day}
+              anchorDeclared={s.diary.anchorDeclared}
+              anchorFirstEntry={s.diary.anchorFirstEntry}
+            />
           )}
         </p>
       </header>
@@ -101,8 +120,10 @@ export default async function EpisodePage({
         <EntryForm
           locale={locale}
           episodeId={id}
-          today={today}
+          serverToday={today}
+          entries={entries}
           strings={s.entry}
+          errorStrings={s.errors}
           activityLabels={s.activities}
           saveLabel={s.actions.save}
         />
@@ -170,8 +191,15 @@ function sideLabel(side: string, s: ReturnType<typeof t>): string {
  * engine draws exactly the same distinction, and the page must not blur it.
  */
 function activitySummary(entry: Entry, s: ReturnType<typeof t>): string {
-  if (entry.activityKind == null || entry.rpe == null || entry.durationMin == null) {
-    return s.diary.restDay;
-  }
+  // No activity at all is a rest day, and saying so is the point: a blank cell
+  // reads as a gap in the diary, and the engine draws exactly that distinction.
+  if (entry.activityKind == null) return s.diary.restDay;
+
+  // But an activity WITHOUT a session is still an activity. This used to print
+  // "no activity" for a recorded walk, because the check demanded all three
+  // fields — turning something the person wrote down into something they
+  // apparently did not.
+  if (entry.rpe == null || entry.durationMin == null) return s.activities[entry.activityKind];
+
   return `${s.activities[entry.activityKind]} ${entry.durationMin}′ · ${s.entry.rpe} ${entry.rpe}`;
 }

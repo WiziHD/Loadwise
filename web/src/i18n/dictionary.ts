@@ -60,6 +60,9 @@ interface Strings {
     rpe: string;
     loadHint: string;
     loadIncomplete: string;
+    symptomIncomplete: string;
+    futureDate: string;
+    invalid: string;
     symptom: string;
     timing: string;
     timingDuring: string;
@@ -68,6 +71,7 @@ interface Strings {
     note: string;
     noteHint: string;
     saved: string;
+    replacing: string;
     /** Both forms, because "1 Tage erfasst" shipped once and read as a bug. */
     daysRecordedOne: string;
     daysRecordedMany: string;
@@ -177,6 +181,9 @@ export const DICTIONARY: Record<Locale, Strings> = {
       rpe: "Effort",
       loadHint: "Effort and minutes belong together. Either both or neither.",
       loadIncomplete: "Effort and minutes belong together — either fill in both or leave both empty.",
+      symptomIncomplete: "A time on its own says nothing — either give a symptom score too, or leave the time blank.",
+      futureDate: "That day has not happened yet.",
+      invalid: "Those values cannot be saved. Please check the numbers.",
       symptom: "Symptoms",
       timing: "When",
       timingDuring: "During",
@@ -185,6 +192,10 @@ export const DICTIONARY: Record<Locale, Strings> = {
       note: "Note",
       noteHint: "For you. No rule reads this, in any language, at any time.",
       saved: "Saved.",
+      // Shown BEFORE saving, not after. The upsert replaces the whole day, and
+      // somebody adding a morning score to a day that already holds a session
+      // needs to know that before they press the button, not afterwards.
+      replacing: "This day is already recorded. What you see here is what is stored, and saving replaces it.",
       daysRecordedOne: "day recorded",
       daysRecordedMany: "days recorded",
     },
@@ -293,6 +304,9 @@ export const DICTIONARY: Record<Locale, Strings> = {
       rpe: "Anstrengung",
       loadHint: "Anstrengung und Minuten gehören zusammen. Entweder beides oder keines.",
       loadIncomplete: "Anstrengung und Minuten gehören zusammen — entweder beides ausfüllen oder beides leer lassen.",
+      symptomIncomplete: "Ein Zeitpunkt allein sagt nichts — entweder auch einen Beschwerdewert eintragen oder den Zeitpunkt leer lassen.",
+      futureDate: "Dieser Tag war noch nicht.",
+      invalid: "Diese Werte kann ich nicht speichern. Bitte schau die Zahlen nochmal an.",
       symptom: "Beschwerden",
       timing: "Wann",
       timingDuring: "Während",
@@ -301,6 +315,7 @@ export const DICTIONARY: Record<Locale, Strings> = {
       note: "Notiz",
       noteHint: "Für dich. Keine Regel liest das, in keiner Sprache, zu keinem Zeitpunkt.",
       saved: "Gespeichert.",
+      replacing: "Dieser Tag ist schon erfasst. Was hier steht, ist das Gespeicherte — Speichern ersetzt es.",
       daysRecordedOne: "Tag erfasst",
       daysRecordedMany: "Tage erfasst",
     },
