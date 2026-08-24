@@ -147,32 +147,120 @@ create policy evaluations_read_own on evaluations
 
 
 -- ---------------------------------------------------------------------------
--- Selbstprüfung: eine Tabelle mit RLS und ohne Regel ist ein Abbruch
+-- Selbstprüfung: der Soll-Zustand wird behauptet, nicht ein Fehler gesucht
 --
--- Genau dieser Zustand ist einmal entstanden und blieb unbemerkt, bis ein
--- Schreibversuch in der App scheiterte. Er ist von aussen nicht zu erkennen:
--- Lesen liefert eine leere Liste, was von »noch keine Daten« nicht zu
--- unterscheiden ist. Also prüft die Migration sich selbst.
+-- Die erste Fassung suchte nach Tabellen, die RLS an haben und keine Regel —
+-- und war damit in der GEFÄHRLICHEN Richtung blind. Sie filterte auf
+-- `c.relrowsecurity`, also fiel eine Tabelle, bei der `enable row level
+-- security` gar nicht gegriffen hat, aus der Abfrage heraus, und die Migration
+-- meldete Erfolg. Ein Wächter, der beim Ausfallen der Sperre grün zeigt, ist
+-- schlimmer als keiner.
+--
+-- Ausserdem prüfte sie nur, DASS eine Regel da ist. Eine einzige Regel mit
+-- `using (true)` hätte bestanden — und eine `for all`-Regel auf flags oder
+-- evaluations ebenso, womit genau die Zusicherung fiele, für die diese Datei
+-- existiert: dass ein Nutzerkonto sich kein Urteil selbst schreiben kann.
+--
+-- Deshalb steht jetzt der erwartete Zustand als Liste da, und jede Abweichung
+-- davon ist ein Abbruch: acht Tabellen, RLS an, force an, und je eine Regel mit
+-- genau dem erwarteten Namen und dem erwarteten Befehlsumfang.
+--
+--   polcmd '*' = alles erlaubt (die sechs Besitzregeln)
+--   polcmd 'r' = nur lesen     (flags, evaluations)
 -- ---------------------------------------------------------------------------
 do $$
 declare
-  offen text;
+  fehler text;
 begin
-  select string_agg(c.relname, ', ' order by c.relname)
-    into offen
-  from pg_class c
-  join pg_namespace n on n.oid = c.relnamespace
-  where n.nspname = 'public'
-    and c.relkind = 'r'
-    and c.relrowsecurity
-    and c.relname in ('episodes','entries','self_tests','measure_keys',
-                      'measurements','milestones','flags','evaluations')
-    and not exists (select 1 from pg_policy p where p.polrelid = c.oid);
+  with soll (tabelle, regel, befehl) as (
+    values
+      ('episodes',     'episodes_own',          '*'),
+      ('entries',      'entries_own',           '*'),
+      ('self_tests',   'self_tests_own',        '*'),
+      ('measure_keys', 'measure_keys_own',      '*'),
+      ('measurements', 'measurements_own',      '*'),
+      ('milestones',   'milestones_own',        '*'),
+      ('flags',        'flags_read_own',        'r'),
+      ('evaluations',  'evaluations_read_own',  'r')
+  ),
+  ist as (
+    select
+      s.tabelle,
+      c.oid is not null                                   as existiert,
+      coalesce(c.relrowsecurity, false)                   as rls_an,
+      coalesce(c.relforcerowsecurity, false)              as force_an,
+      p.polname is not null                               as regel_da,
+      p.polcmd::text                                      as befehl_ist,
+      (select count(*) from pg_policy q where q.polrelid = c.oid) as regeln_gesamt,
+      s.regel,
+      s.befehl
+    from soll s
+    left join pg_class c
+      on c.relname = s.tabelle
+     and c.relnamespace = 'public'::regnamespace
+     and c.relkind = 'r'
+    left join pg_policy p
+      on p.polrelid = c.oid
+     and p.polname = s.regel
+  )
+  select string_agg(
+           tabelle || ' (' ||
+           case
+             when not existiert then 'Tabelle fehlt'
+             when not rls_an    then 'RLS NICHT aktiviert'
+             when not force_an  then 'force row level security fehlt'
+             when not regel_da  then 'Regel ' || regel || ' fehlt'
+             else 'Regel ' || regel || ' hat Befehlsumfang ' || coalesce(befehl_ist, '?') ||
+                  ', erwartet ' || befehl
+           end || ')',
+           E'
+  ' order by tabelle)
+    into fehler
+  from ist
+  where not existiert
+     or not rls_an
+     or not force_an
+     or not regel_da
+     or befehl_ist is distinct from befehl;
 
-  if offen is not null then
-    raise exception
-      'RLS ist an, aber diese Tabellen haben keine einzige Regel: %. Damit ist alles verboten. Diese Datei komplett erneut ausführen.', offen;
+  if fehler is not null then
+    raise exception E'Zugriffsschutz stimmt nicht:
+  %
+
+Diese Datei komplett erneut ausführen.', fehler;
   end if;
 
-  raise notice 'RLS in Ordnung: alle acht Tabellen haben Regeln.';
+  -- Eine zusätzliche Regel ist genauso gefährlich wie eine fehlende: Sie könnte
+  -- alles erlauben, was die erwartete verbietet.
+  select string_agg(tabelle || ' hat ' || regeln_gesamt || ' Regeln, erwartet 1', E'
+  ' order by tabelle)
+    into fehler
+  from ist
+  where regeln_gesamt <> 1;
+
+  if fehler is not null then
+    raise exception E'Unerwartete zusätzliche Regeln:
+  %', fehler;
+  end if;
+
+  raise notice 'RLS in Ordnung: acht Tabellen, RLS und force aktiv, je genau eine Regel mit erwartetem Umfang.';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Buchführung: welche Migration ist angewendet
+--
+-- Dass 0002 einmal halb durchlief, blieb tagelang unbemerkt, weil es keinen Ort
+-- gab, an dem der Zustand steht. Ein Eintrag am ENDE der Datei ist dabei mehr
+-- als eine Notiz: Ein Lauf, der vorher abbricht, erreicht ihn nicht, und die
+-- Prüfung schlägt an. Das Ledger selbst legt 0003 an.
+-- ---------------------------------------------------------------------------
+do $$
+begin
+  if to_regclass('public.schema_migrations') is not null then
+    insert into public.schema_migrations (version)
+      values ('0002_rls')
+      on conflict (version) do update set applied_at = now();
+  else
+    raise notice 'Kein Ledger vorhanden — 0003_ledger.sql ausführen, dann diese Datei erneut.';
+  end if;
 end $$;

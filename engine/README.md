@@ -8,7 +8,7 @@ Das ist mit Absicht das erste Stück des Projekts: Wenn diese Regeln auf echten 
 
 ```bash
 npm install
-npm test          # 306 Tests
+npm test          # 316 Tests
 npm run demo      # alle Regeln über 50 Verläufe, lesbar ausgegeben
 npm run calibrate # welche Schwellenwerte etwas entscheiden — je Profil
 npm run mutate    # merkt die Suite, wenn eine Schwelle kaputt ist?

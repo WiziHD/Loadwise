@@ -6,10 +6,11 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack && npm run check:prerender",
     "start": "next start",
-    "typecheck": "tsc --noEmit && npm run check:boundary",
+    "typecheck": "tsc --noEmit",
     "check:boundary": "tsx scripts/check-wording-boundary.ts",
     "check:prerender": "tsx scripts/check-no-prerendered-private.ts",
-    "check:rls": "tsx scripts/check-rls.ts"
+    "check:rls": "tsx scripts/check-rls.ts",
+    "check:migrations": "tsx scripts/check-migrations.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

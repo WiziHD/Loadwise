@@ -221,7 +221,39 @@ async function main(): Promise<void> {
   console.log(`\nAll ${checks.length} checks hold.\n`);
 }
 
-main().catch((error: unknown) => {
-  console.error(`\n${error instanceof Error ? error.message : String(error)}\n`);
-  process.exit(1);
-});
+/**
+ * Beenden mit Fehlercode, ohne den Prozess abzuwürgen.
+ *
+ * `process.exit` reisst offene Handles mit, und der Supabase-Client hält noch
+ * welche: Unter Windows bricht Node dann mit
+ * "Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)" ab und liefert
+ * 3221226505 statt 1. Ein Prüfskript, dessen Fehlercode nicht stimmt, ist in
+ * einer Kette wertlos — und in CI unbrauchbar.
+ *
+ * Die frühen Abbrüche oben dürfen `process.exit` bleiben: Sie greifen, bevor
+ * ein Client existiert, also gibt es dort nichts, was hängen könnte.
+ */
+function fail(): void {
+  process.exitCode = 1;
+}
+
+try {
+  await main();
+} catch (error: unknown) {
+  console.error(`
+${error instanceof Error ? error.message : String(error)}
+`);
+  process.exitCode = 1;
+}
+
+// Ausdrücklich beenden, statt die Ereignisschleife auslaufen zu lassen.
+//
+// Der Supabase-Client hält unter Windows ein libuv-Handle offen, und ein
+// natürliches Ende bricht dann mit
+// "Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)" ab — mit Exitcode
+// 3221226505 statt 0 oder 1. Ein Prüfskript, dessen Fehlercode lügt, ist in
+// einer Kette wertlos, also wird der Code hier gesetzt und nicht erhofft.
+//
+// Gefahrlos an dieser Stelle: Alles ist ausgegeben, es steht keine Arbeit mehr
+// aus, und die Ausgabe ist bereits geschrieben.
+process.exit(process.exitCode ?? 0);

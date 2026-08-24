@@ -110,7 +110,7 @@ Phase 0  ██████████████████████░�
 
 Zwei teilen sich `knee`; dafür musste die Registry von Körperregion auf Profilschlüssel umgebaut werden. Zwei verschieben eigene Schwellen — die Schienbeinkante gleich drei, weil die 24-Stunden-Regel bei Knochenstress nicht unverändert gilt.
 
-**Motor:** 7 Regeln · **306 Tests** · 50 Szenarien · 27 Urteilscodes · 8 Blockade-Gründe · 16 Problemcodes · **9 recherchierte Profile**, zwei davon mit eigenen Schwellen · Meilenstein-Kanal Stufe 1 und 2 nutzbar, Stufe 3 gebaut und aus · drei Ban-Listen
+**Motor:** 7 Regeln · **316 Tests** · 50 Szenarien · 27 Urteilscodes · 8 Blockade-Gründe · 16 Problemcodes · **9 recherchierte Profile**, zwei davon mit eigenen Schwellen · Meilenstein-Kanal Stufe 1 und 2 nutzbar, Stufe 3 gebaut und aus · drei Ban-Listen
 
 **Was ohne dich weitergehen kann:** Stufe 2 — Ellenbogen, Adduktoren, Knochenstress an Tibia und Mittelfuss, Sprunggelenksdistorsion, Achillessehnenriss nach Versorgung. Dazu die **Kaskade**: zwei gleichzeitige Episoden verschiedener Regionen mit Bezug zueinander — dein eigener Fall, Wade dann Knie.
 

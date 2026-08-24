@@ -10,11 +10,14 @@
   "scripts": {
     "dev": "npm run dev --workspace=web",
     "build": "npm run build --workspace=web",
+    "check:engine": "npm run typecheck --workspace=engine && npm run coverage --workspace=engine",
+    "check:web": "npm run typecheck --workspace=web && npm run check:boundary --workspace=web",
     "test": "npm run test --workspace=engine",
     "typecheck": "npm run typecheck --workspace=engine && npm run typecheck --workspace=web",
-    "check": "npm run typecheck && npm run test"
+    "check": "npm run check:engine && npm run check:web",
+    "check:full": "npm run check:engine && npm run build && npm run check:web"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19 <21 || >=22.12"
   }
 }

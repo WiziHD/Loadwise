@@ -13,14 +13,16 @@ Nicht die 30 Minuten beim Physio — die anderen 167 Stunden.
 
 ```
 engine/     Das Regelmodul. Reine Funktionen, kein Framework, keine Datenbank,
-            keine Oberfläche. 306 Tests. Die Wahrheit über das, was das Produkt sagt.
-web/        Next.js 15. Importiert den Motor als QUELLE, nicht als Build-Artefakt.
+            keine Oberfläche. 316 Tests. Die Wahrheit über das, was das Produkt sagt.
+web/        Next.js 16. Importiert den Motor als QUELLE, nicht als Build-Artefakt.
 supabase/   Schema und zeilenbasierter Zugriffsschutz.
 ```
 
 ```bash
 npm install
-npm run check      # 306 Tests + beide Typprüfungen + Wortlaut-Grenze
+npm run check      # Motor: Typen, 316 Tests, Abdeckungsschwellen
+                   # App:   Typen, Wortlaut-Grenze
+npm run check:full # dasselbe plus Build und Prerender-Wächter
 npm run dev        # Entwicklungsserver
 ```
 

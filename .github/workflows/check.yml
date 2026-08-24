@@ -1,0 +1,100 @@
+# Loadwise — jede Prüfung bei jedem Push
+#
+# ---------------------------------------------------------------------------
+# WARUM DAS HIER STEHT UND NICHT IN EINER ERINNERUNG.
+#
+# Bis heute liefen 316 Tests, die Wortgrenze, der Prerender-Wächter und die
+# Abdeckungsschwellen nur, wenn jemand daran dachte. Genau dadurch stand die
+# Schwelle für `functions` unbemerkt auf Rot — niemand weiss, seit wann, weil
+# `npm run coverage` in keiner Kette steckte.
+#
+# Dieses Projekt hat viel Mühe in Wächter gesteckt. Ein Wächter, den man
+# aufrufen muss, ist kein Wächter, sondern eine Erinnerung.
+#
+# KEINE GEHEIMNISSE, und das ist nachgewiesen: `next build --webpack` läuft mit
+# umbenannter .env.local durch, Exitcode 0. Der Grund ist eine Reihenfolge in
+# lib/supabase/server.ts — `await cookies()` löst die dynamische Notbremse aus,
+# BEVOR die Umgebungsvariable gelesen wird. Wer das umstellt, bricht diesen
+# Ablauf. Deshalb steht es hier und nicht nur dort.
+#
+# Was hier absichtlich NICHT läuft:
+#   check:rls   braucht den Service-Role-Key und schreibt in die echte
+#               Datenbank. Ein solcher Schlüssel in CI ist der Weg, auf dem er
+#               irgendwann in einem Protokoll landet. Ausserdem benutzt es
+#               feste Testkonten und würde mit einem lokalen Lauf kollidieren.
+#   mutate      Der Wert steht bei 38 % und kann legitim erst mit echten
+#               Verläufen steigen. Als Tor würde er dazu verleiten, ihn
+#               künstlich zu heben.
+#   tagebuch    liest eine gitignorierte CSV mit echten Gesundheitsdaten.
+#
+# WAS HIER GEBAUT WIRD, DARF NIE AUSGELIEFERT WERDEN. NEXT_PUBLIC_*-Werte
+# werden beim Bauen in die Client-Bündel einkompiliert; ein Build ohne
+# Umgebung backt dort `undefined` ein. Heute harmlos, weil kein Client-Bauteil
+# den Browser-Client benutzt — an dem Tag, an dem eines das tut, wäre ein
+# CI-Artefakt ein still kaputtes Bündel mit grünem Haken.
+
+name: Prüfungen
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Genau einmal, an der Wurzel, ohne --workspace. Der Arbeitsbereich löst
+      # sich von dort auf; ein Install im Unterverzeichnis holt die falschen
+      # Versionen. (engine/package-lock.json nagelte vitest 2.1.9 fest — samt
+      # der zwei kritischen Verwundbarkeiten — und ist deshalb gelöscht.)
+      - name: Abhängigkeiten
+        run: npm ci
+
+      # Einzeln benannt, damit die Zusammenfassung zeigt, was tatsächlich
+      # geprüft wurde. web/ hat null Tests; ein grüner Haken darf nicht wie
+      # »die App ist getestet« aussehen.
+      - name: Motor — Typen
+        run: npm run typecheck --workspace=engine
+
+      # `coverage` und nicht `test`: dieselbe Suite plus die Schwellen. Darin
+      # steckt die 100-%-Zweigabdeckung auf src/rules/**, mit der die README
+      # wirbt und die vorher von keiner Kette erreicht wurde.
+      - name: Motor — 316 Tests und Abdeckungsschwellen
+        run: npm run coverage --workspace=engine
+
+      # Enthält den Prerender-Wächter: nichts, was von der anmeldenden Person
+      # abhängt, darf in eine statische Datei gebacken werden.
+      - name: App — Build und Prerender-Wächter
+        run: npm run build --workspace=web
+
+      # NACH dem Build, mit Absicht. Erst dann existiert .next/types, und die
+      # von Next erzeugten Routen-Prüfer sind mit im Programm. Derselbe Befehl,
+      # strikt mehr geprüft, und er kostet nichts, weil der Build schon lief.
+      - name: App — Typen
+        run: npm run typecheck --workspace=web
+
+      # 248 Motorsätze dürfen in keiner App-Datei auftauchen. Die Wortwahl ist
+      # hier eine regulatorische Grenze, keine Geschmacksfrage. Eigener Schritt,
+      # seit sie nicht mehr in `typecheck` versteckt ist.
+      - name: App — Wortgrenze
+        run: npm run check:boundary --workspace=web
