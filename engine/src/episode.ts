@@ -114,6 +114,53 @@ export function rawLoadAt(index: EntryIndex, date: DateStr): number {
 }
 
 /**
+ * The first position whose date is not before `date`, by binary search.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THERE IS A BINARY SEARCH IN A DIARY APP.
+ *
+ * `entriesBetween` used to filter the whole array on every call, and every rule
+ * calls it once per day of the episode. That is quadratic, and it was measured
+ * rather than suspected: 360 days took 70 ms, 720 took 276 ms — twice the input
+ * for four times the work.
+ *
+ * The file's own opening docstring says the index exists to stop exactly this,
+ * and it did stop the version of it that the 24-hour rule had. It just never
+ * reached the windows.
+ *
+ * Two things made it expensive. The scan itself, and `diffDays` inside the
+ * predicate — which parses both dates into Date objects for every entry, twice.
+ * Neither is needed: `index.entries` is sorted, and a YYYY-MM-DD string
+ * compares chronologically as text, so the bounds can be found without parsing
+ * anything at all.
+ *
+ * It matters from card 2.2 onward, where the evaluation runs on every save.
+ * ---------------------------------------------------------------------------
+ */
+function lowerBound(entries: Entry[], date: DateStr): number {
+  let low = 0;
+  let high = entries.length;
+  while (low < high) {
+    const mid = (low + high) >> 1;
+    if (entries[mid]!.date < date) low = mid + 1;
+    else high = mid;
+  }
+  return low;
+}
+
+/** The first position whose date is after `date`. */
+function upperBound(entries: Entry[], date: DateStr): number {
+  let low = 0;
+  let high = entries.length;
+  while (low < high) {
+    const mid = (low + high) >> 1;
+    if (entries[mid]!.date <= date) low = mid + 1;
+    else high = mid;
+  }
+  return low;
+}
+
+/**
  * Entries whose date falls in [from, to], inclusive at both ends.
  *
  * Because the index holds one row per calendar day, the length of this result
@@ -121,14 +168,21 @@ export function rawLoadAt(index: EntryIndex, date: DateStr): number {
  * in the engine means to ask.
  */
 export function entriesBetween(index: EntryIndex, from: DateStr, to: DateStr): Entry[] {
-  return index.entries.filter(
-    (e) => diffDays(from, e.date) >= 0 && diffDays(e.date, to) >= 0,
-  );
+  const start = lowerBound(index.entries, from);
+  const end = upperBound(index.entries, to);
+  return start >= end ? [] : index.entries.slice(start, end);
 }
 
-/** Distinct calendar days with an entry in [from, to]. */
+/**
+ * Distinct calendar days with an entry in [from, to].
+ *
+ * Counted from the bounds instead of building the slice: the callers that ask
+ * this are the coverage gates, and they want a number, not an array.
+ */
 export function daysCovered(index: EntryIndex, from: DateStr, to: DateStr): number {
-  return entriesBetween(index, from, to).length;
+  const start = lowerBound(index.entries, from);
+  const end = upperBound(index.entries, to);
+  return start >= end ? 0 : end - start;
 }
 
 /** Total tissue-weighted load over [from, to]. */

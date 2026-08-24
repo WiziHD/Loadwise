@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { LOCALES, isLocale } from "@/i18n/config";
-import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { AppHeader } from "@/components/AppHeader";
 
 /**
  * Both languages are prerendered. Neither is an afterthought — English leads,
@@ -27,7 +27,7 @@ export default async function LocaleLayout({
 
   return (
     <div data-locale={locale}>
-      <LanguageSwitch current={locale} />
+      <AppHeader locale={locale} />
       {children}
     </div>
   );

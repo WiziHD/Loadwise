@@ -30,15 +30,9 @@ export function LanguageSwitch({ current }: { current: Locale }) {
   return (
     <nav
       aria-label={current === "de" ? "Sprache" : "Language"}
-      style={{
-        display: "flex",
-        gap: "0.75rem",
-        justifyContent: "flex-end",
-        padding: "0.75rem 1.25rem 0",
-        maxWidth: "46rem",
-        margin: "0 auto",
-        fontSize: "0.85rem",
-      }}
+      // Nur noch die Sprachen. Die Kopfzeile darum herum — und der Ausgang
+      // aus der App — sitzen in AppHeader.
+      style={{ display: "flex", gap: "0.75rem", fontSize: "0.85rem" }}
     >
       {LOCALES.map((locale) => (
         <Link
