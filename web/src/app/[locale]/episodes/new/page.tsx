@@ -25,9 +25,17 @@ export default async function NewEpisodePage({ params }: { params: Promise<{ loc
   if ((await currentUser()) === null) redirect(`/${locale}/signin`);
 
   // Researched profiles first: they are the ones that actually carry knowledge.
+  //
+  // `localeCompare` without a locale asks the HOST for its default collation
+  // rather than the page. Harmless while both are Latin-1, and wrong in
+  // principle the whole time: the order of a German list is a property of the
+  // list, not of whichever machine happens to render it.
   const profiles = [...ALL_PROFILES]
     .map((p) => toPickerProfile(p, locale))
-    .sort((a, b) => Number(b.researched) - Number(a.researched) || a.label.localeCompare(b.label));
+    .sort(
+      (a, b) =>
+        Number(b.researched) - Number(a.researched) || a.label.localeCompare(b.label, locale),
+    );
 
   return (
     <main>

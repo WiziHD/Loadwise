@@ -23,8 +23,14 @@ import { LanguageSwitch } from "@/components/LanguageSwitch";
  * diary is open matters, but this bar is on the screen in a physiotherapy
  * waiting room and on a phone somebody hands to a friend — and an address is
  * the one field that identifies a person to whoever is standing behind them.
- * It belongs on an account page that somebody chooses to open. `auth.signedInAs`
- * stays unused until there is one.
+ * It belongs on an account page that somebody chooses to open.
+ *
+ * The label for it used to sit in the dictionary, in both languages, waiting
+ * for that page. It has been deleted. A string parked against a page that does
+ * not exist is the same shape as a state that is set and never rendered, and
+ * this bar is where that habit cost the most: `actions.signOut` sat here
+ * translated and unreachable while there was no way out of the app at all. The
+ * sentence gets written when the page is, in the words that page needs.
  * ---------------------------------------------------------------------------
  */
 export async function AppHeader({ locale }: { locale: Locale }) {

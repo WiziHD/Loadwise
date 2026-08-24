@@ -63,7 +63,7 @@ export default async function EpisodePage({
   const episode = await getEpisode(id);
   if (episode === null) notFound();
 
-  const profile = profileOf(episode);
+  const { profile, substituted } = profileOf(episode);
   const entries = await listEntries(id);
 
   // The same context the engine will be handed when it evaluates. Built here
@@ -87,6 +87,24 @@ export default async function EpisodePage({
           ← {s.diary.back}
         </Link>
       </p>
+
+      {substituted && (
+        <p
+          role="alert"
+          style={{
+            margin: "0 0 1.25rem",
+            padding: "0.7rem 0.85rem",
+            border: "1px solid var(--amber)",
+            borderRadius: "0.5rem",
+            color: "var(--amber)",
+            fontSize: "0.88rem",
+            lineHeight: 1.55,
+            maxWidth: "40rem",
+          }}
+        >
+          {s.episode.profileMissing}
+        </p>
+      )}
 
       <header style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.5rem", margin: "0 0 0.35rem" }}>

@@ -116,3 +116,27 @@ export function localeRouteFor(
 
   return { locale, redirectTo: `/${locale}${pathname === "/" ? "" : pathname}` };
 }
+
+/**
+ * Dieselbe Adresse in der anderen Sprache.
+ *
+ * ---------------------------------------------------------------------------
+ * DIE ABFRAGE GEHÖRT ZUR ADRESSE, UND SIE GING VERLOREN.
+ *
+ * Der Sprachwechsel las nur den Pfad. Die eine Seite dieser App, die Zustand in
+ * der Abfrage trägt, ist die Anmeldeseite — `?error=link-expired`. Der Ablauf
+ * war also: Jemand klickt einen abgelaufenen Link, bekommt die Erklärung in der
+ * falschen Sprache, schaltet um, um sie zu lesen — und der Satz, für den
+ * umgeschaltet wurde, ist weg.
+ *
+ * Als reine Funktion, damit das ein Testfall sein kann und keine Erinnerung.
+ * ---------------------------------------------------------------------------
+ */
+export function swapLocaleIn(pathname: string, query: string, to: Locale): string {
+  const segments = pathname.split("/");
+  // ["", "<locale>", ...rest]
+  segments[1] = to;
+  const pfad = segments.join("/") || `/${to}`;
+  const rein = query.startsWith("?") ? query.slice(1) : query;
+  return rein === "" ? pfad : `${pfad}?${rein}`;
+}

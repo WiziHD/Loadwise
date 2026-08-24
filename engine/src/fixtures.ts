@@ -133,7 +133,7 @@ export function steadyRecovery(days = 56, seed = 1): Entry[] {
  * anderen fünfzig behalten damit ihre Bedeutung, und die Golden-Datei zeigt den
  * Unterschied als eigenen Abschnitt statt als verschobenes Urteil.
  */
-export function onMedication(days = 70, seed = 1): Entry[] {
+export function onMedication(days = 70): Entry[] {
   // Auf einem Verlauf aufgebaut, der unter JEDEM Profil ruhig bleibt — auch
   // unter dem Schienbein-Profil, das strenger ist als die anderen. Sonst greift
   // dort eine Warnung, und die geht der Entwarnung korrekt vor: Dann käme die

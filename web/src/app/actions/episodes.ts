@@ -19,14 +19,6 @@ import {
 import { createEpisode } from "@/lib/db/episodes";
 import { saveEntry } from "@/lib/db/entries";
 
-/** A number a form gave us, or null. Empty is not zero — it means "not recorded". */
-function optionalNumber(value: FormDataEntryValue | null): number | null {
-  const text = String(value ?? "").trim();
-  if (text === "") return null;
-  const n = Number(text);
-  return Number.isFinite(n) ? n : null;
-}
-
 function optionalText(value: FormDataEntryValue | null): string | null {
   const text = String(value ?? "").trim();
   return text === "" ? null : text;

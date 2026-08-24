@@ -95,7 +95,8 @@ async function main(): Promise<void> {
         `noch nicht ausgeführt. Danach 0002_rls.sql erneut ausführen, damit es sich\n` +
         `einträgt — es ist wiederholbar.\n`,
     );
-    process.exit(1);
+    fail();
+    return;
   }
 
   const applied = new Map((data as Row[]).map((r) => [r.version, r]));
@@ -163,7 +164,8 @@ async function main(): Promise<void> {
 
   if (problems > 0) {
     console.error(`${problems} Abweichung(en).\n`);
-    process.exit(1);
+    fail();
+    return;
   }
   console.log("Buchführung stimmt mit den Dateien überein.\n");
 }

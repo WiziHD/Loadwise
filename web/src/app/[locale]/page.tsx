@@ -68,7 +68,7 @@ async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof
     <section>
       <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.75rem", display: "grid", gap: "0.75rem" }}>
         {episodes.map((episode) => {
-          const profile = profileOf(episode);
+          const { profile, substituted } = profileOf(episode);
           return (
             <li key={episode.id}>
               <Link
@@ -88,6 +88,14 @@ async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof
                   {profile.label[localeFrom(locale)]}
                   {episode.started_on !== null && ` · ${episode.started_on}`}
                 </span>
+                {substituted && (
+                  <span
+                    role="alert"
+                    style={{ display: "block", color: "var(--amber)", fontSize: "0.85rem", marginTop: "0.4rem" }}
+                  >
+                    {s.episode.profileMissing}
+                  </span>
+                )}
               </Link>
             </li>
           );

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { Locale } from "loadwise-engine";
-import { LOCALES } from "@/i18n/config";
+import { LOCALES, swapLocaleIn } from "@/i18n/config";
 
 const LABEL: Record<Locale, string> = {
   en: "English",
@@ -11,21 +11,18 @@ const LABEL: Record<Locale, string> = {
 };
 
 /**
- * Swaps the locale segment and keeps the rest of the path.
+ * Swaps the locale segment and keeps the rest of the address.
  *
  * Real links rather than a client-side state toggle: the language belongs in
  * the URL, so a page can be bookmarked, shared and reloaded in the language it
  * was read in.
+ *
+ * The swap itself is `swapLocaleIn` in i18n/config.ts — a pure function, so the
+ * query string it used to drop is a test case rather than a memory.
  */
 export function LanguageSwitch({ current }: { current: Locale }) {
   const pathname = usePathname();
-
-  const swap = (to: Locale): string => {
-    const segments = pathname.split("/");
-    // ["", "<locale>", ...rest]
-    segments[1] = to;
-    return segments.join("/") || `/${to}`;
-  };
+  const searchParams = useSearchParams();
 
   return (
     <nav
@@ -37,7 +34,7 @@ export function LanguageSwitch({ current }: { current: Locale }) {
       {LOCALES.map((locale) => (
         <Link
           key={locale}
-          href={swap(locale)}
+          href={swapLocaleIn(pathname, searchParams.toString(), locale)}
           hrefLang={locale}
           aria-current={locale === current ? "true" : undefined}
           style={{

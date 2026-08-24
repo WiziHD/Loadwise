@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { session } from "../src/fixtures.js";
 import { isRestDay, loadOf, mean, median } from "../src/load.js";
-import { tissueFactor, TISSUE_MATRIX } from "../src/tissue.js";
-import type { ActivityKind, BodyRegion, Entry, EpisodeContext } from "../src/types.js";
+import type { Entry, EpisodeContext } from "../src/types.js";
 
 const day = (over: Partial<Entry> = {}): Entry => ({
   date: "2026-03-02",

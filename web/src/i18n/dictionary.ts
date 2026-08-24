@@ -3,25 +3,31 @@
  *
  * `Record<Locale, ...>` on purpose: adding a language and forgetting a string
  * is a compile error, the same discipline `VERDICT_WORDING` uses in the engine.
+ *
+ * ---------------------------------------------------------------------------
+ * `Strings` IS EXPORTED, AND COMPONENTS MUST TAKE THEIR SLICE FROM IT.
+ *
+ * Every component that receives strings used to declare the shape a second
+ * time — `type Strings = { date: string; morning: string; ... }` sitting in
+ * EntryForm, structurally identical and entirely unlinked. It compiled, because
+ * TypeScript matches shapes rather than names, and that is precisely the
+ * problem: a key added here and forgotten there was invisible, and no tool
+ * could tell which of the two lists was the real one.
+ *
+ * `strings: Strings["entry"]` says it once. It also makes the reads findable:
+ * `scripts/check-dictionary.ts` resolves every property access back to the
+ * symbol declared HERE, which is only possible while there is one declaration.
+ * With two, the check would report every entry string as dead.
+ * ---------------------------------------------------------------------------
  */
 
 import type { ActivityKind, Locale } from "loadwise-engine";
 
-interface Strings {
+export interface Strings {
   appName: string;
   tagline: string;
-  nav: {
-    diary: string;
-    evaluation: string;
-    tests: string;
-    progress: string;
-    settings: string;
-  };
   actions: {
     save: string;
-    cancel: string;
-    delete: string;
-    today: string;
     signIn: string;
     signOut: string;
   };
@@ -42,8 +48,12 @@ interface Strings {
     none: string;
     noneHint: string;
     newEpisode: string;
-    researched: string;
     mechanismOnly: string;
+    /**
+     * Wenn der gespeicherte Profilschlüssel zu keinem Profil mehr gehört.
+     * Ohne diesen Satz zeigt die Seite den Namen einer ANDEREN Verletzung.
+     */
+    profileMissing: string;
   };
   /**
    * Exhaustive by type: a twelfth activity in the engine is a compile error
@@ -99,7 +109,6 @@ interface Strings {
     restDay: string;
     editHint: string;
     back: string;
-    notDefault: string;
   };
   auth: {
     heading: string;
@@ -111,7 +120,8 @@ interface Strings {
     invalidEmail: string;
     sendFailed: string;
     linkExpired: string;
-    signedInAs: string;
+    /** Der zweite Code, den auth/callback umleiten kann. Siehe SIGNIN_ERRORS. */
+    missingCode: string;
   };
   /** About the app, never about the person. */
   errors: {
@@ -122,33 +132,14 @@ interface Strings {
     brokeBody: string;
     tryAgain: string;
   };
-  scaffold: {
-    heading: string;
-    engineLoaded: string;
-    profilesAvailable: string;
-    researched: string;
-    generic: string;
-    tests: string;
-    nothingYet: string;
-  };
 }
 
 export const DICTIONARY: Record<Locale, Strings> = {
   en: {
     appName: "Loadwise",
     tagline: "The other 167 hours.",
-    nav: {
-      diary: "Diary",
-      evaluation: "Evaluation",
-      tests: "Self-tests",
-      progress: "Progress",
-      settings: "Settings",
-    },
     actions: {
       save: "Save",
-      cancel: "Cancel",
-      delete: "Delete",
-      today: "Today",
       signIn: "Sign in",
       signOut: "Sign out",
     },
@@ -171,8 +162,9 @@ export const DICTIONARY: Record<Locale, Strings> = {
       none: "No episode yet.",
       noneHint: "An episode is one injury, tracked over time.",
       newEpisode: "New episode",
-      researched: "researched",
       mechanismOnly: "mechanism only",
+      profileMissing:
+        "The profile this episode was created with no longer exists. What you see is the default for this body region — a different injury, and every verdict on this page is its.",
     },
     activities: {
       run: "Running",
@@ -243,7 +235,6 @@ export const DICTIONARY: Record<Locale, Strings> = {
       restDay: "no activity",
       editHint: "Recording a day again replaces it. Filling in yesterday is fine.",
       back: "All episodes",
-      notDefault: "not the default for this region",
     },
     auth: {
       heading: "Sign in",
@@ -258,7 +249,8 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalidEmail: "That does not look like an email address.",
       sendFailed: "The link could not be sent. Nothing was lost — try again.",
       linkExpired: "That link has expired or was already used. Request a new one.",
-      signedInAs: "Signed in as",
+      missingCode:
+        "That link arrived empty. Forwarding a message, or opening it in a preview pane, can cut off the part that does the work. Ask for a new one below and open it directly.",
     },
     errors: {
       notSaved: "That could not be saved. Nothing was lost — try again.",
@@ -271,31 +263,12 @@ export const DICTIONARY: Record<Locale, Strings> = {
       brokeBody: "Something went wrong on our side. Nothing you have recorded is affected.",
       tryAgain: "Try again",
     },
-    scaffold: {
-      heading: "Scaffold",
-      engineLoaded: "Rule engine loaded from the workspace, not copied.",
-      profilesAvailable: "profiles registered",
-      researched: "researched",
-      generic: "mechanism only",
-      tests: "self-tests",
-      nothingYet: "Nothing is wired to a database yet. This page exists to prove the engine imports.",
-    },
   },
   de: {
     appName: "Loadwise",
     tagline: "Die anderen 167 Stunden.",
-    nav: {
-      diary: "Tagebuch",
-      evaluation: "Auswertung",
-      tests: "Selbsttests",
-      progress: "Fortschritt",
-      settings: "Einstellungen",
-    },
     actions: {
       save: "Speichern",
-      cancel: "Abbrechen",
-      delete: "Löschen",
-      today: "Heute",
       signIn: "Anmelden",
       signOut: "Abmelden",
     },
@@ -318,8 +291,9 @@ export const DICTIONARY: Record<Locale, Strings> = {
       none: "Noch keine Episode.",
       noneHint: "Eine Episode ist eine Verletzung, über die Zeit verfolgt.",
       newEpisode: "Neue Episode",
-      researched: "recherchiert",
       mechanismOnly: "nur Mechanik",
+      profileMissing:
+        "Das Profil, mit dem diese Episode angelegt wurde, gibt es nicht mehr. Angezeigt wird das Standardprofil dieser Körperregion — eine andere Verletzung, und jedes Urteil auf dieser Seite ist seins.",
     },
     activities: {
       run: "Laufen",
@@ -382,7 +356,6 @@ export const DICTIONARY: Record<Locale, Strings> = {
       restDay: "keine Aktivität",
       editHint: "Ein Tag noch einmal erfasst ersetzt ihn. Gestern nachtragen ist in Ordnung.",
       back: "Alle Episoden",
-      notDefault: "nicht der Standard für diese Region",
     },
     auth: {
       heading: "Anmelden",
@@ -395,7 +368,8 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalidEmail: "Das sieht nicht nach einer E-Mail-Adresse aus.",
       sendFailed: "Der Link konnte nicht gesendet werden. Nichts ist verloren — bitte noch einmal.",
       linkExpired: "Dieser Link ist abgelaufen oder wurde schon benutzt. Fordere einen neuen an.",
-      signedInAs: "Angemeldet als",
+      missingCode:
+        "Dieser Link kam leer an. Beim Weiterleiten oder in der Vorschau mancher Mailprogramme geht der hintere Teil verloren, und genau der macht die Arbeit. Fordere unten einen neuen an und öffne ihn direkt.",
     },
     errors: {
       notSaved: "Das konnte nicht gespeichert werden. Nichts ist verloren — bitte noch einmal.",
@@ -404,15 +378,6 @@ export const DICTIONARY: Record<Locale, Strings> = {
       brokeHeading: "Das hat nicht geklappt.",
       brokeBody: "Auf unserer Seite ist etwas schiefgegangen. An dem, was du erfasst hast, ändert das nichts.",
       tryAgain: "Nochmal versuchen",
-    },
-    scaffold: {
-      heading: "Gerüst",
-      engineLoaded: "Regelmodul aus dem Arbeitsbereich geladen, nicht kopiert.",
-      profilesAvailable: "Profile registriert",
-      researched: "recherchiert",
-      generic: "nur Mechanik",
-      tests: "Selbsttests",
-      nothingYet: "Noch ist nichts an eine Datenbank angeschlossen. Diese Seite belegt, dass der Motor importierbar ist.",
     },
   },
 };

@@ -124,7 +124,7 @@ describe("load spike rule", () => {
     // Same training, but a handful of reference days were never written down —
     // just enough to stay above the coverage bar, which is where the bias used
     // to live unnoticed.
-    const patchy = full.filter((e, i) => i >= 21 || i % 4 !== 1);
+    const patchy = full.filter((_, i) => i >= 21 || i % 4 !== 1);
 
     const a = run(full, addDays(START, 27));
     const b = run(patchy, addDays(START, 27));
@@ -146,7 +146,7 @@ describe("load spike rule", () => {
     for (let i = 0; i < 28; i++) {
       full.push({ date: addDays(START, i), morningScore: 2, sessions: [session(5, 40)] });
     }
-    const patchy = full.filter((e, i) => i < 21 || i % 4 !== 0);
+    const patchy = full.filter((_, i) => i < 21 || i % 4 !== 0);
 
     const result = run(patchy, addDays(START, 27));
     expect(result.status).toBe("ok");

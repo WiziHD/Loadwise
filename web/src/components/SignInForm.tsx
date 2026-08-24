@@ -3,17 +3,9 @@
 import { useState, useTransition } from "react";
 import type { Locale } from "loadwise-engine";
 import { requestSignInLink } from "@/app/actions/auth";
+import type { Strings } from "@/i18n/dictionary";
 
-type Strings = {
-  emailLabel: string;
-  send: string;
-  sent: string;
-  sentDetail: string;
-  invalidEmail: string;
-  sendFailed: string;
-};
-
-export function SignInForm({ locale, strings }: { locale: Locale; strings: Strings }) {
+export function SignInForm({ locale, strings }: { locale: Locale; strings: Strings["auth"] }) {
   const [state, setState] = useState<"idle" | "sent" | "invalid-email" | "send-failed">("idle");
   const [pending, start] = useTransition();
 

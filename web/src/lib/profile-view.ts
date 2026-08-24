@@ -21,7 +21,6 @@ export type PickerProfile = {
   bodyRegion: string;
   limitations: string;
   researched: boolean;
-  tests: string[];
 };
 
 /**
@@ -36,20 +35,54 @@ export function toPickerProfile(profile: Profile, locale: Locale): PickerProfile
     bodyRegion: profile.bodyRegion,
     limitations: profile.limitations[locale],
     researched: Object.values(profile.evidence).some((e) => e.grade !== "D"),
-    tests: [...profile.tests],
   };
 }
 
 /**
- * The profile an episode is judged under.
+ * The profile an episode is judged under, and whether it is the one that was
+ * chosen.
  *
  * Same order as `evaluateEpisode`: a named profile first, the region's default
- * second. Kept in one function so a page can show the person which profile
- * their episode actually uses — including when the key in the database no
- * longer matches any profile, which is what happens when one is renamed.
+ * second.
+ *
+ * ---------------------------------------------------------------------------
+ * `substituted` EXISTS BECAUSE THE FALLBACK WAS SILENT, AND SILENT IS WRONG.
+ *
+ * This function used to return the profile alone. When a stored `profile_key`
+ * matched nothing — a profile renamed, retired, or split in two, all of which
+ * happen while a diary is still being kept — it quietly handed back the
+ * region's default and every page printed that name as if it had been chosen.
+ *
+ * Two knee profiles share a body region. Somebody tracking a patellar tendon
+ * would have been shown "patellofemoral pain syndrome" in the heading, with no
+ * mark of any kind, and would reasonably have concluded the app knew something.
+ * The wrong thresholds are the smaller half of that: the larger half is being
+ * told, by a health diary, that you have a condition you do not have.
+ *
+ * Returning a pair rather than the profile means a caller has to look at the
+ * flag to get at the profile. `profileOf` used to be the easy call and the
+ * wrong one; now there is only the one.
+ * ---------------------------------------------------------------------------
  */
-export function profileOf(episode: { body_region: BodyRegion; profile_key: string | null }): Profile {
+export type ResolvedProfile = {
+  profile: Profile;
+  /** True when the stored key matched nothing and the region's default stood in. */
+  substituted: boolean;
+};
+
+export function profileOf(episode: {
+  body_region: BodyRegion;
+  profile_key: string | null;
+}): ResolvedProfile {
   const named = episode.profile_key === null ? undefined : profileByKey(episode.profile_key);
-  return named ?? profileFor(episode.body_region);
+  if (named !== undefined) return { profile: named, substituted: false };
+
+  return {
+    profile: profileFor(episode.body_region),
+    // A key of null is an episode from before profiles were named, not a key
+    // that broke. Marking those would put a warning on every old episode and
+    // teach people to ignore it.
+    substituted: episode.profile_key !== null,
+  };
 }
 

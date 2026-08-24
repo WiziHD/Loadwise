@@ -106,3 +106,10 @@ jobs:
       # seit sie nicht mehr in `typecheck` versteckt ist.
       - name: App — Wortgrenze
         run: npm run check:boundary --workspace=web
+
+      # Die Gegenrichtung zur Wortgrenze: Jeder Satz, der IM Wörterbuch steht,
+      # muss auch irgendwo herauskommen. 18 Einträge taten das nicht — darunter
+      # der einzige Satz, der einen stillen Profilwechsel benannt hätte.
+      # Aufgelöst über den Typprüfer; eine Namenssuche fand nur 7 davon.
+      - name: App — jeder Wörterbucheintrag kommt an
+        run: npm run check:dictionary --workspace=web

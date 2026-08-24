@@ -31,13 +31,15 @@ import { resolve } from "node:path";
  * build after the upgrade — which is the point of having it. It is the
  * framework's own last-resort error page: it renders a fixed sentence, reads
  * nothing, and cannot reach a database.
+ *
+ * `/en/signin` and `/de/signin` USED TO STAND HERE, and matched nothing. The
+ * sign-in page reads `searchParams`, so it renders on demand and never appears
+ * in the manifest at all — the two lines were a standing permission for
+ * something that was not happening. An allowlist entry that never fires is
+ * worse than an absent one: it reads as a decision somebody weighed, and it
+ * would have silently covered the day that page DID turn static.
  */
-const PUBLIC_ROUTES = new Set([
-  "/_not-found",
-  "/_global-error",
-  "/en/signin",
-  "/de/signin",
-]);
+const PUBLIC_ROUTES = new Set(["/_not-found", "/_global-error"]);
 
 const MANIFEST = resolve(process.cwd(), ".next/prerender-manifest.json");
 

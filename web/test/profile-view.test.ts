@@ -2,20 +2,20 @@
  * Welches Profil eine Episode trägt — und was passiert, wenn keines passt.
  *
  * ---------------------------------------------------------------------------
- * DER RÜCKFALL IST STILL, UND DAS IST DAS PROBLEM.
+ * DER RÜCKFALL WAR STILL. JETZT SAGT ER SICH AN.
  *
  * `profileOf` nimmt zuerst das benannte Profil, dann das Standardprofil der
  * Körperregion. Der zweite Fall tritt ein, sobald ein Profilschlüssel umbenannt
- * oder entfernt wird — und dann zeigt die App den Namen einer ANDEREN
- * Verletzung an, ohne Kennzeichen. Zwei Profile teilen sich `knee`.
+ * oder entfernt wird — und dann wird die Episode unter einem ANDEREN Profil
+ * beurteilt. Zwei Profile teilen sich `knee`.
  *
- * Der Rückfall ist richtig: Eine Episode ohne beurteilbares Profil wäre
- * schlimmer als eine mit dem Standardprofil. Aber er muss sichtbar sein, und
- * heute ist er es nicht. Das Wörterbuch enthält den Satz dafür und benutzt ihn
- * nicht (Karte H15).
+ * Der Rückfall selbst ist richtig: Eine Episode ganz ohne Profil wäre schlimmer
+ * als eine mit dem Standardprofil der Region. Falsch war, dass nichts es sagte.
+ * Wer eine Patellasehne führt, bekam »patellofemorales Schmerzsyndrom« in der
+ * Überschrift — ohne Kennzeichen, von einem Gesundheitstagebuch.
  *
- * Diese Datei hält das Verhalten fest, damit die Reparatur später eine
- * Entscheidung ist und keine Überraschung.
+ * Deshalb liefert `profileOf` ein Paar. Wer an das Profil will, muss an der
+ * Kennzeichnung vorbei; den bequemen und falschen Aufruf gibt es nicht mehr.
  * ---------------------------------------------------------------------------
  */
 
@@ -25,31 +25,45 @@ import { profileOf, toPickerProfile } from "@/lib/profile-view";
 
 describe("profileOf", () => {
   it("nimmt das benannte Profil", () => {
-    const p = profileOf({ body_region: "knee", profile_key: "patellofemoral_pain" });
-    expect(p.key).toBe("patellofemoral_pain");
+    const r = profileOf({ body_region: "knee", profile_key: "patellofemoral_pain" });
+    expect(r.profile.key).toBe("patellofemoral_pain");
+    expect(r.substituted).toBe(false);
   });
 
-  it("nimmt das Standardprofil der Region, wenn keines benannt ist", () => {
-    const p = profileOf({ body_region: "achilles", profile_key: null });
-    expect(p.key).toBe(DEFAULT_PROFILE_FOR.achilles);
+  it("nimmt das Standardprofil der Region, wenn keines benannt ist — ohne Warnung", () => {
+    // Eine Episode aus der Zeit vor benannten Profilen. Die zu kennzeichnen
+    // hiesse, auf jede alte Episode eine Warnung zu setzen — und damit allen
+    // beizubringen, sie zu übersehen.
+    const r = profileOf({ body_region: "achilles", profile_key: null });
+    expect(r.profile.key).toBe(DEFAULT_PROFILE_FOR.achilles);
+    expect(r.substituted).toBe(false);
   });
 
-  it("fällt bei einem unbekannten Schlüssel auf die Region zurück — still", () => {
-    // Genau der Fall, der eintritt, wenn ein Profil umbenannt wird. Die Episode
-    // wird dann unter einem anderen Profil beurteilt, und nichts sagt es.
-    const p = profileOf({ body_region: "knee", profile_key: "gibt_es_nicht" });
-    expect(p.key).toBe(DEFAULT_PROFILE_FOR.knee);
-    // Festgehalten, weil es weh tut: Der angezeigte Name ist dann der einer
-    // anderen Verletzung als der, die jemand ausgewählt hat.
-    expect(p.key).not.toBe("gibt_es_nicht");
+  it("kennzeichnet den Rückfall bei einem unbekannten Schlüssel", () => {
+    // Genau der Fall, der eintritt, wenn ein Profil umbenannt wird.
+    const r = profileOf({ body_region: "knee", profile_key: "gibt_es_nicht" });
+    expect(r.profile.key).toBe(DEFAULT_PROFILE_FOR.knee);
+    expect(r.substituted).toBe(true);
+  });
+
+  it("kennzeichnet auch, wenn das Standardprofil zufällig gepasst hätte", () => {
+    // Die Falle: Ist der kaputte Schlüssel derselbe wie der Standard, sähe ein
+    // Vergleich der Namen keinen Unterschied. Die Kennzeichnung hängt daran,
+    // ob der GESPEICHERTE Schlüssel aufgelöst werden konnte, nicht daran, ob
+    // das Ergebnis anders aussieht.
+    const standard = DEFAULT_PROFILE_FOR.knee;
+    const r = profileOf({ body_region: "knee", profile_key: standard + "_alt" });
+    expect(r.profile.key).toBe(standard);
+    expect(r.substituted).toBe(true);
   });
 
   it("liefert für jede Region ein Profil, ohne Ausnahme", () => {
     // Die Registry ist erschöpfend typgeprüft; hier wird belegt, dass die
     // Zusicherung auch zur Laufzeit hält.
     for (const region of Object.keys(DEFAULT_PROFILE_FOR) as (keyof typeof DEFAULT_PROFILE_FOR)[]) {
-      expect(profileOf({ body_region: region, profile_key: null }).key)
-        .toBe(profileFor(region).key);
+      const r = profileOf({ body_region: region, profile_key: null });
+      expect(r.profile.key).toBe(profileFor(region).key);
+      expect(r.substituted).toBe(false);
     }
   });
 });
@@ -93,12 +107,20 @@ describe("toPickerProfile", () => {
     }
   });
 
-  it("kopiert die Testliste, statt sie zu teilen", () => {
-    // Der Wähler ist ein Client-Bauteil; was hinübergeht, darf keine Referenz
-    // auf Motordaten sein, die jemand versehentlich verändert.
+  it("trägt nur, was der Wähler auch zeigt", () => {
+    // `tests: string[]` stand hier einmal: berechnet, kopiert, über die
+    // Server/Client-Grenze geschickt — und von keinem Bauteil gerendert. Nur
+    // ein Test las es, und ein Test ist kein Bildschirm.
+    //
+    // Diese Zusicherung ersetzt ihn, weil sie die Richtung hält, in der der
+    // Fehler entsteht: Ein Feld darf nur hinüber, wenn es dort gebraucht wird.
     const achilles = ALL_PROFILES.find((p) => p.key === "achilles_midportion")!;
     const view = toPickerProfile(achilles, "de");
-    expect(view.tests).toEqual([...achilles.tests]);
-    expect(view.tests).not.toBe(achilles.tests);
-  });
-});
+    expect(Object.keys(view).sort()).toEqual([
+      "bodyRegion",
+      "key",
+      "label",
+      "limitations",
+      "researched",
+    ]);
+  });});

@@ -9,6 +9,10 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
+    // Ein Import, den niemand liest, ist dieselbe Familie wie ein
+    // Woerterbucheintrag, den niemand zeigt: gesetzt und nie angekommen.
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "verbatimModuleSyntax": true,
 
     "skipLibCheck": true,

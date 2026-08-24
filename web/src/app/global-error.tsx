@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { localeFrom } from "@/i18n/config";
 import { t } from "@/i18n/dictionary";
@@ -18,6 +19,18 @@ import "./globals.css";
  *
  * `lang` steht hier richtig, im Wurzellayout dagegen fest auf "en" — das ist
  * Karte H8 und wird dort entschieden, nicht nebenbei hier.
+ *
+ * ---------------------------------------------------------------------------
+ * DER FEHLER KAM HIER AN UND WURDE WEGGEWORFEN.
+ *
+ * `ErrorScreen` protokolliert ihn, diese Datei nahm ihn entgegen und las ihn
+ * nie. Ausgerechnet hier: Diese Seite erscheint nur, wenn das Wurzellayout
+ * selbst fehlgeschlagen ist — der schwerste Fall, den die App hat, und der
+ * einzige, der keine Spur hinterliess.
+ *
+ * Gefunden hat das nicht ein Blick, sondern `noUnusedLocals`. Der Compiler
+ * konnte es die ganze Zeit sagen; ihn zu fragen war der fehlende Schritt.
+ * ---------------------------------------------------------------------------
  */
 export default function GlobalError({
   error,
@@ -28,6 +41,13 @@ export default function GlobalError({
 }) {
   const locale = localeFrom(usePathname().split("/")[1]);
   const s = t(locale);
+
+  useEffect(() => {
+    // Dieselbe Zeile wie in ErrorScreen, aus demselben Grund: Der Digest
+    // identifiziert den Fehler in den Serverprotokollen. Auf den Bildschirm
+    // gehört er nicht — dort steht er weiterhin nicht.
+    console.error("Loadwise:", error.digest ?? error.message);
+  }, [error]);
 
   return (
     <html lang={locale}>

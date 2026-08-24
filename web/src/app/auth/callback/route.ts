@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { localeFrom } from "@/i18n/config";
 import { supabaseServer } from "@/lib/supabase/server";
+import type { SignInError } from "@/lib/signin-errors";
 
 /**
  * Where the emailed link lands.
@@ -41,7 +42,12 @@ export async function GET(request: NextRequest) {
   const locale = localeFrom(url.searchParams.get("locale") ?? undefined);
 
   const home = new URL(`/${locale}`, url.origin);
-  const expired = new URL(`/${locale}/signin?error=link-expired`, url.origin);
+  // Über SignInError getippt, damit ein Grund, den die Anmeldeseite nicht
+  // abdeckt, hier gar nicht erst entstehen kann. Vorher schickte diese Datei
+  // `missing-code`, und die Seite kannte es nicht.
+  const zurueck = (grund: SignInError): URL =>
+    new URL(`/${locale}/signin?error=${grund}`, url.origin);
+  const expired = zurueck("link-expired");
 
   if (tokenHash !== null) {
     const type = (url.searchParams.get("type") ?? "magiclink") as EmailOtpType;
@@ -51,7 +57,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (code === null) {
-    return NextResponse.redirect(new URL(`/${locale}/signin?error=missing-code`, url.origin));
+    return NextResponse.redirect(zurueck("missing-code"));
   }
 
   const supabase = await supabaseServer();

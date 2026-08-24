@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PickerProfile } from "@/lib/profile-view";
+import type { Strings } from "@/i18n/dictionary";
 
 /**
  * Choosing the profile, and being told at once what it cannot do.
@@ -18,7 +19,7 @@ export function ProfilePicker({
   strings,
 }: {
   profiles: PickerProfile[];
-  strings: { chooseProfile: string; profileHint: string; whatItCannotTell: string; researched: string; mechanismOnly: string };
+  strings: Strings["episode"];
 }) {
   const [chosen, setChosen] = useState<string>(profiles[0]?.key ?? "");
   const current = profiles.find((p) => p.key === chosen);

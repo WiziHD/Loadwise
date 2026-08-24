@@ -3,48 +3,12 @@
 import { useEffect, useState, useTransition } from "react";
 import {
   ALL_ACTIVITY_KINDS,
-  type ActivityKind,
   type Entry,
   type Locale,
   type SymptomTiming,
 } from "loadwise-engine";
 import { saveEntryAction } from "@/app/actions/episodes";
-
-type Strings = {
-  date: string;
-  morning: string;
-  morningHint: string;
-  activity: string;
-  duration: string;
-  rpe: string;
-  loadHint: string;
-  addSession: string;
-  removeSession: string;
-  sessionNumber: string;
-  everyday: string;
-  everydayHint: string;
-  everydaySitting: string;
-  everydayNormal: string;
-  everydayOnFeet: string;
-  everydayVeryActive: string;
-  stiffness: string;
-  stiffnessHint: string;
-  medication: string;
-  medicationHint: string;
-  loadIncomplete: string;
-  symptomIncomplete: string;
-  futureDate: string;
-  invalid: string;
-  symptom: string;
-  timing: string;
-  timingDuring: string;
-  timingAfter: string;
-  timingEvening: string;
-  note: string;
-  noteHint: string;
-  saved: string;
-  replacing: string;
-};
+import type { Strings } from "@/i18n/dictionary";
 
 /** Exactly the fields of a diary day, as strings — because that is what a form holds. */
 /** Eine Einheit im Formular — als Text, denn das ist, was ein Feld hält. */
@@ -198,9 +162,9 @@ export function EntryForm({
   /** The host's date — a starting guess, corrected on mount. See deviceToday. */
   serverToday: string;
   entries: Entry[];
-  strings: Strings;
-  errorStrings: { notSaved: string; offline: string };
-  activityLabels: Record<ActivityKind, string>;
+  strings: Strings["entry"];
+  errorStrings: Strings["errors"];
+  activityLabels: Strings["activities"];
   saveLabel: string;
 }) {
   const byDate = new Map(entries.map((e) => [String(e.date), e]));

@@ -16,7 +16,14 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { DEFAULT_LOCALE, isLocale, localeFrom, localeRouteFor, preferredLocale } from "@/i18n/config";
+import {
+  DEFAULT_LOCALE,
+  isLocale,
+  localeFrom,
+  localeRouteFor,
+  preferredLocale,
+  swapLocaleIn,
+} from "@/i18n/config";
 
 describe("der Anmeldecallback darf keine Sprache bekommen", () => {
   it("leitet /auth/callback nicht um", () => {
@@ -101,5 +108,37 @@ describe("localeFrom und isLocale", () => {
     expect(isLocale("de")).toBe(true);
     expect(isLocale("DE")).toBe(false);
     expect(isLocale("de-CH")).toBe(false);
+  });
+});
+
+describe("swapLocaleIn", () => {
+  it("tauscht nur das Sprachsegment", () => {
+    expect(swapLocaleIn("/de/episodes/abc", "", "en")).toBe("/en/episodes/abc");
+    expect(swapLocaleIn("/en", "", "de")).toBe("/de");
+  });
+
+  it("behält die Abfrage", () => {
+    // Der Ablauf, der vorher kaputt war: abgelaufener Link, Erklärung in der
+    // falschen Sprache, umschalten — und der Satz, für den umgeschaltet wurde,
+    // war weg.
+    expect(swapLocaleIn("/en/signin", "error=link-expired", "de")).toBe(
+      "/de/signin?error=link-expired",
+    );
+  });
+
+  it("nimmt die Abfrage mit oder ohne Fragezeichen", () => {
+    // `URLSearchParams.toString()` liefert sie ohne, ein Aufrufer von Hand
+    // schreibt sie gern mit. Beides darf nicht zu `??` führen.
+    expect(swapLocaleIn("/en/signin", "?error=missing-code", "de")).toBe(
+      "/de/signin?error=missing-code",
+    );
+  });
+
+  it("hängt kein leeres Fragezeichen an", () => {
+    expect(swapLocaleIn("/de/episodes/abc", "", "en")).not.toContain("?");
+  });
+
+  it("verliert einen Pfad mit mehreren Parametern nicht", () => {
+    expect(swapLocaleIn("/de/x/y", "a=1&b=2", "en")).toBe("/en/x/y?a=1&b=2");
   });
 });
