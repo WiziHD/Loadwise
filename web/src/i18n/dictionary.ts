@@ -56,6 +56,35 @@ export interface Strings {
     profileMissing: string;
   };
   /**
+   * Eine Episode korrigieren und wegräumen.
+   *
+   * Eigene Gruppe, weil hier ein Satz steht, den es sonst nirgends gibt:
+   * `profileChangeWarning` sagt vorher, dass ein Profilwechsel VERGANGENE
+   * Urteile verändert. Er gehört zum gefährlichsten Knopf der App und darf
+   * nicht zwischen Formularbeschriftungen untergehen.
+   */
+  edit: {
+    link: string;
+    heading: string;
+    profile: string;
+    profileChangeWarning: string;
+    save: string;
+    saved: string;
+    unknownProfile: string;
+    futureStart: string;
+    invalid: string;
+    changeHistory: string;
+    changedTo: string;
+    archive: string;
+    archiveHint: string;
+    unarchive: string;
+    noDelete: string;
+    archiveHeading: string;
+    archiveLink: string;
+    archiveEmpty: string;
+    archivedNote: string;
+  };
+  /**
    * Exhaustive by type: a twelfth activity in the engine is a compile error
    * here until it has a name in every language.
    */
@@ -165,6 +194,32 @@ export const DICTIONARY: Record<Locale, Strings> = {
       mechanismOnly: "mechanism only",
       profileMissing:
         "The profile this episode was created with no longer exists. What you see is the default for this body region — a different injury, and every verdict on this page is its.",
+    },
+    edit: {
+      link: "Correct this episode",
+      heading: "Correct episode",
+      profile: "What is being tracked",
+      // The one sentence that has to arrive BEFORE the button is pressed.
+      profileChangeWarning:
+        "Changing the profile changes verdicts you have already been given. The thresholds are different, the self-tests are different, the tissue factor is different — a warning from last week can turn green without a single diary day changing. Nothing in your diary is touched, and the change is recorded below.",
+      save: "Save changes",
+      saved: "Saved.",
+      unknownProfile: "That profile does not exist.",
+      futureStart: "That day has not happened yet.",
+      invalid: "Those values cannot be saved. Please check the fields.",
+      changeHistory: "Profile changes",
+      changedTo: "changed to",
+      archive: "Move to archive",
+      archiveHint:
+        "It leaves the list. Nothing is deleted, and you can bring it back at any time.",
+      unarchive: "Bring back",
+      // Says why the button somebody is looking for is not here.
+      noDelete:
+        "There is no delete. Deleting comes with the export — nobody should be able to erase months of their own record before they can take a copy of it.",
+      archiveHeading: "Archive",
+      archiveLink: "Archive",
+      archiveEmpty: "Nothing archived.",
+      archivedNote: "This episode is archived. It does not appear in your list.",
     },
     activities: {
       run: "Running",
@@ -294,6 +349,30 @@ export const DICTIONARY: Record<Locale, Strings> = {
       mechanismOnly: "nur Mechanik",
       profileMissing:
         "Das Profil, mit dem diese Episode angelegt wurde, gibt es nicht mehr. Angezeigt wird das Standardprofil dieser Körperregion — eine andere Verletzung, und jedes Urteil auf dieser Seite ist seins.",
+    },
+    edit: {
+      link: "Diese Episode korrigieren",
+      heading: "Episode korrigieren",
+      profile: "Was verfolgt wird",
+      profileChangeWarning:
+        "Ein Profilwechsel verändert Urteile, die du schon bekommen hast. Die Schwellen sind andere, die Selbsttests sind andere, der Gewebefaktor ist ein anderer — eine Warnung von letzter Woche kann grün werden, ohne dass sich ein einziger Tagebuchtag geändert hat. An deinem Tagebuch wird nichts angerührt, und der Wechsel wird unten festgehalten.",
+      save: "Änderungen speichern",
+      saved: "Gespeichert.",
+      unknownProfile: "Dieses Profil gibt es nicht.",
+      futureStart: "Dieser Tag ist noch nicht gewesen.",
+      invalid: "Diese Angaben lassen sich nicht speichern. Bitte die Felder prüfen.",
+      changeHistory: "Profilwechsel",
+      changedTo: "gewechselt zu",
+      archive: "Ins Archiv legen",
+      archiveHint:
+        "Sie verschwindet aus der Liste. Gelöscht wird nichts, und du kannst sie jederzeit zurückholen.",
+      unarchive: "Zurückholen",
+      noDelete:
+        "Es gibt kein Löschen. Löschen kommt zusammen mit dem Export — niemand soll Monate der eigenen Aufzeichnung auslöschen können, bevor er eine Kopie davon mitnehmen kann.",
+      archiveHeading: "Archiv",
+      archiveLink: "Archiv",
+      archiveEmpty: "Nichts archiviert.",
+      archivedNote: "Diese Episode liegt im Archiv. Sie steht nicht in deiner Liste.",
     },
     activities: {
       run: "Laufen",

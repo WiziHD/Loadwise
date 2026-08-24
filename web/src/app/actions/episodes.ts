@@ -16,7 +16,12 @@ import {
   type EntryPayload,
   type EntryProblem,
 } from "@/lib/entry-validation";
-import { createEpisode } from "@/lib/db/episodes";
+import {
+  validateEpisodePatch,
+  type EpisodePatch,
+  type EpisodeProblem,
+} from "@/lib/episode-validation";
+import { createEpisode, setArchived, updateEpisode } from "@/lib/db/episodes";
 import { saveEntry } from "@/lib/db/entries";
 
 function optionalText(value: FormDataEntryValue | null): string | null {
@@ -94,4 +99,89 @@ export async function saveEntryAction(
   }
 
   return { ok: true };
+}
+
+export type EpisodeEditResult = { ok: true } | { ok: false; reason: EpisodeProblem | "failed" };
+
+/**
+ * Eine Episode korrigieren.
+ *
+ * ---------------------------------------------------------------------------
+ * DIE KÖRPERREGION KOMMT AUS DEM PROFIL, NICHT AUS DEM FORMULAR.
+ *
+ * Genau wie beim Anlegen. Zwei Profile teilen sich `knee`; liesse man das
+ * Formular beides schicken, könnten sie sich widersprechen — und die Episode
+ * liefe unter einer Region, die zu ihrem Profil nicht passt. Eine zweite Tür
+ * darf nicht weiter sein als die erste.
+ *
+ * Den Profilwechsel hält ein Trigger fest, in derselben Transaktion wie das
+ * UPDATE. Hier steht dazu nichts, und das ist Absicht.
+ * ---------------------------------------------------------------------------
+ */
+export async function updateEpisodeAction(
+  locale: Locale,
+  episodeId: string,
+  patch: EpisodePatch,
+): Promise<EpisodeEditResult> {
+  const problem = validateEpisodePatch(patch, utcToday());
+  if (problem !== null) return { ok: false, reason: problem };
+
+  // Zulässig, weil `validateEpisodePatch` oben genau diese Formen geprüft hat
+  // und sonst schon zurückgekehrt wäre.
+  const profileKey = patch.profileKey as string;
+  const profile = profileByKey(profileKey);
+  if (profile === undefined) return { ok: false, reason: "unknown-profile" };
+
+  try {
+    await updateEpisode(episodeId, {
+      profileKey,
+      bodyRegion: profile.bodyRegion as BodyRegion,
+      side: patch.side as Side,
+      startedOn: patch.startedOn as string | null,
+      label: patch.label as string | null,
+    });
+  } catch {
+    return { ok: false, reason: "failed" };
+  }
+
+  revalidate(locale, episodeId);
+  return { ok: true };
+}
+
+/**
+ * Ins Archiv und zurück.
+ *
+ * Kein Löschen. Endgültiges Löschen gehört zu Datenexport und Kontolöschung —
+ * löschen darf nur, wer vorher exportieren konnte.
+ */
+export async function setEpisodeArchivedAction(
+  locale: Locale,
+  episodeId: string,
+  archived: boolean,
+): Promise<EpisodeEditResult> {
+  try {
+    await setArchived(episodeId, archived);
+  } catch {
+    return { ok: false, reason: "failed" };
+  }
+
+  revalidate(locale, episodeId);
+  return { ok: true };
+}
+
+/**
+ * Beide Seiten, die sich geändert haben — und in einem eigenen try.
+ *
+ * Der Schreibvorgang ist zu diesem Zeitpunkt durch. Eine Neuberechnung, die
+ * fehlschlägt, darf nicht als »konnte nicht gespeichert werden« ankommen; diese
+ * Zeile würde jemanden dazu bringen, eine Korrektur ein zweites Mal
+ * einzutragen, die längst steht.
+ */
+function revalidate(locale: Locale, episodeId: string): void {
+  try {
+    revalidatePath(`/${locale}/episodes/${episodeId}`);
+    revalidatePath(`/${locale}`);
+  } catch {
+    // Die Seite ist bis zur nächsten Navigation veraltet. Kein Wort wert.
+  }
 }

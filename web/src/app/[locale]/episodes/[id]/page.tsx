@@ -123,6 +123,11 @@ export default async function EpisodePage({
             />
           )}
         </p>
+        <p style={{ margin: "0.6rem 0 0", fontSize: "0.9rem" }}>
+          <Link href={`/${locale}/episodes/${id}/edit`} style={{ color: "var(--muted)" }}>
+            {s.edit.link}
+          </Link>
+        </p>
       </header>
 
       <section

@@ -35,6 +35,30 @@ export interface EpisodeRow {
   started_on: string | null;
   ended_on: string | null;
   label: string | null;
+  /**
+   * Archiviert heisst: aus der Liste verschwunden, nicht gelöscht.
+   *
+   * Endgültiges Löschen gehört zu Datenexport und Kontolöschung — löschen darf
+   * nur, wer vorher exportieren konnte. Ein Löschknopf ohne Ausgang wäre in
+   * einem Tagebuch, das jemand über Monate führt, eine Falle.
+   */
+  archived_at: string | null;
+}
+
+/**
+ * Ein Profilwechsel, so wie die Datenbank ihn festhält.
+ *
+ * Geschrieben von einem Trigger, nie von der App: Ein Wechsel und sein Eintrag
+ * müssen dieselbe Transaktion sein, sonst gibt es Wechsel ohne Erklärung oder
+ * Erklärungen ohne Wechsel. Die App liest hier nur.
+ */
+export interface ProfileChangeRow {
+  id: string;
+  episode_id: string;
+  changed_at: string;
+  /** Null: eine Episode aus der Zeit vor benannten Profilen. */
+  from_key: string | null;
+  to_key: string;
 }
 
 export interface EntryRow {

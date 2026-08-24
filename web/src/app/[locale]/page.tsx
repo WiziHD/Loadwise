@@ -13,7 +13,7 @@ import Link from "next/link";
 import { localeFrom } from "@/i18n/config";
 import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
-import { listEpisodes, profileOf } from "@/lib/db/episodes";
+import { countArchived, listEpisodes, profileOf } from "@/lib/db/episodes";
 
 const primaryButton: React.CSSProperties = {
   display: "inline-block",
@@ -50,7 +50,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 }
 
 async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof t> }) {
-  const episodes = await listEpisodes();
+  // Ohne Archiv. Beides in einem Aufruf zu holen und danach zu filtern hiesse,
+  // eine wachsende Liste zu ziehen, um sie wegzuwerfen.
+  const [episodes, archiviert] = await Promise.all([listEpisodes(false), countArchived()]);
 
   if (episodes.length === 0) {
     return (
@@ -60,6 +62,7 @@ async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof
         <Link href={`/${locale}/episodes/new`} style={primaryButton}>
           {s.episode.newEpisode}
         </Link>
+        <ArchiveLink locale={locale} s={s} count={archiviert} />
       </section>
     );
   }
@@ -105,6 +108,33 @@ async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof
       <Link href={`/${locale}/episodes/new`} style={primaryButton}>
         {s.episode.newEpisode}
       </Link>
+      <ArchiveLink locale={locale} s={s} count={archiviert} />
     </section>
+  );
+}
+
+/**
+ * Der Weg ins Archiv, und nur wenn dort etwas liegt.
+ *
+ * Ein Archiv, das man nicht ansehen kann, ist ein Löschknopf mit anderem Namen.
+ * Ein leeres Archiv zu verlinken wäre dagegen eine Tür in einen leeren Raum —
+ * die Zahl steht deshalb daneben, statt dass der Link immer da ist.
+ */
+function ArchiveLink({
+  locale,
+  s,
+  count,
+}: {
+  locale: string;
+  s: ReturnType<typeof t>;
+  count: number;
+}) {
+  if (count === 0) return null;
+  return (
+    <p style={{ margin: "1.25rem 0 0", fontSize: "0.9rem" }}>
+      <Link href={`/${locale}/episodes/archive`} style={{ color: "var(--muted)" }}>
+        {s.edit.archiveLink} ({count})
+      </Link>
+    </p>
   );
 }

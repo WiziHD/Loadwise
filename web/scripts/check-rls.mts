@@ -21,9 +21,9 @@
  * an der Episode, und ein falsch gesetzter Join LIEST in einer leeren Datenbank
  * genauso wie ein richtiger.
  *
- * Welche Tabellen es gibt, liest das Skript deshalb aus 0002_rls.sql statt es
- * zu wissen: Eine neunte Tabelle mit Regel, für die hier nichts steht, ist ab
- * sofort ein Fehlschlag und keine stille Lücke.
+ * Welche Tabellen es gibt, liest das Skript deshalb aus den Migrationen statt
+ * es zu wissen: Eine weitere Tabelle mit Regel, für die hier nichts steht, ist
+ * ab sofort ein Fehlschlag und keine stille Lücke.
  *
  * Braucht den Service-Role-Key, der RLS umgeht — genau das erlaubt es, den
  * Aufbau zu stellen und von aussen zu prüfen. Es ist damit ein
@@ -90,7 +90,7 @@ function readEnv(): Record<string, string> {
  * neue Tabelle stillschweigend übersehen — genau der Fehler, gegen den er
  * gebaut wurde, in seinem eigenen Code.
  *
- * Das ist der strukturelle Teil: Wer eine neunte Tabelle mit Regel anlegt und
+ * Das ist der strukturelle Teil: Wer eine weitere Tabelle mit Regel anlegt und
  * hier nichts ergänzt, bekommt einen Fehlschlag statt einer stillen Lücke.
  * Genau so ist die Lücke entstanden, die dieses Skript gerade schliesst.
  */
@@ -173,15 +173,26 @@ type Ctx = { episodeId: string; measureKeyId: string; entryId: string };
 /**
  * Was auf jeder Tabelle gilt.
  *
- * `owner`  — dem Konto gehört die Zeile: lesen und schreiben.
- * `engine` — Urteile. Sie entstehen serverseitig aus dem Regelmodul; dürfte
- *            ein Konto sie schreiben, könnte ein manipulierter Client sich
- *            selbst ein »alles in Ordnung« eintragen, und ein Physio-Bericht
- *            wäre wertlos, weil niemand mehr wüsste, woher die Zeile stammt.
+ * `owner`    — dem Konto gehört die Zeile: lesen und schreiben.
+ * `readonly` — das Konto darf lesen und NICHT schreiben. Zwei Sorten Zeilen
+ *              fallen darunter, aus demselben Grund:
+ *
+ *              Urteile entstehen serverseitig aus dem Regelmodul. Dürfte ein
+ *              Konto sie schreiben, könnte ein manipulierter Client sich selbst
+ *              ein »alles in Ordnung« eintragen, und ein Physio-Bericht wäre
+ *              wertlos, weil niemand mehr wüsste, woher die Zeile stammt.
+ *
+ *              Profilwechsel schreibt ein Trigger. Eine Zeile, die man selbst
+ *              hineinlegen kann, erklärt einen veränderten Bericht nicht mehr,
+ *              sondern behauptet nur etwas darüber.
+ *
+ *              (Hiess einmal `engine` — nach der einen Herkunft, die es damals
+ *              gab. Der Name beschrieb, woher die Zeile kommt, statt was gelten
+ *              muss, und wäre bei der zweiten Herkunft falsch geworden.)
  */
 type Spec = {
   table: string;
-  access: "owner" | "engine";
+  access: "owner" | "readonly";
   match: (ctx: Ctx) => Record<string, unknown>;
   row: (ctx: Ctx) => Record<string, unknown>;
 };
@@ -249,7 +260,7 @@ const SPECS: Spec[] = [
   },
   {
     table: "flags",
-    access: "engine",
+    access: "readonly",
     match: (c) => ({ episode_id: c.episodeId, for_date: "2026-01-01" }),
     row: (c) => ({
       episode_id: c.episodeId,
@@ -264,7 +275,7 @@ const SPECS: Spec[] = [
   },
   {
     table: "evaluations",
-    access: "engine",
+    access: "readonly",
     match: (c) => ({ episode_id: c.episodeId, profile_key: "probe" }),
     row: (c) => ({
       episode_id: c.episodeId,
@@ -274,6 +285,15 @@ const SPECS: Spec[] = [
       profile_version: "probe",
       rule_version: "probe",
     }),
+  },
+  {
+    // Profilwechsel. Schreibt der Trigger, nicht das Konto — deshalb hier
+    // dieselbe Behandlung wie bei einem Urteil: A darf es NICHT hineinlegen,
+    // der Service-Role-Key legt die Prüfzeile an, A liest sie, B nicht.
+    table: "episode_profile_changes",
+    access: "readonly",
+    match: (c) => ({ episode_id: c.episodeId, to_key: "sonde_ziel" }),
+    row: (c) => ({ episode_id: c.episodeId, from_key: "sonde_start", to_key: "sonde_ziel" }),
   },
 ];
 
@@ -304,9 +324,9 @@ async function main(): Promise<void> {
   // ist einmal passiert: Ein kaputter Ausdruck fand nichts, und der Wächter
   // meldete »alle 0 Tabellen abgedeckt«, grün. Eine Zahl unter der bekannten
   // Untergrenze heisst deshalb: Die Migrationen wurden nicht gelesen.
-  if (geschuetzt.size < 8) {
+  if (geschuetzt.size < 10) {
     throw new Error(
-      `Nur ${geschuetzt.size} Tabellen mit Regel in den Migrationen gefunden, mindestens 8 erwartet. ` +
+      `Nur ${geschuetzt.size} Tabellen mit Regel in den Migrationen gefunden, mindestens 10 erwartet. ` +
         `Vermutlich wurden die Dateien nicht gelesen — dann sagt diese Prüfung nichts aus.`,
     );
   }
@@ -380,7 +400,7 @@ async function main(): Promise<void> {
   const stealResult = denied(bSteal);
   record("B kann keine Zeile auf A's Namen anlegen", stealResult.ok, stealResult.detail);
 
-  // --- Und jetzt jede der sieben abhängigen Tabellen, beide Hälften.
+  // --- Und jetzt jede abhängige Tabelle, beide Hälften.
   for (const spec of SPECS) {
     const eigen = spec.access === "owner";
 
@@ -392,11 +412,11 @@ async function main(): Promise<void> {
         "error" in row ? row.error : "",
       );
     } else {
-      // Urteile darf ein Konto NICHT schreiben. Die Zeile legt der
-      // Service-Role-Key an — so, wie es der Motor später tun wird.
+      // Was ein Konto nicht schreiben darf, legt der Service-Role-Key an —
+      // so, wie es der Motor bzw. der Trigger später tut.
       const { error: aWrite } = await a.client.from(spec.table).insert(spec.row(ctx));
       const result = denied(aWrite);
-      record(`${spec.table}: A kann sein eigenes Urteil nicht schreiben`, result.ok, result.detail);
+      record(`${spec.table}: A kann hier nicht selbst schreiben`, result.ok, result.detail);
 
       const seeded = await findOrCreate(admin, spec.table, spec.match(ctx), spec.row(ctx));
       if ("error" in seeded) {
