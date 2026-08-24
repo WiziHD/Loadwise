@@ -36,8 +36,10 @@
 name: Prüfungen
 
 on:
+  # Jeder Zweig, nicht nur main. Wer allein arbeitet, schiebt auf einen Zweig
+  # und will ihn geprüft haben — und ohne das lässt sich nicht belegen, dass
+  # dieser Ablauf überhaupt anschlägt, ohne main dafür rot zu machen.
   push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -56,9 +58,9 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
