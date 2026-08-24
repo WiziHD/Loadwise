@@ -177,10 +177,11 @@ async function main(): Promise<void> {
  * welche: Unter Windows bricht Node dann mit
  * "Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)" ab und liefert
  * 3221226505 statt 1. Ein Prüfskript, dessen Fehlercode nicht stimmt, ist in
- * einer Kette wertlos — und in CI unbrauchbar.
+ * einer Kette wertlos.
  *
  * Die frühen Abbrüche oben dürfen `process.exit` bleiben: Sie greifen, bevor
- * ein Client existiert, also gibt es dort nichts, was hängen könnte.
+ * ein Client existiert, also gibt es dort nichts, was mitgerissen werden
+ * könnte.
  */
 function fail(): void {
   process.exitCode = 1;
@@ -195,22 +196,23 @@ ${error instanceof Error ? error.message : String(error)}
   process.exitCode = 1;
 }
 
-// Ausdrücklich beenden, statt die Ereignisschleife auslaufen zu lassen.
+// KEIN ausdrückliches Beenden — und das ist die Reparatur.
 //
-// BEKANNTE GRENZE, ehrlich benannt statt kaschiert: Auf dem Pfad, auf dem die
-// Buchführungstabelle noch gar nicht existiert, bricht Node unter Windows beim
-// Abbau mit "Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)" ab und
-// liefert 3221226505 statt 1. Die AUSGABE ist dabei vollständig und richtig —
-// nur der Fehlercode stimmt nicht.
+// Hier stand `process.exit(process.exitCode ?? 0)`, darüber eine ausführliche
+// "bekannte Grenze": Auf einem bestimmten Pfad breche Node beim Abbau ab und
+// liefere 3221226505 statt 1, das sei eingegrenzt und werde getragen.
 //
-// Eingegrenzt, nicht vermutet: Derselbe Aufbau beendet sich in check-rls.ts
-// sauber mit 0, eine minimale Sonde mit demselben Client und derselben
-// fehlschlagenden Abfrage ebenfalls. Weder der Wechsel von tsx auf Node noch
-// oberste Ebene statt main().catch() noch ein Tick vor dem Beenden hat es
-// geändert. Es hängt an diesem einen sofort fehlschlagenden Aufruf.
+// Getragen wurde eine selbstgemachte Wunde. Der Abbruch hing nicht an jenem
+// einen fehlschlagenden Aufruf, sondern an dieser Zeile: `process.exit` reisst
+// die offenen Sockets des Clients mitten im Abbau weg, und genau darüber
+// stolpert libuv. Aufgefallen ist es, als der Abbruch auf einem GANZ ANDEREN
+// Pfad auftrat als dem beschriebenen — dem gewöhnlichen "es gibt
+// Abweichungen".
 //
-// Getragen statt behoben, weil: Das ist ein lokales Entwicklerwerkzeug, es
-// läuft nicht in CI, und der betroffene Zustand endet, sobald 0003_ledger.sql
-// einmal ausgeführt ist. Ab dann geht der Lauf über den Erfolgspfad, und der
-// ist nachweislich sauber. Steht als Karte auf dem Brett.
-process.exit(process.exitCode ?? 0);
+// Gemessen, nicht vermutet: ohne diese Zeile endet dieses Skript auf dem
+// Fehlerpfad mit Code 1 nach 6 Sekunden, check-rls.mts auf dem Erfolgspfad mit
+// Code 0 nach 8 Sekunden. Die Sekunden sind auslaufende Keep-alive-Sockets.
+//
+// Die Lehre steht in beiden Dateien: Eine Grenze, die man dokumentiert statt
+// einzugrenzen, wird zu einem Möbelstück. Diese hier hat monatelang erklärt,
+// warum der falsche Fehlercode in Ordnung sei.

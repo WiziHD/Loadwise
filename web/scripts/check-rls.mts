@@ -440,8 +440,17 @@ try {
   process.exitCode = 1;
 }
 
-// Ausdrücklich beenden, statt die Ereignisschleife auslaufen zu lassen: Der
-// Supabase-Client hält offene Handles, und ein natürliches Ende bricht unter
-// Windows mit einem libuv-Fehler ab. Gefahrlos hier — alles ist ausgegeben und
-// es steht keine Arbeit mehr aus.
-process.exit(process.exitCode ?? 0);
+// KEIN ausdrückliches Beenden — und das ist die Reparatur, nicht die Nachlässigkeit.
+//
+// Hier stand `process.exit(process.exitCode ?? 0)`, mit dem Kommentar, ein
+// natürliches Ende breche unter Windows mit einem libuv-Fehler ab. Es ist
+// umgekehrt: Der Aufruf WAR der Abbruch. `process.exit` reisst die offenen
+// Sockets des Supabase-Clients mitten im Abbau weg, und libuv meldet dann
+// "Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)" und liefert
+// 3221226505 statt 1 oder 0.
+//
+// Gemessen, nicht vermutet: ohne diese Zeile endet dieses Skript mit Code 0
+// nach 8 Sekunden, check-migrations.mts auf seinem Fehlerpfad mit Code 1 nach
+// 6 Sekunden. Die Sekunden sind die Keep-alive-Sockets, die auslaufen — für ein
+// Werkzeug, das von Hand läuft, ist das nichts, und ein richtiger Fehlercode
+// ist alles.
