@@ -172,6 +172,15 @@ do $$
 declare
   fehler text;
 begin
+  -- EINE Anweisung, und das ist keine Kosmetik.
+  --
+  -- Die erste Fassung stellte zwei Abfragen hintereinander, beide auf denselben
+  -- CTE `ist`. Ein CTE gilt aber nur für die Anweisung, an der er hängt: Die
+  -- zweite lief in »relation "ist" does not exist« und brach die Migration ab.
+  --
+  -- Der Abbruch war folgenlos für den Schutz — die Regeln standen zu dem
+  -- Zeitpunkt schon — und die Buchführung meldete anschliessend korrekt »nie bis
+  -- zum Ende durchgelaufen«. Genau dafür steht der Ledger-Eintrag am Schluss.
   with soll (tabelle, regel, befehl) as (
     values
       ('episodes',     'episodes_own',          '*'),
@@ -186,11 +195,11 @@ begin
   ist as (
     select
       s.tabelle,
-      c.oid is not null                                   as existiert,
-      coalesce(c.relrowsecurity, false)                   as rls_an,
-      coalesce(c.relforcerowsecurity, false)              as force_an,
-      p.polname is not null                               as regel_da,
-      p.polcmd::text                                      as befehl_ist,
+      c.oid is not null                        as existiert,
+      coalesce(c.relrowsecurity, false)        as rls_an,
+      coalesce(c.relforcerowsecurity, false)   as force_an,
+      p.polname is not null                    as regel_da,
+      p.polcmd::text                           as befehl_ist,
       (select count(*) from pg_policy q where q.polrelid = c.oid) as regeln_gesamt,
       s.regel,
       s.befehl
@@ -204,43 +213,35 @@ begin
      and p.polname = s.regel
   )
   select string_agg(
-           tabelle || ' (' ||
+           tabelle || ': ' ||
            case
              when not existiert then 'Tabelle fehlt'
              when not rls_an    then 'RLS NICHT aktiviert'
              when not force_an  then 'force row level security fehlt'
              when not regel_da  then 'Regel ' || regel || ' fehlt'
-             else 'Regel ' || regel || ' hat Befehlsumfang ' || coalesce(befehl_ist, '?') ||
-                  ', erwartet ' || befehl
-           end || ')',
-           E'
-  ' order by tabelle)
+             when befehl_ist is distinct from befehl then
+               'Regel ' || regel || ' hat Befehlsumfang ' || coalesce(befehl_ist, '?') ||
+               ', erwartet ' || befehl
+             else
+               -- Eine zusätzliche Regel ist so gefährlich wie eine fehlende: Sie
+               -- könnte erlauben, was die erwartete verbietet.
+               regeln_gesamt || ' Regeln statt genau einer'
+           end,
+           chr(10) || '  ' order by tabelle)
     into fehler
   from ist
   where not existiert
      or not rls_an
      or not force_an
      or not regel_da
-     or befehl_ist is distinct from befehl;
+     or befehl_ist is distinct from befehl
+     or regeln_gesamt <> 1;
 
   if fehler is not null then
     raise exception E'Zugriffsschutz stimmt nicht:
   %
 
-Diese Datei komplett erneut ausführen.', fehler;
-  end if;
-
-  -- Eine zusätzliche Regel ist genauso gefährlich wie eine fehlende: Sie könnte
-  -- alles erlauben, was die erwartete verbietet.
-  select string_agg(tabelle || ' hat ' || regeln_gesamt || ' Regeln, erwartet 1', E'
-  ' order by tabelle)
-    into fehler
-  from ist
-  where regeln_gesamt <> 1;
-
-  if fehler is not null then
-    raise exception E'Unerwartete zusätzliche Regeln:
-  %', fehler;
+Diese Datei komplett erneut ausfuehren.', fehler;
   end if;
 
   raise notice 'RLS in Ordnung: acht Tabellen, RLS und force aktiv, je genau eine Regel mit erwartetem Umfang.';
