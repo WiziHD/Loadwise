@@ -33,14 +33,14 @@
  *   npm run check:rls --workspace=web
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const A_EMAIL = "rls-probe-a@loadwise.test";
 const B_EMAIL = "rls-probe-b@loadwise.test";
 const PROBE_LABEL = "RLS-Sonde";
-const RLS_MIGRATION = resolve(process.cwd(), "..", "supabase", "migrations", "0002_rls.sql");
+const MIGRATIONS_DIR = resolve(process.cwd(), "..", "supabase", "migrations");
 
 /** Der Postgres-Code für »die Regel verbietet das«. Alles andere ist etwas anderes. */
 const DENIED = "42501";
@@ -83,24 +83,34 @@ function readEnv(): Record<string, string> {
 }
 
 /**
- * Welche Tabellen die Migration schützt — aus der Datei gelesen, nicht geraten.
+ * Welche Tabellen geschützt sind — aus ALLEN Migrationen gelesen, nicht geraten.
+ *
+ * Zuerst las das hier nur 0002_rls.sql. Beim Anlegen von `sessions` in 0004
+ * stand die Regel damit ausserhalb des Blickfelds, und der Wächter hätte die
+ * neue Tabelle stillschweigend übersehen — genau der Fehler, gegen den er
+ * gebaut wurde, in seinem eigenen Code.
  *
  * Das ist der strukturelle Teil: Wer eine neunte Tabelle mit Regel anlegt und
  * hier nichts ergänzt, bekommt einen Fehlschlag statt einer stillen Lücke.
  * Genau so ist die Lücke entstanden, die dieses Skript gerade schliesst.
  */
 function tablesWithPolicies(): Set<string> {
-  if (!existsSync(RLS_MIGRATION)) {
-    console.error(`Kein ${RLS_MIGRATION}.`);
+  if (!existsSync(MIGRATIONS_DIR)) {
+    console.error(`Kein ${MIGRATIONS_DIR}.`);
     process.exit(1);
   }
-  const sql = readFileSync(RLS_MIGRATION, "utf8");
+
   const found = new Set<string>();
-  for (const match of sql.matchAll(/^create policy\s+\w+\s+on\s+(\w+)/gm)) {
-    found.add(match[1]!);
+  for (const file of readdirSync(MIGRATIONS_DIR).sort()) {
+    if (!file.endsWith(".sql")) continue;
+    const sql = readFileSync(resolve(MIGRATIONS_DIR, file), "utf8");
+    for (const match of sql.matchAll(/^create policy\s+\w+\s+on\s+(\w+)/gm)) {
+      found.add(match[1]!);
+    }
   }
   return found;
 }
+
 
 /** Ein angemeldeter Client für `email`; das Konto entsteht beim ersten Mal. */
 async function signIn(
@@ -158,7 +168,7 @@ async function findOrCreate(
   return data as { id: string };
 }
 
-type Ctx = { episodeId: string; measureKeyId: string };
+type Ctx = { episodeId: string; measureKeyId: string; entryId: string };
 
 /**
  * Was auf jeder Tabelle gilt.
@@ -182,6 +192,21 @@ const SPECS: Spec[] = [
     access: "owner",
     match: (c) => ({ episode_id: c.episodeId, entry_date: "2026-01-01" }),
     row: (c) => ({ episode_id: c.episodeId, entry_date: "2026-01-01", morning_score: 3 }),
+  },
+  {
+    // Hängt über `entries` an der Episode — dieselbe zweistufige Form wie
+    // `measurements`, und derselbe Grund für Sorgfalt: Ein falsch gesetzter
+    // Join liest in einer leeren Datenbank genauso wie ein richtiger.
+    table: "sessions",
+    access: "owner",
+    match: (c) => ({ entry_id: c.entryId, position: 0 }),
+    row: (c) => ({
+      entry_id: c.entryId,
+      position: 0,
+      activity_kind: "run",
+      duration_min: 30,
+      rpe: 5,
+    }),
   },
   {
     table: "self_tests",
@@ -274,6 +299,17 @@ async function main(): Promise<void> {
 
   // --- Deckt das Skript ab, was die Migration schützt?
   const geschuetzt = tablesWithPolicies();
+
+  // Eine leere Liste besteht jede Abdeckungsprüfung mühelos — und genau das
+  // ist einmal passiert: Ein kaputter Ausdruck fand nichts, und der Wächter
+  // meldete »alle 0 Tabellen abgedeckt«, grün. Eine Zahl unter der bekannten
+  // Untergrenze heisst deshalb: Die Migrationen wurden nicht gelesen.
+  if (geschuetzt.size < 8) {
+    throw new Error(
+      `Nur ${geschuetzt.size} Tabellen mit Regel in den Migrationen gefunden, mindestens 8 erwartet. ` +
+        `Vermutlich wurden die Dateien nicht gelesen — dann sagt diese Prüfung nichts aus.`,
+    );
+  }
   const geprueft = new Set(["episodes", ...SPECS.map((s) => s.table)]);
   const luecke = [...geschuetzt].filter((t) => !geprueft.has(t)).sort();
   record(
@@ -318,7 +354,17 @@ async function main(): Promise<void> {
   );
   if ("error" in key) throw new Error(`A kann keinen Massschlüssel anlegen: ${key.error}`);
 
-  const ctx: Ctx = { episodeId: episode.id, measureKeyId: key.id };
+  // Der Tageseintrag, an dem die Einheiten hängen. Vorab angelegt, weil seine
+  // Kennung gebraucht wird, bevor die Reihe der Prüfungen losläuft.
+  const eintrag = await findOrCreate(
+    a.client,
+    "entries",
+    { episode_id: episode.id, entry_date: "2026-01-01" },
+    { episode_id: episode.id, entry_date: "2026-01-01", morning_score: 3 },
+  );
+  if ("error" in eintrag) throw new Error(`A kann keinen Tageseintrag anlegen: ${eintrag.error}`);
+
+  const ctx: Ctx = { episodeId: episode.id, measureKeyId: key.id, entryId: eintrag.id };
 
   // --- B sieht die Episode von A nicht.
   const { data: bEpisodes } = await b.client.from("episodes").select("id");

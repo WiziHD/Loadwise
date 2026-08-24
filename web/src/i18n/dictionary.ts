@@ -59,6 +59,15 @@ interface Strings {
     duration: string;
     rpe: string;
     loadHint: string;
+    addSession: string;
+    removeSession: string;
+    sessionNumber: string;
+    everyday: string;
+    everydayHint: string;
+    everydaySitting: string;
+    everydayNormal: string;
+    everydayOnFeet: string;
+    everydayVeryActive: string;
     loadIncomplete: string;
     symptomIncomplete: string;
     futureDate: string;
@@ -182,7 +191,18 @@ export const DICTIONARY: Record<Locale, Strings> = {
       activity: "Activity",
       duration: "Minutes",
       rpe: "Effort",
-      loadHint: "Effort and minutes belong together. Either both or neither.",
+      loadHint: "A session needs all three. Two sessions in a day are two entries, not one long one.",
+      addSession: "Add a session",
+      removeSession: "Remove",
+      sessionNumber: "Session",
+      everyday: "On your feet otherwise",
+      // Says plainly that nothing computes with it. A field that quietly feeds
+      // no rule would be a question asked for nothing.
+      everydayHint: "Outside training. Recorded for your own record — no rule reads it yet, because how much load a day on your feet carries is not established.",
+      everydaySitting: "Mostly sitting",
+      everydayNormal: "Normal",
+      everydayOnFeet: "A lot on my feet",
+      everydayVeryActive: "On my feet all day",
       loadIncomplete: "Effort and minutes belong together — either fill in both or leave both empty.",
       symptomIncomplete: "A time on its own says nothing — either give a symptom score too, or leave the time blank.",
       futureDate: "That day has not happened yet.",
@@ -311,7 +331,16 @@ export const DICTIONARY: Record<Locale, Strings> = {
       activity: "Aktivität",
       duration: "Minuten",
       rpe: "Anstrengung",
-      loadHint: "Anstrengung und Minuten gehören zusammen. Entweder beides oder keines.",
+      loadHint: "Eine Einheit braucht alle drei Angaben. Zwei Einheiten an einem Tag sind zwei Einträge, nicht eine lange.",
+      addSession: "Einheit hinzufügen",
+      removeSession: "Entfernen",
+      sessionNumber: "Einheit",
+      everyday: "Sonst auf den Beinen",
+      everydayHint: "Ausserhalb des Trainings. Wird für dich festgehalten — noch liest keine Regel es, weil nicht belegt ist, wie viel Last ein Tag auf den Beinen trägt.",
+      everydaySitting: "Überwiegend gesessen",
+      everydayNormal: "Normal",
+      everydayOnFeet: "Viel auf den Beinen",
+      everydayVeryActive: "Den ganzen Tag auf den Beinen",
       loadIncomplete: "Anstrengung und Minuten gehören zusammen — entweder beides ausfüllen oder beides leer lassen.",
       symptomIncomplete: "Ein Zeitpunkt allein sagt nichts — entweder auch einen Beschwerdewert eintragen oder den Zeitpunkt leer lassen.",
       futureDate: "Dieser Tag war noch nicht.",

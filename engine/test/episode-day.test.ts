@@ -11,9 +11,9 @@ import { validateEpisodeStart } from "../src/validate.js";
 import type { Entry } from "../src/types.js";
 
 const ENTRIES: Entry[] = [
-  { date: "2026-03-15", morningScore: 4 },
-  { date: "2026-03-16", morningScore: 4 },
-  { date: "2026-03-20", morningScore: 3 },
+  { date: "2026-03-15", morningScore: 4, sessions: [] },
+  { date: "2026-03-16", morningScore: 4, sessions: [] },
+  { date: "2026-03-20", morningScore: 3, sessions: [] },
 ];
 
 describe("episodeDay", () => {

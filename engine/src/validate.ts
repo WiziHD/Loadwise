@@ -133,37 +133,36 @@ export function validateEntries(entries: Entry[]): ValidationResult {
       });
     }
 
-    const hasRpe = entry.rpe !== null && entry.rpe !== undefined;
-    const hasDuration = entry.durationMin !== null && entry.durationMin !== undefined;
+    // Jede Einheit des Tages einzeln. Ein Tag kann mehrere haben, und die
+    // Meldung muss sagen, WELCHE nicht stimmt — sonst sucht jemand in einem
+    // Doppeltag nach der falschen Zahl.
+    for (const [n, session] of entry.sessions.entries()) {
+      const wo = entry.sessions.length > 1 ? ` (Einheit ${n + 1})` : "";
 
-    if (hasRpe && !inRange(entry.rpe as number, 1, 10)) {
-      problems.push({
-        code: "rpe-out-of-range",
-        date: at,
-        field: "rpe",
-        message: `rpe must be between 1 and 10, got ${entry.rpe}`,
-      });
+      if (!inRange(session.rpe, 1, 10)) {
+        problems.push({
+          code: "rpe-out-of-range",
+          date: at,
+          field: "rpe",
+          message: `rpe must be between 1 and 10, got ${session.rpe}${wo}`,
+        });
+      }
+
+      if (!(session.durationMin > 0)) {
+        problems.push({
+          code: "duration-not-positive",
+          date: at,
+          field: "durationMin",
+          message: `durationMin must be greater than 0, got ${session.durationMin}${wo}`,
+        });
+      }
     }
 
-    if (hasDuration && !((entry.durationMin as number) > 0)) {
-      problems.push({
-        code: "duration-not-positive",
-        date: at,
-        field: "durationMin",
-        message: `durationMin must be greater than 0, got ${entry.durationMin}`,
-      });
-    }
-
-    // Half a session is not a session. Silently scoring it as a rest day
-    // would quietly bend the load curve downward.
-    if (hasRpe !== hasDuration) {
-      problems.push({
-        code: "load-incomplete",
-        date: at,
-        field: hasRpe ? "durationMin" : "rpe",
-        message: `A session needs both rpe and durationMin. Only ${hasRpe ? "rpe" : "durationMin"} was given.`,
-      });
-    }
+    // `load-incomplete` steht hier NICHT mehr. Eine halbe Einheit — Anstrengung
+    // ohne Minuten — ist seit `Session` nicht mehr darstellbar; der Typ verbietet
+    // sie. Der Code lebt weiter, weil er weiter gebraucht wird: an der Grenze,
+    // wo untypisierte Daten hereinkommen. `parseDiary` meldet ihn, siehe
+    // import.ts. Eine Prüfung hier wäre ein Zweig, der nie läuft.
 
     const hasSymptom = entry.symptomScore !== null && entry.symptomScore !== undefined;
     if (hasSymptom && !inRange(entry.symptomScore as number, 0, 10)) {

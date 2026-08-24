@@ -21,6 +21,7 @@
  */
 
 import { describe, expect, it } from "vitest";
+import { session } from "../src/fixtures.js";
 import { evaluateEpisode } from "../src/evaluate.js";
 import { profileFor } from "../src/profiles/registry.js";
 import type { Milestone } from "../src/progress.js";
@@ -30,10 +31,10 @@ const START = "2026-03-02";
 
 /** Four days, every field different from every other, so a swap shows up. */
 const ENTRIES: Entry[] = [
-  { date: "2026-03-02", morningScore: 5, activityKind: "run", durationMin: 30, rpe: 5, symptomScore: 4, symptomTiming: "after", note: null },
-  { date: "2026-03-03", morningScore: 3, activityKind: "cycle", durationMin: 60, rpe: 4, symptomScore: 2, symptomTiming: "during", note: null },
-  { date: "2026-03-04", morningScore: 1, activityKind: null, durationMin: null, rpe: null, symptomScore: null, symptomTiming: null, note: null },
-  { date: "2026-03-05", morningScore: 0, activityKind: "run", durationMin: 45, rpe: 6, symptomScore: 1, symptomTiming: "after", note: null },
+  { date: "2026-03-02", morningScore: 5, sessions: [session(5, 30, "run")], symptomScore: 4, symptomTiming: "after", note: null },
+  { date: "2026-03-03", morningScore: 3, sessions: [session(4, 60, "cycle")], symptomScore: 2, symptomTiming: "during", note: null },
+  { date: "2026-03-04", morningScore: 1, sessions: [], symptomScore: null, symptomTiming: null, note: null },
+  { date: "2026-03-05", morningScore: 0, sessions: [session(6, 45, "run")], symptomScore: 1, symptomTiming: "after", note: null },
 ];
 
 const goal = (id: string, over: Partial<Milestone>): Milestone => ({

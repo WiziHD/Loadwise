@@ -1,71 +1,122 @@
-import type { ActivityKind, Entry, SymptomTiming } from "loadwise-engine";
+import type { Entry, EverydayLoad, Session, SymptomTiming } from "loadwise-engine";
 import { supabaseServer } from "@/lib/supabase/server";
-import { toEntry, type EntryRow } from "./types";
+import { toEntry, type EntryRow, type SessionRow } from "./types";
 
 export type EntryInput = {
   date: string;
   morningScore: number;
-  activityKind: ActivityKind | null;
-  durationMin: number | null;
-  rpe: number | null;
+  sessions: Session[];
+  everydayLoad: EverydayLoad | null;
   symptomScore: number | null;
   symptomTiming: SymptomTiming | null;
   note: string | null;
 };
 
+/**
+ * Alle Tage einer Episode, jeder mit seinen Einheiten.
+ *
+ * Zwei Abfragen statt eines Joins: PostgREST liefert einen Join als
+ * verschachteltes Objekt, und das wäre eine dritte Beschreibung derselben
+ * Struktur — neben dem Zeilentyp und dem Motortyp. Zwei flache Abfragen und
+ * eine Zuordnung von Hand sind hier ehrlicher und leichter zu lesen.
+ *
+ * Bei neunzig Tagen sind das zwei Abfragen statt neunzig. Die Zuordnung selbst
+ * läuft über eine Map und ist linear.
+ */
 export async function listEntries(episodeId: string): Promise<Entry[]> {
   const supabase = await supabaseServer();
-  const { data, error } = await supabase
+
+  const { data: rows, error } = await supabase
     .from("entries")
     .select("*")
     .eq("episode_id", episodeId)
     .order("entry_date", { ascending: true });
 
   if (error !== null) throw new Error(error.message);
-  return ((data ?? []) as EntryRow[]).map(toEntry);
-}
+  const entries = (rows ?? []) as EntryRow[];
+  if (entries.length === 0) return [];
 
-export async function getEntry(episodeId: string, date: string): Promise<Entry | null> {
-  const supabase = await supabaseServer();
-  const { data, error } = await supabase
-    .from("entries")
+  const { data: sessionRows, error: sessionError } = await supabase
+    .from("sessions")
     .select("*")
-    .eq("episode_id", episodeId)
-    .eq("entry_date", date)
-    .maybeSingle();
+    .in("entry_id", entries.map((e) => e.id));
 
-  if (error !== null) throw new Error(error.message);
-  return data === null ? null : toEntry(data as EntryRow);
+  if (sessionError !== null) throw new Error(sessionError.message);
+
+  const byEntry = new Map<string, SessionRow[]>();
+  for (const row of (sessionRows ?? []) as SessionRow[]) {
+    const list = byEntry.get(row.entry_id);
+    if (list === undefined) byEntry.set(row.entry_id, [row]);
+    else list.push(row);
+  }
+
+  return entries.map((row) => toEntry(row, byEntry.get(row.id) ?? []));
 }
 
 /**
- * Writes the entry for one day, replacing whatever was there.
+ * Schreibt den Eintrag eines Tages und ersetzt, was dort stand.
  *
- * `upsert` on (episode_id, entry_date) rather than insert-or-update in two
- * steps. The unique constraint is the same rule the engine enforces — one
- * calendar day is one row — and letting the database decide avoids the race
- * where two tabs both find nothing and both insert.
+ * ---------------------------------------------------------------------------
+ * DIE EINHEITEN WERDEN ERSETZT, NICHT ERGÄNZT — UND DAS MUSS SICHTBAR SEIN.
  *
- * Editing yesterday is expected and allowed. People forget, and a diary that
- * only accepts today is a diary with holes in it.
+ * `upsert` auf (episode_id, entry_date) statt Suchen-und-dann-Schreiben in zwei
+ * Schritten. Dieselbe Regel, die der Motor durchsetzt — ein Kalendertag ist eine
+ * Zeile —, und die Datenbank entscheiden zu lassen vermeidet das Rennen, bei
+ * dem zwei Reiter beide nichts finden und beide anlegen.
+ *
+ * Die Einheiten des Tages werden danach gelöscht und neu geschrieben. Das ist
+ * die einzige Form, in der »diesen Tag ersetzen« widerspruchsfrei ist: Wer eine
+ * Einheit entfernt hat, muss sie los sein, und eine Zuordnung nach Position
+ * wäre bei zwei getauschten Einheiten stillschweigend falsch.
+ *
+ * Es ist deshalb Pflicht der Oberfläche, VORHER zu zeigen, was dasteht. Genau
+ * daran ist die erste Fassung gescheitert: Das Formular war immer leer, und ein
+ * nachgetragener Morgenwert löschte eine erfasste Trainingseinheit — gemeldet
+ * als »Gespeichert.«.
+ *
+ * Einen Tag nachträglich zu bearbeiten ist ausdrücklich vorgesehen. Menschen
+ * vergessen, und ein Tagebuch, das nur heute annimmt, ist ein Tagebuch mit
+ * Löchern.
+ * ---------------------------------------------------------------------------
  */
 export async function saveEntry(episodeId: string, input: EntryInput): Promise<void> {
   const supabase = await supabaseServer();
 
-  const { error } = await supabase.from("entries").upsert(
-    {
-      episode_id: episodeId,
-      entry_date: input.date,
-      morning_score: input.morningScore,
-      activity_kind: input.activityKind,
-      duration_min: input.durationMin,
-      rpe: input.rpe,
-      symptom_score: input.symptomScore,
-      symptom_timing: input.symptomTiming,
-      note: input.note,
-    },
-    { onConflict: "episode_id,entry_date" },
-  );
+  const { data, error } = await supabase
+    .from("entries")
+    .upsert(
+      {
+        episode_id: episodeId,
+        entry_date: input.date,
+        morning_score: input.morningScore,
+        everyday_load: input.everydayLoad,
+        symptom_score: input.symptomScore,
+        symptom_timing: input.symptomTiming,
+        note: input.note,
+      },
+      { onConflict: "episode_id,entry_date" },
+    )
+    .select("id")
+    .single();
 
   if (error !== null) throw new Error(error.message);
+  const entryId = (data as { id: string }).id;
+
+  // Erst weg, dann neu. Der Löschvorgang trifft ausschliesslich die Einheiten
+  // GENAU DIESES Tages, und der Aufrufer hat sie vorher angezeigt bekommen.
+  const { error: clearError } = await supabase.from("sessions").delete().eq("entry_id", entryId);
+  if (clearError !== null) throw new Error(clearError.message);
+
+  if (input.sessions.length === 0) return;
+
+  const { error: insertError } = await supabase.from("sessions").insert(
+    input.sessions.map((s, position) => ({
+      entry_id: entryId,
+      position,
+      activity_kind: s.activityKind,
+      duration_min: s.durationMin,
+      rpe: s.rpe,
+    })),
+  );
+  if (insertError !== null) throw new Error(insertError.message);
 }

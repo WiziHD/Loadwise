@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { validateAll, validateEntries, validateTests } from "../src/validate.js";
 import { evaluateAsymmetry } from "../src/rules/asymmetry.js";
 import { DEFAULT_CONFIG } from "../src/types.js";
-import { steadyRecovery, symmetricTests } from "../src/fixtures.js";
+import { steadyRecovery, symmetricTests, session } from "../src/fixtures.js";
 import type { Entry, SelfTest } from "../src/types.js";
 
 const codesOf = (problems: { code: string }[]): string[] => problems.map((p) => p.code);
@@ -13,7 +13,7 @@ describe("entry validation", () => {
   });
 
   it("rejects an impossible date", () => {
-    const result = validateEntries([{ date: "2026-02-30", morningScore: 2 }]);
+    const result = validateEntries([{ date: "2026-02-30", morningScore: 2, sessions: [] }]);
     expect(codesOf(result.problems)).toContain("invalid-date");
   });
 
@@ -21,54 +21,59 @@ describe("entry validation", () => {
     // Before this check, the later row silently won and the earlier one
     // vanished from the baseline without a trace.
     const entries: Entry[] = [
-      { date: "2026-03-02", morningScore: 2 },
-      { date: "2026-03-02", morningScore: 8 },
+      { date: "2026-03-02", morningScore: 2, sessions: [] },
+      { date: "2026-03-02", morningScore: 8, sessions: [] },
     ];
     expect(codesOf(validateEntries(entries).problems)).toContain("duplicate-date");
   });
 
   it("rejects a morning score outside zero to ten", () => {
-    expect(codesOf(validateEntries([{ date: "2026-03-02", morningScore: 47 }]).problems))
+    expect(codesOf(validateEntries([{ date: "2026-03-02", morningScore: 47, sessions: [] }]).problems))
       .toContain("morning-out-of-range");
-    expect(codesOf(validateEntries([{ date: "2026-03-02", morningScore: -1 }]).problems))
+    expect(codesOf(validateEntries([{ date: "2026-03-02", morningScore: -1, sessions: [] }]).problems))
       .toContain("morning-out-of-range");
   });
 
   it("rejects an effort rating outside one to ten", () => {
-    const entries: Entry[] = [{ date: "2026-03-02", morningScore: 2, rpe: 12, durationMin: 30 }];
+    const entries: Entry[] = [{ date: "2026-03-02", morningScore: 2, sessions: [session(12, 30)] }];
     expect(codesOf(validateEntries(entries).problems)).toContain("rpe-out-of-range");
   });
 
-  it("rejects half a session", () => {
-    // Effort without duration would score as a rest day and quietly bend the
-    // load curve downward.
-    const onlyRpe: Entry[] = [{ date: "2026-03-02", morningScore: 2, rpe: 6 }];
-    const onlyDuration: Entry[] = [{ date: "2026-03-02", morningScore: 2, durationMin: 40 }];
-    expect(codesOf(validateEntries(onlyRpe).problems)).toContain("load-incomplete");
-    expect(codesOf(validateEntries(onlyDuration).problems)).toContain("load-incomplete");
+  it("cannot be given half a session at all", () => {
+    // Früher stand hier eine Prüfung auf »Anstrengung ohne Minuten«. Die
+    // braucht es nicht mehr: `Session` verlangt alle drei Angaben, der Typ
+    // verbietet die halbe Einheit also. Ein Test dafür wäre ein Test gegen den
+    // Compiler.
+    //
+    // Aus einer CSV-Datei kann sie trotzdem kommen, und dort wird sie gemeldet
+    // — siehe import.test.ts und problems.test.ts.
+    const ganz: Entry[] = [
+      { date: "2026-03-02", morningScore: 2, sessions: [session(6, 40)] },
+    ];
+    expect(codesOf(validateEntries(ganz).problems)).not.toContain("load-incomplete");
   });
 
   it("rejects a zero-length session", () => {
-    const entries: Entry[] = [{ date: "2026-03-02", morningScore: 2, rpe: 6, durationMin: 0 }];
+    const entries: Entry[] = [{ date: "2026-03-02", morningScore: 2, sessions: [session(6, 0)] }];
     expect(codesOf(validateEntries(entries).problems)).toContain("duration-not-positive");
   });
 
   it("rejects a symptom score outside zero to ten", () => {
     const entries: Entry[] = [
-      { date: "2026-03-02", morningScore: 2, symptomScore: 15, symptomTiming: "during" },
+      { date: "2026-03-02", morningScore: 2, sessions: [], symptomScore: 15, symptomTiming: "during" },
     ];
     expect(codesOf(validateEntries(entries).problems)).toContain("symptom-out-of-range");
   });
 
   it("rejects a symptom timing with no score to weight it", () => {
     const entries: Entry[] = [
-      { date: "2026-03-02", morningScore: 2, symptomTiming: "during" },
+      { date: "2026-03-02", morningScore: 2, sessions: [], symptomTiming: "during" },
     ];
     expect(codesOf(validateEntries(entries).problems)).toContain("symptom-timing-without-score");
   });
 
   it("names the day and the field, not just the fact", () => {
-    const result = validateEntries([{ date: "2026-03-02", morningScore: 47 }]);
+    const result = validateEntries([{ date: "2026-03-02", morningScore: 47, sessions: [] }]);
     const problem = result.problems[0]!;
     expect(problem.date).toBe("2026-03-02");
     expect(problem.field).toBe("morningScore");
@@ -77,7 +82,7 @@ describe("entry validation", () => {
 
   it("stops looking at a row whose date is unusable", () => {
     // Findings on an unanchored row could not be shown anywhere sensible.
-    const result = validateEntries([{ date: "not-a-date", morningScore: 99 }]);
+    const result = validateEntries([{ date: "not-a-date", morningScore: 99, sessions: [] }]);
     expect(codesOf(result.problems)).toEqual(["invalid-date"]);
   });
 });
@@ -146,7 +151,7 @@ describe("self-test validation", () => {
 describe("combined validation", () => {
   it("collects findings from both sources", () => {
     const result = validateAll(
-      [{ date: "2026-03-02", morningScore: 47 }],
+      [{ date: "2026-03-02", morningScore: 47, sessions: [] }],
       [{ type: "calf_raise", date: "2026-03-02", involved: 5, uninvolved: -1 }],
     );
     expect(result.ok).toBe(false);

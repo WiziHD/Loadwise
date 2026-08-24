@@ -18,6 +18,15 @@ type Strings = {
   duration: string;
   rpe: string;
   loadHint: string;
+  addSession: string;
+  removeSession: string;
+  sessionNumber: string;
+  everyday: string;
+  everydayHint: string;
+  everydaySitting: string;
+  everydayNormal: string;
+  everydayOnFeet: string;
+  everydayVeryActive: string;
   loadIncomplete: string;
   symptomIncomplete: string;
   futureDate: string;
@@ -34,26 +43,29 @@ type Strings = {
 };
 
 /** Exactly the fields of a diary day, as strings — because that is what a form holds. */
+/** Eine Einheit im Formular — als Text, denn das ist, was ein Feld hält. */
+type SessionDraft = { activityKind: string; durationMin: string; rpe: string };
+
 type Draft = {
   date: string;
   morningScore: string;
-  activityKind: string;
-  durationMin: string;
-  rpe: string;
+  sessions: SessionDraft[];
+  everydayLoad: string;
   symptomScore: string;
   symptomTiming: string;
   note: string;
 };
 
+const LEERE_EINHEIT: SessionDraft = { activityKind: "", durationMin: "", rpe: "" };
+
 const BLANK = {
   morningScore: "",
-  activityKind: "",
-  durationMin: "",
-  rpe: "",
+  sessions: [] as SessionDraft[],
+  everydayLoad: "",
   symptomScore: "",
   symptomTiming: "",
   note: "",
-} as const;
+};
 
 const asText = (n: number | null | undefined): string =>
   n === null || n === undefined ? "" : String(n);
@@ -65,9 +77,12 @@ function draftFor(entry: Entry | undefined, date: string): Draft {
   return {
     date,
     morningScore: asText(entry.morningScore),
-    activityKind: entry.activityKind ?? "",
-    durationMin: asText(entry.durationMin),
-    rpe: asText(entry.rpe),
+    sessions: entry.sessions.map((s) => ({
+      activityKind: s.activityKind,
+      durationMin: String(s.durationMin),
+      rpe: String(s.rpe),
+    })),
+    everydayLoad: entry.everydayLoad ?? "",
     symptomScore: asText(entry.symptomScore),
     symptomTiming: entry.symptomTiming ?? "",
     note: entry.note ?? "",
@@ -91,6 +106,18 @@ function deviceToday(): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
+
+const quietButton: React.CSSProperties = {
+  minHeight: "2.75rem",
+  padding: "0.3rem 0.9rem",
+  fontSize: "0.85rem",
+  borderRadius: "0.375rem",
+  border: "1px solid var(--line)",
+  background: "transparent",
+  color: "var(--muted)",
+  cursor: "pointer",
+  justifySelf: "start",
+};
 
 const field: React.CSSProperties = {
   // 44 px ist die kleinste Fläche, die ein Daumen zuverlässig trifft — die
@@ -204,6 +231,31 @@ export function EntryForm({
     if (state !== "idle") setState("idle");
   };
 
+  const setSession = (index: number, key: keyof SessionDraft, value: string) => {
+    setDraft((d) => ({
+      ...d,
+      sessions: d.sessions.map((s, i) => (i === index ? { ...s, [key]: value } : s)),
+    }));
+    if (state !== "idle") setState("idle");
+  };
+
+  const addSession = () => {
+    setDraft((d) => ({ ...d, sessions: [...d.sessions, { ...LEERE_EINHEIT }] }));
+    if (state !== "idle") setState("idle");
+  };
+
+  /**
+   * Eine Einheit entfernen.
+   *
+   * Ohne Rückfrage: Sie ist erst gespeichert, wenn jemand auf Speichern tippt,
+   * und bis dahin steht sie nur im Formular. Eine Rückfrage für etwas, das noch
+   * nirgends steht, gewöhnt Leute daran, Rückfragen wegzuklicken.
+   */
+  const removeSession = (index: number) => {
+    setDraft((d) => ({ ...d, sessions: d.sessions.filter((_, i) => i !== index) }));
+    if (state !== "idle") setState("idle");
+  };
+
   /** Switching the day means editing a different day, so the fields follow it. */
   const setDate = (date: string) => {
     setDraft(draftFor(byDate.get(date), date));
@@ -258,9 +310,16 @@ export function EntryForm({
             result = await saveEntryAction(locale, episodeId, {
               date: draft.date,
               morningScore: asNumber(draft.morningScore),
-              activityKind: (draft.activityKind === "" ? null : draft.activityKind) as ActivityKind | null,
-              durationMin: asNumber(draft.durationMin),
-              rpe: asNumber(draft.rpe),
+              // Leere Zeilen fliegen raus: Wer auf »Einheit hinzufügen« tippt
+              // und es sich anders überlegt, hat keine halbe Einheit gemeint.
+              sessions: draft.sessions
+                .filter((s) => s.activityKind !== "" || s.durationMin !== "" || s.rpe !== "")
+                .map((s) => ({
+                  activityKind: s.activityKind === "" ? null : s.activityKind,
+                  durationMin: asNumber(s.durationMin),
+                  rpe: asNumber(s.rpe),
+                })),
+              everydayLoad: draft.everydayLoad === "" ? null : draft.everydayLoad,
               symptomScore: asNumber(draft.symptomScore),
               symptomTiming: (draft.symptomTiming === "" ? null : draft.symptomTiming) as SymptomTiming | null,
               note: draft.note.trim() === "" ? null : draft.note.trim(),
@@ -317,53 +376,88 @@ export function EntryForm({
           {strings.activity}
         </legend>
 
-        <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit, minmax(9rem, 1fr))" }}>
-          <label style={{ display: "grid", gap: "0.3rem" }}>
-            <span style={{ fontSize: "0.85rem" }}>{strings.activity}</span>
-            <select
-              value={draft.activityKind}
-              onChange={(e) => set("activityKind", e.target.value)}
-              style={field}
-            >
-              <option value="">—</option>
-              {ALL_ACTIVITY_KINDS.map((a) => (
-                <option key={a} value={a}>{activityLabels[a]}</option>
-              ))}
-            </select>
-          </label>
+        {draft.sessions.map((s, i) => (
+          <div key={i} style={{ display: "grid", gap: "0.5rem", marginBottom: "0.9rem" }}>
+            {draft.sessions.length > 1 && (
+              <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                {strings.sessionNumber} {i + 1}
+              </span>
+            )}
 
-          <label style={{ display: "grid", gap: "0.3rem" }}>
-            <span style={{ fontSize: "0.85rem" }}>{strings.duration}</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={1}
-              step={1}
-              value={draft.durationMin}
-              onChange={(e) => set("durationMin", e.target.value)}
-              style={field}
-            />
-          </label>
+            <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit, minmax(9rem, 1fr))" }}>
+              <label style={{ display: "grid", gap: "0.3rem" }}>
+                <span style={{ fontSize: "0.85rem" }}>{strings.activity}</span>
+                <select
+                  value={s.activityKind}
+                  onChange={(e) => setSession(i, "activityKind", e.target.value)}
+                  style={field}
+                >
+                  <option value="">—</option>
+                  {ALL_ACTIVITY_KINDS.map((a) => (
+                    <option key={a} value={a}>{activityLabels[a]}</option>
+                  ))}
+                </select>
+              </label>
 
-          <label style={{ display: "grid", gap: "0.3rem" }}>
-            <span style={{ fontSize: "0.85rem" }}>{strings.rpe}</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={10}
-              step={1}
-              value={draft.rpe}
-              onChange={(e) => set("rpe", e.target.value)}
-              style={field}
-            />
-          </label>
-        </div>
+              <label style={{ display: "grid", gap: "0.3rem" }}>
+                <span style={{ fontSize: "0.85rem" }}>{strings.duration}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  step={1}
+                  value={s.durationMin}
+                  onChange={(e) => setSession(i, "durationMin", e.target.value)}
+                  style={field}
+                />
+              </label>
+
+              <label style={{ display: "grid", gap: "0.3rem" }}>
+                <span style={{ fontSize: "0.85rem" }}>{strings.rpe}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={s.rpe}
+                  onChange={(e) => setSession(i, "rpe", e.target.value)}
+                  style={field}
+                />
+              </label>
+            </div>
+
+            <button type="button" onClick={() => removeSession(i)} style={quietButton}>
+              {strings.removeSession}
+            </button>
+          </div>
+        ))}
+
+        <button type="button" onClick={addSession} style={quietButton}>
+          {strings.addSession}
+        </button>
 
         <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: "0.7rem 0 0" }}>
           {strings.loadHint}
         </p>
       </fieldset>
+
+      <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
+        <label htmlFor="everydayLoad" style={{ fontWeight: 600 }}>{strings.everyday}</label>
+        <select
+          id="everydayLoad"
+          value={draft.everydayLoad}
+          onChange={(e) => set("everydayLoad", e.target.value)}
+          style={field}
+        >
+          <option value="">—</option>
+          <option value="sitting">{strings.everydaySitting}</option>
+          <option value="normal">{strings.everydayNormal}</option>
+          <option value="on-feet">{strings.everydayOnFeet}</option>
+          <option value="very-active">{strings.everydayVeryActive}</option>
+        </select>
+        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.everydayHint}</span>
+      </div>
 
       <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit, minmax(9rem, 1fr))", maxWidth: "26rem" }}>
         <label style={{ display: "grid", gap: "0.3rem" }}>

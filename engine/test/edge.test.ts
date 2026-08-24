@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { addDays, diffDays } from "../src/dates.js";
 import { buildIndex, entriesBetween, loadAt } from "../src/episode.js";
 import { evaluateEpisode } from "../src/evaluate.js";
-import { build, START, steadyRecovery } from "../src/fixtures.js";
+import { build, START, steadyRecovery, session } from "../src/fixtures.js";
 import { evaluateAsymmetry } from "../src/rules/asymmetry.js";
 import { DEFAULT_CONFIG, type Entry, type SelfTest } from "../src/types.js";
 
@@ -21,7 +21,7 @@ describe("empty and tiny inputs", () => {
 
   it("survives a single entry", () => {
     const result = evaluateEpisode({
-      entries: [{ date: START, morningScore: 3, rpe: 5, durationMin: 30 }],
+      entries: [{ date: START, morningScore: 3, sessions: [session(5, 30)] }],
     });
     expect(result.flags).toEqual([]);
     expect(result.pending.length).toBeGreaterThan(0);
@@ -70,7 +70,7 @@ describe("gaps and boundaries", () => {
   it("handles a gap of a full year without inventing anything", () => {
     const before = steadyRecovery(28);
     const after = build(
-      Array.from({ length: 28 }, () => ({ rpe: 5, durationMin: 30, morningScore: 3 })),
+      Array.from({ length: 28 }, () => ({ sessions: [session(5, 30)], morningScore: 3 })),
       addDays(START, 400),
     );
     const entries: Entry[] = [...before, ...after];
@@ -82,7 +82,7 @@ describe("gaps and boundaries", () => {
 
   it("spans a year boundary correctly", () => {
     const entries = build(
-      Array.from({ length: 40 }, () => ({ rpe: 5, durationMin: 30, morningScore: 2 })),
+      Array.from({ length: 40 }, () => ({ sessions: [session(5, 30)], morningScore: 2 })),
       "2026-12-10",
     );
     const index = buildIndex(entries);
@@ -110,7 +110,7 @@ describe("bad input is reported, not swallowed", () => {
   it("surfaces problems alongside whatever verdicts were still possible", () => {
     const entries: Entry[] = [
       ...steadyRecovery(30),
-      { date: "2026-02-30", morningScore: 3 },
+      { date: "2026-02-30", morningScore: 3, sessions: [] },
     ];
     const result = evaluateEpisode({ entries });
     expect(result.problems.length).toBeGreaterThan(0);
@@ -120,7 +120,7 @@ describe("bad input is reported, not swallowed", () => {
   it("still returns verdicts so the caller can decide what to do", () => {
     const entries: Entry[] = [
       ...steadyRecovery(40),
-      { date: addDays(START, 41), morningScore: 99 },
+      { date: addDays(START, 41), morningScore: 99, sessions: [] },
     ];
     const result = evaluateEpisode({ entries });
     expect(result.problems.length).toBeGreaterThan(0);

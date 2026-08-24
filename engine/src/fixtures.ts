@@ -21,6 +21,7 @@ import type {
   EpisodeContext,
   SelfTest,
   SymptomTiming,
+  Session,
 } from "./types.js";
 
 export const START: DateStr = "2026-03-02"; // a Monday
@@ -51,13 +52,31 @@ export interface DayPlan {
   symptomTiming?: SymptomTiming;
 }
 
+/**
+ * Eine Einheit, kurz geschrieben.
+ *
+ * Für Szenarien und Tests. Die Reihenfolge ist Anstrengung, dann Minuten —
+ * so, wie man einen Trainingstag beschreibt (»sechs, vierzig Minuten«), und
+ * nicht wie die Datenbank die Spalten sortiert.
+ */
+export const session = (
+  rpe: number,
+  durationMin: number,
+  activityKind: ActivityKind = "run",
+): Session => ({ activityKind, durationMin, rpe });
+
 export function build(plans: DayPlan[], start: DateStr = START): Entry[] {
   return plans.map((plan, i) => ({
     date: addDays(start, i),
     morningScore: plan.morningScore,
-    activityKind: plan.rpe ? (plan.activity ?? "run") : null,
-    durationMin: plan.durationMin ?? null,
-    rpe: plan.rpe ?? null,
+    // Ein Plan beschreibt höchstens eine Einheit — so waren alle fünfzig
+    // Szenarien geschrieben. Sie werden dadurch zu einer Liste mit null oder
+    // einem Eintrag, und die Summe ist derselbe Wert wie vorher. Die
+    // Golden-Datei muss deshalb byteweise gleich bleiben.
+    sessions:
+      plan.rpe && plan.durationMin
+        ? [{ activityKind: plan.activity ?? "run", durationMin: plan.durationMin, rpe: plan.rpe }]
+        : [],
     symptomScore: plan.symptomScore ?? null,
     symptomTiming: plan.symptomTiming ?? null,
   }));

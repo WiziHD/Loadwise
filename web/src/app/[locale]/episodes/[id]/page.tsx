@@ -191,15 +191,15 @@ function sideLabel(side: string, s: ReturnType<typeof t>): string {
  * engine draws exactly the same distinction, and the page must not blur it.
  */
 function activitySummary(entry: Entry, s: ReturnType<typeof t>): string {
-  // No activity at all is a rest day, and saying so is the point: a blank cell
-  // reads as a gap in the diary, and the engine draws exactly that distinction.
-  if (entry.activityKind == null) return s.diary.restDay;
+  // Kein Eintrag heisst Ruhetag, und das zu sagen ist der Punkt: Eine leere
+  // Zelle liest sich wie eine Lücke im Tagebuch, und der Motor unterscheidet
+  // genau das.
+  if (entry.sessions.length === 0) return s.diary.restDay;
 
-  // But an activity WITHOUT a session is still an activity. This used to print
-  // "no activity" for a recorded walk, because the check demanded all three
-  // fields — turning something the person wrote down into something they
-  // apparently did not.
-  if (entry.rpe == null || entry.durationMin == null) return s.activities[entry.activityKind];
-
-  return `${s.activities[entry.activityKind]} ${entry.durationMin}′ · ${s.entry.rpe} ${entry.rpe}`;
+  // Jede Einheit einzeln. Ein Tag mit zwei Einheiten zeigt beide — sie
+  // zusammenzufassen würde denselben Tag wie einen einzelnen langen aussehen
+  // lassen, und der Unterschied ist genau der, um den es hier ging.
+  return entry.sessions
+    .map((session) => `${s.activities[session.activityKind]} ${session.durationMin}′ · ${s.entry.rpe} ${session.rpe}`)
+    .join(" + ");
 }

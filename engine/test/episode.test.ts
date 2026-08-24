@@ -12,12 +12,13 @@ import { describe, expect, it } from "vitest";
 import { addDays } from "../src/dates.js";
 import { buildIndex, daysCovered, entriesBetween, loadAt, loadBetween } from "../src/episode.js";
 import { evaluateEpisode } from "../src/evaluate.js";
-import { START, steadyRecovery } from "../src/fixtures.js";
+import { START, steadyRecovery, session } from "../src/fixtures.js";
 import type { Entry } from "../src/types.js";
 
 const day = (offset: number, over: Partial<Entry> = {}): Entry => ({
   date: addDays(START, offset),
   morningScore: 2,
+  sessions: [],
   ...over,
 });
 
@@ -25,8 +26,8 @@ describe("the index holds one row per day", () => {
   it("collapses a duplicated date instead of carrying it twice", () => {
     const index = buildIndex([
       day(0),
-      day(1, { rpe: 6, durationMin: 40 }),
-      day(1, { rpe: 6, durationMin: 40 }),
+      day(1, { sessions: [session(6, 40)] }),
+      day(1, { sessions: [session(6, 40)] }),
       day(2),
     ]);
     expect(index.entries).toHaveLength(3);
@@ -34,10 +35,10 @@ describe("the index holds one row per day", () => {
   });
 
   it("does not count a duplicated session's load twice", () => {
-    const single = buildIndex([day(0, { rpe: 6, durationMin: 40 })]);
+    const single = buildIndex([day(0, { sessions: [session(6, 40)] })]);
     const doubled = buildIndex([
-      day(0, { rpe: 6, durationMin: 40 }),
-      day(0, { rpe: 6, durationMin: 40 }),
+      day(0, { sessions: [session(6, 40)] }),
+      day(0, { sessions: [session(6, 40)] }),
     ]);
     const range = { from: START, to: START };
     expect(loadBetween(doubled, range.from, range.to)).toBe(
@@ -58,7 +59,7 @@ describe("the index holds one row per day", () => {
   it("drops an impossible date at the door", () => {
     const index = buildIndex([
       day(0),
-      { date: "2026-03-32", morningScore: 3 },
+      { date: "2026-03-32", morningScore: 3, sessions: [] },
       day(1),
     ]);
     expect(index.entries.map((e) => e.date)).not.toContain("2026-03-32");
@@ -70,7 +71,7 @@ describe("the index holds one row per day", () => {
     // one could emit a verdict for a day nobody ever lived.
     const entries: Entry[] = [
       ...steadyRecovery(40),
-      { date: "2026-03-32", morningScore: 3, rpe: 6, durationMin: 40 },
+      { date: "2026-03-32", morningScore: 3, sessions: [session(6, 40)] },
     ];
     const result = evaluateEpisode({ entries });
     expect(result.flags.map((f) => f.forDate)).not.toContain("2026-03-32");
@@ -95,7 +96,7 @@ describe("the index holds one row per day", () => {
   });
 
   it("survives an index with no usable rows at all", () => {
-    const index = buildIndex([{ date: "nonsense", morningScore: 3 }]);
+    const index = buildIndex([{ date: "nonsense", morningScore: 3, sessions: [] }]);
     expect(index.entries).toEqual([]);
     expect(index.first).toBeNull();
     expect(index.last).toBeNull();

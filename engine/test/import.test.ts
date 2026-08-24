@@ -7,6 +7,7 @@
  */
 
 import { describe, expect, it } from "vitest";
+import { session } from "../src/fixtures.js";
 import { parseDiary } from "../src/import.js";
 import { evaluateEpisode } from "../src/evaluate.js";
 import { validateEntries } from "../src/validate.js";
@@ -25,14 +26,12 @@ describe("diary import", () => {
     expect(entries[0]).toMatchObject({
       date: "2026-08-21",
       morningScore: 3,
-      activityKind: "run",
-      durationMin: 30,
-      rpe: 5,
+      sessions: [session(5, 30, "run")],
       symptomScore: 4,
       symptomTiming: "after",
     });
     // A rest day: only the two fields that matter.
-    expect(entries[1]).toMatchObject({ date: "2026-08-22", morningScore: 4, activityKind: null });
+    expect(entries[1]).toMatchObject({ date: "2026-08-22", morningScore: 4, sessions: [] });
   });
 
   it("reads the semicolon dialect a German spreadsheet produces", () => {
@@ -40,7 +39,7 @@ describe("diary import", () => {
       ["datum;morgen;aktivitaet;minuten;anstrengung", "2026-08-21;3;rad;40;6"].join("\r\n"),
     );
     expect(problems).toEqual([]);
-    expect(entries[0]).toMatchObject({ activityKind: "cycle", durationMin: 40, rpe: 6 });
+    expect(entries[0]).toMatchObject({ sessions: [session(6, 40, "cycle")] });
   });
 
   it("survives a byte-order mark and blank lines", () => {
@@ -56,7 +55,7 @@ describe("diary import", () => {
       ["morgen,notiz,datum", "3,schlecht geschlafen,2026-08-21"].join("\n"),
     );
     expect(problems).toEqual([]);
-    expect(entries[0]).toMatchObject({ date: "2026-08-21", morningScore: 3, note: "schlecht geschlafen" });
+    expect(entries[0]).toMatchObject({ date: "2026-08-21", morningScore: 3, sessions: [], note: "schlecht geschlafen" });
   });
 
   it("accepts German and English labels alike", () => {

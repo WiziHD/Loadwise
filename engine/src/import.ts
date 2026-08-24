@@ -18,6 +18,7 @@ import type {
   DateStr,
   Entry,
   SelfTest,
+  Session,
   SymptomTiming,
   TestType,
 } from "./types.js";
@@ -183,12 +184,53 @@ export function parseDiary(text: string): ImportResult {
 
     const note = at("note");
 
+    const durationMin = numeric("durationMin", "minuten");
+    const rpe = numeric("rpe", "anstrengung");
+
+    // ---------------------------------------------------------------------
+    // HIER lebt `load-incomplete`, und nur noch hier.
+    //
+    // Der Typ `Session` verlangt alle drei Angaben, eine halbe Einheit ist im
+    // Motor also nicht mehr darstellbar. Eine CSV-Datei kann sie trotzdem
+    // enthalten — jemand hat die Anstrengung eingetragen und die Minuten
+    // vergessen —, und dann muss sie GEMELDET werden. Sie stillschweigend als
+    // Ruhetag zu zählen, bögest die Lastkurve nach unten, ohne ein Wort zu
+    // sagen: der Standardfehler dieses Projekts in anderem Gewand.
+    //
+    // Auch eine Einheit ohne Aktivität ist keine: Der Gewebefaktor hätte nichts
+    // nachzuschlagen, und die Last liefe gegen einen Standardwert, den niemand
+    // gewählt hat.
+    // ---------------------------------------------------------------------
+    const sessions: Session[] = [];
+
+    if (durationMin !== null || rpe !== null) {
+      if (durationMin === null || rpe === null) {
+        problems.push(
+          problem(
+            "load-incomplete",
+            date,
+            rpe !== null ? "minuten" : "anstrengung",
+            `Zeile ${i + 1}: Eine Einheit braucht Minuten UND Anstrengung. Nur ${rpe !== null ? "die Anstrengung" : "die Minuten"} steht da.`,
+          ),
+        );
+      } else if (activityKind === null) {
+        problems.push(
+          problem(
+            "load-incomplete",
+            date,
+            "aktivitaet",
+            `Zeile ${i + 1}: Eine Einheit braucht eine Aktivität — sonst ist nicht bekannt, welches Gewebe sie belastet.`,
+          ),
+        );
+      } else {
+        sessions.push({ activityKind, durationMin, rpe });
+      }
+    }
+
     entries.push({
       date,
       morningScore: morning,
-      activityKind,
-      durationMin: numeric("durationMin", "minuten"),
-      rpe: numeric("rpe", "anstrengung"),
+      sessions,
       symptomScore: numeric("symptomScore", "beschwerden"),
       symptomTiming,
       note: note === "" ? null : note,

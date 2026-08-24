@@ -21,6 +21,7 @@ import type {
   SymptomTiming,
   TestType,
   Unit,
+  EverydayLoad,
 } from "loadwise-engine";
 import type { Measurement } from "loadwise-engine";
 
@@ -41,12 +42,30 @@ export interface EntryRow {
   episode_id: string;
   entry_date: string;
   morning_score: number;
-  activity_kind: ActivityKind | null;
-  duration_min: number | null;
-  rpe: number | null;
+  /** Siehe EverydayLoad im Motor: erfasst, von keiner Regel gelesen. */
+  everyday_load: EverydayLoad | null;
   symptom_score: number | null;
   symptom_timing: SymptomTiming | null;
   note: string | null;
+}
+
+/**
+ * Eine Einheit, so wie die Datenbank sie hält.
+ *
+ * Eigene Tabelle statt Spalten auf `entries`: Ein Tag hat null bis mehrere
+ * Einheiten, und drei feste Spalten waren genau die Grenze, an der jemand, der
+ * morgens läuft und abends Kraft macht, die Hälfte seines Tages verlor.
+ *
+ * Alle drei Angaben sind Pflicht — hier wie im Typ `Session` des Motors. Die
+ * halbe Einheit ist damit nicht mehr darstellbar.
+ */
+export interface SessionRow {
+  id: string;
+  entry_id: string;
+  position: number;
+  activity_kind: ActivityKind;
+  duration_min: number;
+  rpe: number;
 }
 
 export interface SelfTestRow {
@@ -82,13 +101,26 @@ export interface MeasurementRow {
 // and why nothing else in the app is allowed to construct an `Entry` by hand.
 // ---------------------------------------------------------------------------
 
-export function toEntry(row: EntryRow): Entry {
+/**
+ * Eine Tageszeile plus ihre Einheiten.
+ *
+ * Die Einheiten kommen getrennt herein, weil sie aus einer eigenen Tabelle
+ * stammen. Sortiert nach `position`: Ein Bericht soll den Tag in der
+ * Reihenfolge zeigen, in der er stattgefunden hat, nicht in der, in der die
+ * Datenbank die Zeilen zurückgab.
+ */
+export function toEntry(row: EntryRow, sessions: SessionRow[] = []): Entry {
   return {
     date: row.entry_date,
     morningScore: row.morning_score,
-    activityKind: row.activity_kind,
-    durationMin: row.duration_min,
-    rpe: row.rpe,
+    sessions: [...sessions]
+      .sort((a, b) => a.position - b.position)
+      .map((s) => ({
+        activityKind: s.activity_kind,
+        durationMin: s.duration_min,
+        rpe: s.rpe,
+      })),
+    everydayLoad: row.everyday_load,
     symptomScore: row.symptom_score,
     symptomTiming: row.symptom_timing,
     note: row.note,

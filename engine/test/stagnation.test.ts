@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildIndex } from "../src/episode.js";
-import { build, plateau, steadyRecovery, tooShort } from "../src/fixtures.js";
+import { build, plateau, steadyRecovery, tooShort, session } from "../src/fixtures.js";
 import { evaluateBaselineDrift } from "../src/rules/baselineDrift.js";
 import { evaluateLoadSpike } from "../src/rules/loadSpike.js";
 import { evaluateResponse24h } from "../src/rules/response24h.js";
@@ -29,8 +29,8 @@ describe("stagnation rule", () => {
   it("says nothing when the episode is old but the windows are empty", () => {
     // Long enough on the calendar, too thin in the two windows that matter.
     const entries: Entry[] = [
-      { date: "2026-03-02", morningScore: 5 },
-      { date: "2026-05-20", morningScore: 5 },
+      { date: "2026-03-02", morningScore: 5, sessions: [] },
+      { date: "2026-05-20", morningScore: 5, sessions: [] },
     ];
     const result = run(entries, "2026-05-20");
     expect(result.status).toBe("insufficient");
@@ -54,7 +54,7 @@ describe("stagnation rule", () => {
     // who has already recovered.
     const entries = build(
       Array.from({ length: 84 }, (_, i) =>
-        i % 7 < 4 ? { rpe: 5, durationMin: 35, morningScore: 1 } : { morningScore: 1 },
+        i % 7 < 4 ? { sessions: [session(5, 35)], morningScore: 1 } : { morningScore: 1 },
       ),
     );
     const result = run(entries, lastDate(entries));

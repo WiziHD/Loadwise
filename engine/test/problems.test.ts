@@ -10,6 +10,7 @@
  */
 
 import { describe, expect, it } from "vitest";
+import { session } from "../src/fixtures.js";
 import { parseDiary, parseTests } from "../src/import.js";
 import { evaluateEpisode } from "../src/evaluate.js";
 import { ALL_PROBLEM_CODES, validateAll, type ProblemCode } from "../src/validate.js";
@@ -20,39 +21,45 @@ import type { Entry, SelfTest } from "../src/types.js";
 const PROVOCATIONS: { code: ProblemCode; produce: () => ProblemCode[] }[] = [
   {
     code: "invalid-date",
-    produce: () => codes([{ date: "2026-02-30", morningScore: 2 }]),
+    produce: () => codes([{ date: "2026-02-30", morningScore: 2, sessions: [] }]),
   },
   {
     code: "duplicate-date",
     produce: () =>
       codes([
-        { date: "2026-03-02", morningScore: 2 },
-        { date: "2026-03-02", morningScore: 3 },
+        { date: "2026-03-02", morningScore: 2, sessions: [] },
+        { date: "2026-03-02", morningScore: 3, sessions: [] },
       ]),
   },
   {
     code: "morning-out-of-range",
-    produce: () => codes([{ date: "2026-03-02", morningScore: 47 }]),
+    produce: () => codes([{ date: "2026-03-02", morningScore: 47, sessions: [] }]),
   },
   {
     code: "rpe-out-of-range",
-    produce: () => codes([{ date: "2026-03-02", morningScore: 2, rpe: 20, durationMin: 30 }]),
+    produce: () => codes([{ date: "2026-03-02", morningScore: 2, sessions: [session(20, 30)] }]),
   },
   {
     code: "duration-not-positive",
-    produce: () => codes([{ date: "2026-03-02", morningScore: 2, rpe: 5, durationMin: 0 }]),
+    produce: () => codes([{ date: "2026-03-02", morningScore: 2, sessions: [session(5, 0)] }]),
   },
   {
+    // Nicht mehr über `validateAll`, und das ist der Punkt: Seit `Session` alle
+    // drei Angaben verlangt, ist eine halbe Einheit im Motor nicht mehr
+    // DARSTELLBAR. Der Code lebt an der Grenze weiter, wo untypisierte Daten
+    // hereinkommen — eine CSV-Datei, in der jemand die Minuten vergessen hat.
     code: "load-incomplete",
-    produce: () => codes([{ date: "2026-03-02", morningScore: 2, rpe: 5 }]),
+    produce: () =>
+      parseDiary(["datum;morgen;anstrengung", "2026-03-02;2;5"].join(String.fromCharCode(10)))
+        .problems.map((p) => p.code),
   },
   {
     code: "symptom-out-of-range",
-    produce: () => codes([{ date: "2026-03-02", morningScore: 2, symptomScore: 20 }]),
+    produce: () => codes([{ date: "2026-03-02", morningScore: 2, sessions: [], symptomScore: 20 }]),
   },
   {
     code: "symptom-timing-without-score",
-    produce: () => codes([{ date: "2026-03-02", morningScore: 2, symptomTiming: "during" }]),
+    produce: () => codes([{ date: "2026-03-02", morningScore: 2, sessions: [], symptomTiming: "during" }]),
   },
   {
     code: "test-value-not-positive",
@@ -81,8 +88,8 @@ const PROVOCATIONS: { code: ProblemCode; produce: () => ProblemCode[] }[] = [
     produce: () =>
       evaluateEpisode({
         entries: [
-          { date: "2026-03-02", morningScore: 3 },
-          { date: "2026-03-03", morningScore: 3 },
+          { date: "2026-03-02", morningScore: 3, sessions: [] },
+          { date: "2026-03-03", morningScore: 3, sessions: [] },
         ],
         context: { bodyRegion: "achilles", startedOn: "2026-06-01" },
       }).problems.map((x) => x.code),

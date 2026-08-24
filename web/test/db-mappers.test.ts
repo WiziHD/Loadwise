@@ -27,67 +27,67 @@ import {
   type EntryRow,
   type MeasureKeyRow,
   type MeasurementRow,
+  type SessionRow,
   type SelfTestRow,
 } from "@/lib/db/types";
 
 describe("toEntry", () => {
   // Jeder Zahlenwert verschieden, damit ein Tausch auffällt.
-  // Ohne `as`: So prüft der Typ die Testdaten mit. Die erste Fassung hatte ein
-  // `created_at` erfunden, das es in keiner dieser Zeilen gibt — die Zusicherung
-  // hätte das verdeckt, der Typecheck hat es gefunden.
   const row: EntryRow = {
     id: "e1",
     episode_id: "ep1",
     entry_date: "2026-08-22",
     morning_score: 2,
-    activity_kind: "cycle",
-    duration_min: 75,
-    rpe: 4,
+    everyday_load: "on-feet",
     symptom_score: 6,
     symptom_timing: "after",
     note: "Auf Asphalt",
   };
 
+  const einheiten: SessionRow[] = [
+    { id: "s2", entry_id: "e1", position: 1, activity_kind: "strength_lower", duration_min: 30, rpe: 5 },
+    { id: "s1", entry_id: "e1", position: 0, activity_kind: "cycle", duration_min: 75, rpe: 4 },
+  ];
+
   it("legt jedes Feld auf das richtige Gegenstück", () => {
-    expect(toEntry(row)).toEqual({
+    expect(toEntry(row, [einheiten[1]!])).toEqual({
       date: "2026-08-22",
       morningScore: 2,
-      activityKind: "cycle",
-      durationMin: 75,
-      rpe: 4,
+      sessions: [{ activityKind: "cycle", durationMin: 75, rpe: 4 }],
+      everydayLoad: "on-feet",
       symptomScore: 6,
       symptomTiming: "after",
       note: "Auf Asphalt",
     });
   });
 
+  it("sortiert die Einheiten nach ihrer Position, nicht nach dem Zufall der Abfrage", () => {
+    // Ein Bericht soll den Tag in der Reihenfolge zeigen, in der er
+    // stattgefunden hat. Die Datenbank gibt keine Reihenfolge zu, wenn man
+    // keine verlangt — hier kommen sie absichtlich verkehrt herein.
+    const e = toEntry(row, einheiten);
+    expect(e.sessions.map((s) => s.activityKind)).toEqual(["cycle", "strength_lower"]);
+  });
+
   it("verwechselt Morgenwert, Anstrengung und Beschwerden nicht", () => {
-    const e = toEntry(row);
+    const e = toEntry(row, [einheiten[1]!]);
     expect(e.morningScore).toBe(2);
-    expect(e.rpe).toBe(4);
+    expect(e.sessions[0]!.rpe).toBe(4);
     expect(e.symptomScore).toBe(6);
   });
 
-  it("reicht null durch, statt es zu einer Null zu machen", () => {
-    // Ein Ruhetag hat keine Anstrengung. Würde daraus eine 0, hielte der Motor
-    // sie für eine erfasste Einheit mit Anstrengung null.
-    const ruhetag = toEntry({
-      ...row,
-      activity_kind: null,
-      duration_min: null,
-      rpe: null,
-      symptom_score: null,
-      symptom_timing: null,
-      note: null,
-    });
-
-    expect(ruhetag.activityKind).toBeNull();
-    expect(ruhetag.durationMin).toBeNull();
-    expect(ruhetag.rpe).toBeNull();
+  it("macht aus einem Tag ohne Einheiten einen Ruhetag, nicht eine Null", () => {
+    const ruhetag = toEntry({ ...row, symptom_score: null, symptom_timing: null, note: null }, []);
+    expect(ruhetag.sessions).toEqual([]);
     expect(ruhetag.symptomScore).toBeNull();
-    expect(ruhetag.note).toBeNull();
     // Der Morgenwert bleibt: Er ist Pflicht, und 0 ist dort ein echter Wert.
     expect(ruhetag.morningScore).toBe(2);
+  });
+
+  it("reicht eine fehlende Alltagsbelastung als null durch", () => {
+    // Wer die App vor dieser Änderung benutzt hat, hat für jeden alten Tag
+    // keinen Wert. Daraus »sitzend« zu machen wäre eine erfundene Angabe.
+    expect(toEntry({ ...row, everyday_load: null }, []).everydayLoad).toBeNull();
   });
 });
 

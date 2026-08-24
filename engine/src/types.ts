@@ -73,6 +73,55 @@ export interface EpisodeContext {
 export const NEUTRAL_CONTEXT: EpisodeContext = { bodyRegion: "other" };
 
 /** One diary day. Exactly one per episode per date. */
+/**
+ * Eine Trainingseinheit. Alle drei Angaben gehören zusammen oder gar nicht.
+ *
+ * ---------------------------------------------------------------------------
+ * DIESER TYP MACHT EINEN GANZEN FEHLER UNMÖGLICH.
+ *
+ * Vorher standen `activityKind`, `durationMin` und `rpe` einzeln und nullbar
+ * auf `Entry`. Damit war eine halbe Einheit darstellbar — Anstrengung ohne
+ * Minuten —, und gegen diesen Zustand kämpften vier Stellen gleichzeitig an:
+ * eine Prüfung im Motor, eine Bedingung in der Datenbank, eine im Formular und
+ * ein Problemcode für den Import. Er hat trotzdem echten Schaden angerichtet.
+ *
+ * Als eigener Typ mit drei Pflichtfeldern kann es die halbe Einheit nicht mehr
+ * geben. Was von aussen hereinkommt — eine CSV-Datei — kann sie weiterhin
+ * enthalten, und genau dort wird sie gemeldet: beim Einlesen, nicht danach.
+ * ---------------------------------------------------------------------------
+ */
+export interface Session {
+  activityKind: ActivityKind;
+  /** Minuten. Grösser als null, sonst ist es keine Einheit. */
+  durationMin: number;
+  /** Anstrengung der Einheit, 1–10. */
+  rpe: number;
+}
+
+/**
+ * Wie viel jemand an diesem Tag ausserhalb des Trainings auf den Beinen war.
+ *
+ * ---------------------------------------------------------------------------
+ * AUFGEZEICHNET, ABER NOCH NICHT VERRECHNET — und das ist eine Entscheidung.
+ *
+ * Der Untertitel des Produkts ist »die anderen 167 Stunden«, und genau die
+ * fehlten: Ein Ruhetag mit 18 000 Schritten auf Asphalt war für den Motor
+ * dasselbe wie ein Tag im Bett.
+ *
+ * Verrechnen liesse sich das nur mit einem Umrechnungsfaktor — wie viel Last
+ * ein »viel auf den Beinen«-Tag in denselben Einheiten trägt wie eine
+ * Trainingseinheit. Diesen Faktor gibt es nicht belegt, und ihn zu schätzen ist
+ * hier gefährlicher als anderswo: Er landet im Zähler UND im Nenner des
+ * Belastungsverhältnisses. Ein zu grosser Wert zieht jedes Verhältnis gegen 1,
+ * und die Lastspitzen-Regel wird still stumm. Ein zu kleiner ändert nichts.
+ *
+ * Deshalb dieselbe Bauform wie bei `Protocol` und der Bezahlschranke: erfasst,
+ * typisiert, gespeichert, angezeigt — und von keiner Regel gelesen, bis der
+ * Faktor belegt ist. Aufzeichnen kann man nachholen, Daten nicht.
+ * ---------------------------------------------------------------------------
+ */
+export type EverydayLoad = "sitting" | "normal" | "on-feet" | "very-active";
+
 export interface Entry {
   date: DateStr;
   /**
@@ -81,11 +130,18 @@ export interface Entry {
    * 24-hour rule a comparison between two neighbouring rows.
    */
   morningScore: number;
-  /** null / omitted means a rest day. Rest days still count — they carry the baseline. */
-  activityKind?: ActivityKind | null;
-  durationMin?: number | null;
-  /** Session RPE, 1-10. */
-  rpe?: number | null;
+  /**
+   * Jede Einheit dieses Tages. Leer heisst Ruhetag — Ruhetage zählen mit, sie
+   * tragen die Basislinie.
+   *
+   * Eine Liste, weil ein Tag mehr als eine Einheit haben kann. Vorher ging nur
+   * eine: Wer morgens läuft und abends Kraft macht, konnte nur eines eintragen,
+   * und die Last des Tages wurde zu niedrig gerechnet — ausgerechnet an den
+   * Tagen mit der höchsten.
+   */
+  sessions: Session[];
+  /** Siehe EverydayLoad: erfasst, von keiner Regel gelesen. */
+  everydayLoad?: EverydayLoad | null;
   /** Symptoms felt in connection with the session itself, 0-10. */
   symptomScore?: number | null;
   symptomTiming?: SymptomTiming | null;
@@ -222,6 +278,17 @@ export const ALL_ACTIVITY_KINDS = [
   "court_sport",
   "other",
 ] as const satisfies readonly ActivityKind[];
+
+export const ALL_EVERYDAY_LOADS = [
+  "sitting",
+  "normal",
+  "on-feet",
+  "very-active",
+] as const satisfies readonly EverydayLoad[];
+
+const _everydayExhaustive: Exhaustive<EverydayLoad, typeof ALL_EVERYDAY_LOADS> =
+  ALL_EVERYDAY_LOADS;
+void _everydayExhaustive;
 
 // Compile error if any ActivityKind is missing from the array above.
 const _activityKindsExhaustive: Exhaustive<ActivityKind, typeof ALL_ACTIVITY_KINDS> =

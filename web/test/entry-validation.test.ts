@@ -17,9 +17,8 @@ const HEUTE = "2026-08-24";
 const tag = (over: Partial<EntryPayload> = {}): EntryPayload => ({
   date: "2026-08-20",
   morningScore: 3,
-  activityKind: null,
-  durationMin: null,
-  rpe: null,
+  sessions: [],
+  everydayLoad: null,
   symptomScore: null,
   symptomTiming: null,
   note: null,
@@ -56,39 +55,92 @@ describe("der Morgenwert darf nicht aus Versehen zur Null werden", () => {
   });
 });
 
-describe("Anstrengung und Minuten sind ein Paar", () => {
-  it("nimmt beides an", () => {
-    expect(validateEntry(tag({ activityKind: "run", durationMin: 40, rpe: 6 }), HEUTE)).toBeNull();
+describe("eine Einheit ist ganz oder gar nicht", () => {
+  it("nimmt eine vollständige Einheit an", () => {
+    expect(
+      validateEntry(tag({ sessions: [{ activityKind: "run", durationMin: 40, rpe: 6 }] }), HEUTE),
+    ).toBeNull();
+  });
+
+  it("nimmt mehrere Einheiten an einem Tag an", () => {
+    // Der Grund für den ganzen Umbau: Wer morgens läuft und abends Kraft
+    // macht, konnte vorher nur eines eintragen — und die Last des Tages fiel zu
+    // niedrig aus, ausgerechnet an den Tagen mit der höchsten.
+    expect(
+      validateEntry(
+        tag({
+          sessions: [
+            { activityKind: "run", durationMin: 40, rpe: 6 },
+            { activityKind: "strength_lower", durationMin: 30, rpe: 5 },
+          ],
+        }),
+        HEUTE,
+      ),
+    ).toBeNull();
   });
 
   it("lehnt Anstrengung ohne Minuten ab", () => {
-    expect(validateEntry(tag({ activityKind: "run", rpe: 6 }), HEUTE)).toBe("load-incomplete");
+    expect(
+      validateEntry(tag({ sessions: [{ activityKind: "run", durationMin: null, rpe: 6 }] }), HEUTE),
+    ).toBe("load-incomplete");
   });
 
   it("lehnt Minuten ohne Anstrengung ab", () => {
-    expect(validateEntry(tag({ activityKind: "run", durationMin: 40 }), HEUTE)).toBe(
-      "load-incomplete",
-    );
-  });
-});
-
-describe("eine Aktivität ohne Einheit ist erlaubt, eine Einheit ohne Aktivität nicht", () => {
-  it("nimmt »ich bin gegangen« ohne Minuten an", () => {
-    // Eine Tatsache, die jemand aufgeschrieben hat. Die Anzeige hat daraus
-    // eine Zeitlang »keine Aktivität« gemacht; abgelehnt wurde es nie.
-    expect(validateEntry(tag({ activityKind: "walk" }), HEUTE)).toBeNull();
+    expect(
+      validateEntry(tag({ sessions: [{ activityKind: "run", durationMin: 40, rpe: null }] }), HEUTE),
+    ).toBe("load-incomplete");
   });
 
   it("lehnt eine Einheit ohne Aktivität ab", () => {
-    // Der Gewebefaktor hätte nichts nachzuschlagen, und die Last würde gegen
-    // einen Standardwert gerechnet, den niemand gewählt hat.
-    expect(validateEntry(tag({ durationMin: 40, rpe: 6 }), HEUTE)).toBe("invalid");
+    // Der Gewebefaktor hätte nichts nachzuschlagen, und die Last liefe gegen
+    // einen Standardwert, den niemand gewählt hat.
+    expect(
+      validateEntry(tag({ sessions: [{ activityKind: null, durationMin: 40, rpe: 6 }] }), HEUTE),
+    ).toBe("load-incomplete");
+  });
+
+  it("lehnt »ich bin gegangen« ohne Minuten ab — und das ist ein Verlust", () => {
+    // EHRLICH FESTGEHALTEN: Vorher liess sich eine Aktivität ohne Minuten
+    // erfassen. Sie trug null Last, war also für jede Regel unsichtbar, sah auf
+    // dem Bildschirm aber aus wie etwas.
+    //
+    // Seit eine Einheit alle drei Angaben verlangt, geht das nicht mehr. Wer
+    // gegangen ist und nicht auf die Uhr geschaut hat, hat jetzt zwei Wege:
+    // die Minuten schätzen, oder es unter »sonst auf den Beinen« festhalten.
+    // Das ist bewusst so — ein Eintrag, der nichts bewirkt und so tut, als
+    // bewirke er etwas, ist schlechter als keiner.
+    expect(
+      validateEntry(tag({ sessions: [{ activityKind: "walk", durationMin: null, rpe: null }] }), HEUTE),
+    ).toBe("load-incomplete");
   });
 
   it("lehnt eine Aktivität ab, die der Motor nicht kennt", () => {
     expect(
-      validateEntry(tag({ activityKind: "quidditch" as never, durationMin: 40, rpe: 6 }), HEUTE),
+      validateEntry(tag({ sessions: [{ activityKind: "quidditch", durationMin: 40, rpe: 6 }] }), HEUTE),
     ).toBe("invalid");
+  });
+
+  it("lehnt eine unglaubwürdige Zahl von Einheiten ab", () => {
+    // Eine Server-Aktion ist ein öffentlicher Endpunkt. Neun Einheiten an einem
+    // Tag sind keine Trainingswoche, sondern jemand, der etwas ausprobiert.
+    const viele = Array.from({ length: 9 }, () => ({ activityKind: "run", durationMin: 10, rpe: 3 }));
+    expect(validateEntry(tag({ sessions: viele }), HEUTE)).toBe("invalid");
+  });
+});
+
+describe("die Alltagsbelastung", () => {
+  it("nimmt die vier bekannten Stufen an", () => {
+    for (const stufe of ["sitting", "normal", "on-feet", "very-active"]) {
+      expect(validateEntry(tag({ everydayLoad: stufe }), HEUTE), stufe).toBeNull();
+    }
+  });
+
+  it("darf fehlen", () => {
+    expect(validateEntry(tag({ everydayLoad: null }), HEUTE)).toBeNull();
+  });
+
+  it("lehnt eine erfundene Stufe ab", () => {
+    expect(validateEntry(tag({ everydayLoad: "sehr sportlich" }), HEUTE)).toBe("invalid");
   });
 });
 

@@ -7,6 +7,7 @@ import {
   poorResponse,
   START,
   tooShort,
+  session,
 } from "../src/fixtures.js";
 import { evaluateResponse24h } from "../src/rules/response24h.js";
 import { DEFAULT_CONFIG, type DateStr, type Entry } from "../src/types.js";
@@ -19,13 +20,12 @@ const run = (entries: Entry[], date: DateStr) =>
 function withBaseline(tail: Partial<Entry>[], baselineScore = 2): Entry[] {
   const head: Entry[] = [];
   for (let i = 0; i < 14; i++) {
-    head.push({ date: addDays(START, i), morningScore: baselineScore });
+    head.push({ date: addDays(START, i), morningScore: baselineScore, sessions: [] });
   }
   const rest = tail.map((t, i) => ({
     date: addDays(START, 14 + i),
     morningScore: t.morningScore ?? baselineScore,
-    rpe: t.rpe ?? null,
-    durationMin: t.durationMin ?? null,
+    sessions: t.sessions ?? [],
   }));
   return [...head, ...rest];
 }
@@ -50,14 +50,14 @@ describe("24-hour rule", () => {
   });
 
   it("declines to judge when tomorrow was never recorded", () => {
-    const result = run(withBaseline([{ rpe: 6, durationMin: 40 }]), addDays(START, 14));
+    const result = run(withBaseline([{ sessions: [session(6, 40)] }]), addDays(START, 14));
     expect(result.status).toBe("insufficient");
     if (result.status === "insufficient") expect(result.reason).toBe("next-day-missing");
   });
 
   it("passes a session that settles overnight", () => {
     const result = run(
-      withBaseline([{ rpe: 6, durationMin: 40 }, { morningScore: 3 }]),
+      withBaseline([{ sessions: [session(6, 40)] }, { morningScore: 3 }]),
       addDays(START, 14),
     );
     expect(result.status).toBe("ok");
@@ -89,7 +89,7 @@ describe("24-hour rule", () => {
 
   it("flags red on a large reaction without waiting for the second day", () => {
     const result = run(
-      withBaseline([{ rpe: 9, durationMin: 60 }, { morningScore: 8 }]),
+      withBaseline([{ sessions: [session(9, 60)] }, { morningScore: 8 }]),
       addDays(START, 14),
     );
     expect(result.status).toBe("ok");
@@ -112,7 +112,7 @@ describe("24-hour rule", () => {
 
   it("needs the second day before calling a mild reaction", () => {
     const result = run(
-      withBaseline([{ rpe: 6, durationMin: 40 }, { morningScore: 5 }]),
+      withBaseline([{ sessions: [session(6, 40)] }, { morningScore: 5 }]),
       addDays(START, 14),
     );
     expect(result.status).toBe("insufficient");
@@ -123,14 +123,14 @@ describe("24-hour rule", () => {
     // Thirteen calm days plus one very bad one. A mean would shift by ~0.5
     // and could turn a red verdict amber. The median must not budge.
     const head: Entry[] = [];
-    for (let i = 0; i < 13; i++) head.push({ date: addDays(START, i), morningScore: 2 });
-    head.push({ date: addDays(START, 13), morningScore: 9 });
+    for (let i = 0; i < 13; i++) head.push({ date: addDays(START, i), morningScore: 2, sessions: [] });
+    head.push({ date: addDays(START, 13), morningScore: 9, sessions: [] });
 
     const entries: Entry[] = [
       ...head,
-      { date: addDays(START, 14), morningScore: 2, rpe: 6, durationMin: 40 },
-      { date: addDays(START, 15), morningScore: 6 },
-      { date: addDays(START, 16), morningScore: 6 },
+      { date: addDays(START, 14), morningScore: 2, sessions: [session(6, 40)] },
+      { date: addDays(START, 15), morningScore: 6, sessions: [] },
+      { date: addDays(START, 16), morningScore: 6, sessions: [] },
     ];
 
     const result = run(entries, addDays(START, 14));

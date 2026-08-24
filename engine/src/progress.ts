@@ -243,9 +243,17 @@ function seriesOf(input: ProgressInput, measure: Measure): RecordedPoint[] {
       break;
     case "session_minutes":
       for (const e of input.index.entries) {
-        if (e.durationMin === null || e.durationMin === undefined) continue;
-        if (measure.activityKind !== undefined && e.activityKind !== measure.activityKind) continue;
-        out.push({ date: e.date, value: e.durationMin });
+        // Alle Einheiten des Tages zusammengezählt. Vorher gab es nur eine, und
+        // wer morgens läuft und abends Kraft macht, hätte für ein Ziel wie
+        // »45 Minuten laufen« nur die halbe Wahrheit gesehen.
+        let minuten = 0;
+        for (const session of e.sessions) {
+          if (measure.activityKind !== undefined && session.activityKind !== measure.activityKind) {
+            continue;
+          }
+          minuten += session.durationMin;
+        }
+        if (minuten > 0) out.push({ date: e.date, value: minuten });
       }
       break;
   }

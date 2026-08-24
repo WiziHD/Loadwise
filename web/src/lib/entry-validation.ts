@@ -23,6 +23,7 @@
 
 import {
   ALL_ACTIVITY_KINDS,
+  ALL_EVERYDAY_LOADS,
   diffDays,
   isDateStr,
   type ActivityKind,
@@ -40,12 +41,25 @@ export type EntryPayload = {
    * gibt.
    */
   morningScore: number | null;
-  activityKind: ActivityKind | null;
-  durationMin: number | null;
-  rpe: number | null;
+  /** Null bis mehrere Einheiten. Leer heisst Ruhetag. */
+  sessions: SessionInput[];
+  everydayLoad: string | null;
   symptomScore: number | null;
   symptomTiming: SymptomTiming | null;
   note: string | null;
+};
+
+/**
+ * Eine Einheit, wie sie über das Netz ankommt: alles noch unsicher.
+ *
+ * Der Motortyp `Session` verlangt drei Zahlen bzw. eine bekannte Aktivität.
+ * Hier steht `unknown`, weil eine Server-Aktion ein öffentlicher Endpunkt ist
+ * und alles enthalten kann. Erst `validateEntry` macht daraus Sessions.
+ */
+export type SessionInput = {
+  activityKind: unknown;
+  durationMin: unknown;
+  rpe: unknown;
 };
 
 export type EntryProblem =
@@ -98,23 +112,29 @@ export function validateEntry(input: EntryPayload, hostToday: string): EntryProb
   if (!wholeNumberInRange(input.morningScore, 0, 10)) return "invalid";
   if (tooFarAhead(input.date, hostToday)) return "future-date";
 
-  // Dieselbe Paarung, die der Motor durchsetzt und die Datenbank prüft. Hier
-  // ebenfalls, damit die Person einen Satz bekommt statt einer Verletzung einer
-  // Bedingung.
-  if ((input.rpe === null) !== (input.durationMin === null)) return "load-incomplete";
-  if (input.rpe !== null && !wholeNumberInRange(input.rpe, 1, 10)) return "invalid";
-  if (input.durationMin !== null && !wholeNumberInRange(input.durationMin, 1, 1440)) {
-    return "invalid";
+  // ---------------------------------------------------------------------
+  // Jede Einheit einzeln, und alle drei Angaben sind Pflicht.
+  //
+  // Die Paarung »Anstrengung und Minuten gehören zusammen« musste früher an
+  // vier Stellen gleichzeitig verteidigt werden und hat trotzdem Daten
+  // gekostet. Seit eine Einheit ein eigenes Ding mit drei Pflichtfeldern ist,
+  // gibt es die halbe Einheit nicht mehr — hier wird nur noch geprüft, dass
+  // ankommt, was ankommen soll.
+  // ---------------------------------------------------------------------
+  if (!Array.isArray(input.sessions)) return "invalid";
+  if (input.sessions.length > 8) return "invalid";
+
+  for (const s of input.sessions) {
+    if (s === null || typeof s !== "object") return "invalid";
+    if (typeof s.activityKind !== "string") return "load-incomplete";
+    if (!ALL_ACTIVITY_KINDS.includes(s.activityKind as ActivityKind)) return "invalid";
+    if (!wholeNumberInRange(s.durationMin, 1, 1440)) return "load-incomplete";
+    if (!wholeNumberInRange(s.rpe, 1, 10)) return "load-incomplete";
   }
 
-  // Eine Aktivität ohne Einheit ist erlaubt — »ich bin gegangen« ohne Minuten
-  // ist eine Tatsache. Eine Einheit ohne Aktivität nicht: Der Gewebefaktor
-  // hätte nichts nachzuschlagen, und die Last würde gegen einen Standardwert
-  // gerechnet, den niemand gewählt hat.
-  if (input.activityKind !== null && !ALL_ACTIVITY_KINDS.includes(input.activityKind)) {
+  if (input.everydayLoad !== null && !ALL_EVERYDAY_LOADS.includes(input.everydayLoad as never)) {
     return "invalid";
   }
-  if (input.durationMin !== null && input.activityKind === null) return "invalid";
 
   if (input.symptomScore !== null && !wholeNumberInRange(input.symptomScore, 0, 10)) {
     return "invalid";

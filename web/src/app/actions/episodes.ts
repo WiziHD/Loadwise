@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { profileByKey, type BodyRegion, type Locale, type Side } from "loadwise-engine";
+import {
+  profileByKey,
+  type BodyRegion,
+  type EverydayLoad,
+  type Locale,
+  type Session,
+  type Side,
+} from "loadwise-engine";
 import {
   utcToday,
   validateEntry,
@@ -67,10 +74,13 @@ export async function saveEntryAction(
   try {
     await saveEntry(episodeId, {
       date: input.date,
+      // Die Zusicherungen hier sind erlaubt, weil `validateEntry` oben genau
+      // diese Formen geprüft hat und sonst schon zurückgekehrt wäre. Sie
+      // stehen zusammen an einer Stelle statt verstreut, damit sichtbar bleibt,
+      // worauf sie sich stützen.
       morningScore: input.morningScore as number,
-      activityKind: input.activityKind,
-      durationMin: input.durationMin,
-      rpe: input.rpe,
+      sessions: input.sessions as unknown as Session[],
+      everydayLoad: input.everydayLoad as EverydayLoad | null,
       symptomScore: input.symptomScore,
       symptomTiming: input.symptomTiming,
       note: input.note,

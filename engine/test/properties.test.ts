@@ -113,7 +113,7 @@ describe("leaving out a bad day", () => {
 describe("growing the diary", () => {
   it("never invents a verdict for a day that has no entry", () => {
     const base = steadyRecovery(30);
-    const grown: Entry[] = [...base, { date: addDays(START, 30), morningScore: 2 }];
+    const grown: Entry[] = [...base, { date: addDays(START, 30), morningScore: 2, sessions: [] }];
     const result = evaluateEpisode({ entries: grown });
     const dates = new Set(grown.map((e) => e.date));
 

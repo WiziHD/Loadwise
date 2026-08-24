@@ -160,7 +160,7 @@ describe("invariants", () => {
     const base = steadyRecovery(56);
     const scaled: Entry[] = base.map((e) => ({
       ...e,
-      durationMin: e.durationMin === null || e.durationMin === undefined ? e.durationMin : e.durationMin * 3,
+      sessions: e.sessions.map((s) => ({ ...s, durationMin: s.durationMin * 3 })),
     }));
 
     const last = base[base.length - 1]!.date;
@@ -211,7 +211,7 @@ describe("invariants", () => {
 
       const withRest: Entry[] = [
         ...scenario.entries,
-        { date: addDays(lastEntry.date, 1), morningScore: lastEntry.morningScore },
+        { date: addDays(lastEntry.date, 1), morningScore: lastEntry.morningScore, sessions: [] },
       ];
       const after = evaluateEpisode({
         entries: withRest,

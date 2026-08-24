@@ -5,6 +5,7 @@ import {
   easingPattern,
   steadyRecovery,
   worseningPattern,
+  session,
 } from "../src/fixtures.js";
 import { evaluatePainPattern } from "../src/rules/painPattern.js";
 import { DEFAULT_CONFIG, type DateStr, type Entry } from "../src/types.js";
@@ -63,15 +64,13 @@ describe("pain pattern rule", () => {
     // the average toward whichever end of the scale is numerically lower.
     const withPainFree = build([
       ...Array.from({ length: 21 }, () => ({
-        rpe: 5,
-        durationMin: 30,
+        sessions: [session(5, 30)],
         morningScore: 2,
         symptomScore: 0,
         symptomTiming: "during" as const,
       })),
       ...Array.from({ length: 21 }, () => ({
-        rpe: 5,
-        durationMin: 30,
+        sessions: [session(5, 30)],
         morningScore: 2,
         symptomScore: 0,
         symptomTiming: "evening" as const,
@@ -84,15 +83,13 @@ describe("pain pattern rule", () => {
   it("weights a severe report more heavily than a mild one", () => {
     const mostlyMildEvening = build([
       ...Array.from({ length: 21 }, (_, i) => ({
-        rpe: 5,
-        durationMin: 30,
+        sessions: [session(5, 30)],
         morningScore: 2,
         symptomScore: i % 3 === 0 ? 2 : 0,
         symptomTiming: "evening" as const,
       })),
       ...Array.from({ length: 21 }, (_, i) => ({
-        rpe: 5,
-        durationMin: 30,
+        sessions: [session(5, 30)],
         morningScore: 2,
         symptomScore: i % 3 === 0 ? 9 : 0,
         symptomTiming: "during" as const,

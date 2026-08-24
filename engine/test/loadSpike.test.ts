@@ -11,6 +11,7 @@ import {
   START,
   steadyRecovery,
   tooShort,
+  session,
 } from "../src/fixtures.js";
 import { evaluateLoadSpike } from "../src/rules/loadSpike.js";
 import { DEFAULT_CONFIG, type DateStr, type Entry } from "../src/types.js";
@@ -100,8 +101,7 @@ describe("load spike rule", () => {
       entries.push({
         date: addDays(START, i),
         morningScore: 2,
-        rpe: inLastWeek ? 6 : 2,
-        durationMin: inLastWeek ? 60 : 10,
+        sessions: [session(inLastWeek ? 6 : 2, inLastWeek ? 60 : 10)],
       });
     }
     const result = run(entries, addDays(START, 27));
@@ -119,7 +119,7 @@ describe("load spike rule", () => {
     // back as `sharp-increase`.
     const full: Entry[] = [];
     for (let i = 0; i < 28; i++) {
-      full.push({ date: addDays(START, i), morningScore: 2, rpe: 5, durationMin: 40 });
+      full.push({ date: addDays(START, i), morningScore: 2, sessions: [session(5, 40)] });
     }
     // Same training, but a handful of reference days were never written down —
     // just enough to stay above the coverage bar, which is where the bias used
@@ -144,7 +144,7 @@ describe("load spike rule", () => {
     // whose load had not changed at all.
     const full: Entry[] = [];
     for (let i = 0; i < 28; i++) {
-      full.push({ date: addDays(START, i), morningScore: 2, rpe: 5, durationMin: 40 });
+      full.push({ date: addDays(START, i), morningScore: 2, sessions: [session(5, 40)] });
     }
     const patchy = full.filter((e, i) => i < 21 || i % 4 !== 0);
 
@@ -163,7 +163,7 @@ describe("load spike rule", () => {
     const entries: Entry[] = [];
     for (let i = 0; i < 28; i++) {
       if (i >= 21 && i % 7 < 5) continue; // gut the current week
-      entries.push({ date: addDays(START, i), morningScore: 2, rpe: 5, durationMin: 40 });
+      entries.push({ date: addDays(START, i), morningScore: 2, sessions: [session(5, 40)] });
     }
     const result = run(entries, addDays(START, 27));
     expect(result.status).toBe("insufficient");

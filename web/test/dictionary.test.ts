@@ -32,6 +32,7 @@ function walk(value: unknown, path: string[] = []): Array<{ path: string; text: 
  */
 const GLEICH_ERLAUBT = new Set([
   "appName", // Ein Produktname wird nicht übersetzt.
+  "entry.everydayNormal", // »Normal« ist in beiden Sprachen dasselbe Wort.
 ]);
 
 describe("kein Eintrag ist leer", () => {
