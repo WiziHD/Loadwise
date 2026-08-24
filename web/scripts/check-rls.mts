@@ -1,0 +1,401 @@
+/**
+ * Hält der zeilenbasierte Zugriffsschutz? Gefragt an der echten Datenbank.
+ *
+ * ---------------------------------------------------------------------------
+ * WARUM DAS EIN SKRIPT IST UND KEINE CHECKLISTE.
+ *
+ * Die Migration endete einmal mit einem Kommentar, der ein Ritual von Hand
+ * beschrieb: zwei Konten anlegen, sich als beide anmelden, drei Abfragen
+ * tippen. Niemand führt ein Ritual zweimal aus. Und der Fehler, der wirklich
+ * eintrat — RLS aktiviert, keine einzige Regel, also alles verboten — hätte
+ * zwei der drei Prüfungen BESTANDEN, weil »Konto B sieht nichts« bei kaputter
+ * und bei korrekter Datenbank gleich aussieht.
+ *
+ * Deshalb ist die Prüfung umgedreht: Sie belegt, dass A an die EIGENEN Daten
+ * kommt, und dass B es nicht kann. Nur beide Hälften zusammen bedeuten etwas.
+ * Eine Datenbank, in der niemand an irgendetwas kommt, ist nicht sicher,
+ * sondern kaputt, und muss hier durchfallen.
+ *
+ * Sie deckte anfangs drei von acht Tabellen ab. Die fünf ungeprüften waren
+ * nicht die harmlosen: `measurements` hängt über einen Join zwei Ebenen tief
+ * an der Episode, und ein falsch gesetzter Join LIEST in einer leeren Datenbank
+ * genauso wie ein richtiger.
+ *
+ * Welche Tabellen es gibt, liest das Skript deshalb aus 0002_rls.sql statt es
+ * zu wissen: Eine neunte Tabelle mit Regel, für die hier nichts steht, ist ab
+ * sofort ein Fehlschlag und keine stille Lücke.
+ *
+ * Braucht den Service-Role-Key, der RLS umgeht — genau das erlaubt es, den
+ * Aufbau zu stellen und von aussen zu prüfen. Es ist damit ein
+ * Entwicklungswerkzeug und kann nie Teil der App werden.
+ * ---------------------------------------------------------------------------
+ *
+ *   npm run check:rls --workspace=web
+ */
+
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+const A_EMAIL = "rls-probe-a@loadwise.test";
+const B_EMAIL = "rls-probe-b@loadwise.test";
+const PROBE_LABEL = "RLS-Sonde";
+const RLS_MIGRATION = resolve(process.cwd(), "..", "supabase", "migrations", "0002_rls.sql");
+
+/** Der Postgres-Code für »die Regel verbietet das«. Alles andere ist etwas anderes. */
+const DENIED = "42501";
+
+type Check = { name: string; ok: boolean; detail: string };
+const checks: Check[] = [];
+
+function record(name: string, ok: boolean, detail: string): void {
+  checks.push({ name, ok, detail });
+  console.log(`${ok ? "  ok  " : " FAIL "} ${name}${detail === "" ? "" : ` — ${detail}`}`);
+}
+
+/** Ein Fehler ist nicht automatisch eine Verweigerung. */
+function denied(error: { code?: string; message?: string } | null): {
+  ok: boolean;
+  detail: string;
+} {
+  if (error === null) return { ok: false, detail: "das Einfügen hat FUNKTIONIERT" };
+  if (error.code !== DENIED) {
+    return { ok: false, detail: `${error.code}: ${error.message} — kein Regelverstoss` };
+  }
+  return { ok: true, detail: DENIED };
+}
+
+function readEnv(): Record<string, string> {
+  const path = resolve(process.cwd(), ".env.local");
+  if (!existsSync(path)) {
+    console.error(`Kein ${path}. Dieses Skript redet mit dem echten Projekt.`);
+    process.exit(1);
+  }
+  return Object.fromEntries(
+    readFileSync(path, "utf8")
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== "" && !line.trim().startsWith("#"))
+      .map((line) => {
+        const i = line.indexOf("=");
+        return [line.slice(0, i).trim(), line.slice(i + 1).trim().replace(/^["']|["']$/g, "")];
+      }),
+  );
+}
+
+/**
+ * Welche Tabellen die Migration schützt — aus der Datei gelesen, nicht geraten.
+ *
+ * Das ist der strukturelle Teil: Wer eine neunte Tabelle mit Regel anlegt und
+ * hier nichts ergänzt, bekommt einen Fehlschlag statt einer stillen Lücke.
+ * Genau so ist die Lücke entstanden, die dieses Skript gerade schliesst.
+ */
+function tablesWithPolicies(): Set<string> {
+  if (!existsSync(RLS_MIGRATION)) {
+    console.error(`Kein ${RLS_MIGRATION}.`);
+    process.exit(1);
+  }
+  const sql = readFileSync(RLS_MIGRATION, "utf8");
+  const found = new Set<string>();
+  for (const match of sql.matchAll(/^create policy\s+\w+\s+on\s+(\w+)/gm)) {
+    found.add(match[1]!);
+  }
+  return found;
+}
+
+/** Ein angemeldeter Client für `email`; das Konto entsteht beim ersten Mal. */
+async function signIn(
+  admin: SupabaseClient,
+  url: string,
+  anon: string,
+  email: string,
+): Promise<{ client: SupabaseClient; userId: string }> {
+  const { error: createError } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+  });
+  if (createError !== null && !/already|registered|exists/i.test(createError.message)) {
+    throw new Error(`createUser(${email}): ${createError.message}`);
+  }
+
+  const { data: link, error: linkError } = await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email,
+  });
+  if (linkError !== null) throw new Error(`generateLink(${email}): ${linkError.message}`);
+
+  const client = createClient(url, anon, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data, error } = await client.auth.verifyOtp({
+    type: "magiclink",
+    token_hash: link.properties.hashed_token,
+  });
+  if (error !== null) throw new Error(`verifyOtp(${email}): ${error.message}`);
+  if (data.user === null) throw new Error(`verifyOtp(${email}) lieferte keinen Nutzer`);
+
+  return { client, userId: data.user.id };
+}
+
+/**
+ * Zeile suchen, sonst anlegen.
+ *
+ * Nie löschen: Das Skript soll so oft laufen dürfen, wie jemand mag, ohne
+ * Zeilen anzuhäufen und ohne je etwas wegzuwerfen.
+ */
+async function findOrCreate(
+  client: SupabaseClient,
+  table: string,
+  match: Record<string, unknown>,
+  row: Record<string, unknown>,
+): Promise<{ id: string } | { error: string }> {
+  let query = client.from(table).select("id");
+  for (const [column, value] of Object.entries(match)) query = query.eq(column, value as never);
+  const { data: found } = await query.limit(1).maybeSingle();
+  if (found !== null && found !== undefined) return found as { id: string };
+
+  const { data, error } = await client.from(table).insert(row).select("id").single();
+  if (error !== null) return { error: error.message };
+  return data as { id: string };
+}
+
+type Ctx = { episodeId: string; measureKeyId: string };
+
+/**
+ * Was auf jeder Tabelle gilt.
+ *
+ * `owner`  — dem Konto gehört die Zeile: lesen und schreiben.
+ * `engine` — Urteile. Sie entstehen serverseitig aus dem Regelmodul; dürfte
+ *            ein Konto sie schreiben, könnte ein manipulierter Client sich
+ *            selbst ein »alles in Ordnung« eintragen, und ein Physio-Bericht
+ *            wäre wertlos, weil niemand mehr wüsste, woher die Zeile stammt.
+ */
+type Spec = {
+  table: string;
+  access: "owner" | "engine";
+  match: (ctx: Ctx) => Record<string, unknown>;
+  row: (ctx: Ctx) => Record<string, unknown>;
+};
+
+const SPECS: Spec[] = [
+  {
+    table: "entries",
+    access: "owner",
+    match: (c) => ({ episode_id: c.episodeId, entry_date: "2026-01-01" }),
+    row: (c) => ({ episode_id: c.episodeId, entry_date: "2026-01-01", morning_score: 3 }),
+  },
+  {
+    table: "self_tests",
+    access: "owner",
+    match: (c) => ({ episode_id: c.episodeId, test_date: "2026-01-01" }),
+    row: (c) => ({
+      episode_id: c.episodeId,
+      test_type: "calf_raise",
+      test_date: "2026-01-01",
+      involved: 8,
+      uninvolved: 20,
+    }),
+  },
+  {
+    table: "measure_keys",
+    access: "owner",
+    match: (c) => ({ episode_id: c.episodeId, key: "sonde" }),
+    row: (c) => ({ episode_id: c.episodeId, key: "sonde", unit: "reps" }),
+  },
+  {
+    // Hängt über measure_keys zwei Ebenen tief an der Episode. Die Regel ist
+    // ein Join über zwei Tabellen, und ein falscher Join liest in einer leeren
+    // Datenbank genauso wie ein richtiger — deshalb wird hier zuerst etwas
+    // hineingelegt und dann gelesen.
+    table: "measurements",
+    access: "owner",
+    match: (c) => ({ measure_key_id: c.measureKeyId, measured_on: "2026-01-01" }),
+    row: (c) => ({ measure_key_id: c.measureKeyId, measured_on: "2026-01-01", value: 12 }),
+  },
+  {
+    table: "milestones",
+    access: "owner",
+    match: (c) => ({ episode_id: c.episodeId, label_text: "Sonde" }),
+    row: (c) => ({
+      episode_id: c.episodeId,
+      label_text: "Sonde",
+      label_locale: "de",
+      created_on: "2026-01-01",
+    }),
+  },
+  {
+    table: "flags",
+    access: "engine",
+    match: (c) => ({ episode_id: c.episodeId, for_date: "2026-01-01" }),
+    row: (c) => ({
+      episode_id: c.episodeId,
+      kind: "response24h",
+      for_date: "2026-01-01",
+      severity: "green",
+      reason: "settled-within-24h",
+      detail: {},
+      rule_version: "probe",
+      profile_version: "probe",
+    }),
+  },
+  {
+    table: "evaluations",
+    access: "engine",
+    match: (c) => ({ episode_id: c.episodeId, profile_key: "probe" }),
+    row: (c) => ({
+      episode_id: c.episodeId,
+      overall_status: "insufficient",
+      coverage: {},
+      profile_key: "probe",
+      profile_version: "probe",
+      rule_version: "probe",
+    }),
+  },
+];
+
+async function main(): Promise<void> {
+  const env = readEnv();
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const service = env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !anon || !service) {
+    console.error(
+      "NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY und " +
+        "SUPABASE_SERVICE_ROLE_KEY werden in .env.local gebraucht.",
+    );
+    process.exit(1);
+  }
+
+  const admin = createClient(url, service, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  console.log("\nZeilenbasierter Zugriffsschutz, gegen das echte Projekt\n");
+
+  // --- Deckt das Skript ab, was die Migration schützt?
+  const geschuetzt = tablesWithPolicies();
+  const geprueft = new Set(["episodes", ...SPECS.map((s) => s.table)]);
+  const luecke = [...geschuetzt].filter((t) => !geprueft.has(t)).sort();
+  record(
+    `alle ${geschuetzt.size} Tabellen mit Regel sind hier abgedeckt`,
+    luecke.length === 0,
+    luecke.length === 0 ? [...geprueft].sort().join(", ") : `ungeprüft: ${luecke.join(", ")}`,
+  );
+
+  const a = await signIn(admin, url, anon, A_EMAIL);
+  const b = await signIn(admin, url, anon, B_EMAIL);
+
+  // --- Die Wurzel des Besitzverhältnisses.
+  const episode = await findOrCreate(
+    a.client,
+    "episodes",
+    { user_id: a.userId, label: PROBE_LABEL },
+    {
+      user_id: a.userId,
+      body_region: "patella",
+      profile_key: "patellar_tendinopathy",
+      side: "right",
+      label: PROBE_LABEL,
+    },
+  );
+  if ("error" in episode) {
+    throw new Error(
+      `A kann seine EIGENE Episode nicht anlegen: ${episode.error}\n\n` +
+        `Das ist der Fehlschlag, der nach Sicherheit aussieht und keine ist. RLS ist an\n` +
+        `und keine Regel erlaubt etwas, also ist alles verboten — auch dem Besitzer.\n` +
+        `supabase/migrations/0002_rls.sql erneut ausführen: Es ist wiederholbar und\n` +
+        `weigert sich inzwischen, in diesem Zustand zu enden.`,
+    );
+  }
+  record("A liest und schreibt die eigene Episode", true, episode.id);
+
+  // Der Massschlüssel, an dem die Messungen hängen.
+  const key = await findOrCreate(
+    a.client,
+    "measure_keys",
+    { episode_id: episode.id, key: "sonde" },
+    { episode_id: episode.id, key: "sonde", unit: "reps" },
+  );
+  if ("error" in key) throw new Error(`A kann keinen Massschlüssel anlegen: ${key.error}`);
+
+  const ctx: Ctx = { episodeId: episode.id, measureKeyId: key.id };
+
+  // --- B sieht die Episode von A nicht.
+  const { data: bEpisodes } = await b.client.from("episodes").select("id");
+  record("B sieht keine Episode von A", (bEpisodes ?? []).length === 0, `${(bEpisodes ?? []).length} Zeile(n)`);
+
+  const { error: bSteal } = await b.client.from("episodes").insert({
+    user_id: a.userId,
+    body_region: "patella",
+    profile_key: "patellar_tendinopathy",
+    side: "right",
+    label: "gestohlen",
+  });
+  const stealResult = denied(bSteal);
+  record("B kann keine Zeile auf A's Namen anlegen", stealResult.ok, stealResult.detail);
+
+  // --- Und jetzt jede der sieben abhängigen Tabellen, beide Hälften.
+  for (const spec of SPECS) {
+    const eigen = spec.access === "owner";
+
+    if (eigen) {
+      const row = await findOrCreate(a.client, spec.table, spec.match(ctx), spec.row(ctx));
+      record(
+        `${spec.table}: A schreibt in die eigene Episode`,
+        !("error" in row),
+        "error" in row ? row.error : "",
+      );
+    } else {
+      // Urteile darf ein Konto NICHT schreiben. Die Zeile legt der
+      // Service-Role-Key an — so, wie es der Motor später tun wird.
+      const { error: aWrite } = await a.client.from(spec.table).insert(spec.row(ctx));
+      const result = denied(aWrite);
+      record(`${spec.table}: A kann sein eigenes Urteil nicht schreiben`, result.ok, result.detail);
+
+      const seeded = await findOrCreate(admin, spec.table, spec.match(ctx), spec.row(ctx));
+      if ("error" in seeded) {
+        record(`${spec.table}: Zeile zum Prüfen anlegen`, false, seeded.error);
+        continue;
+      }
+    }
+
+    // A liest, was in der eigenen Episode steht — die Hälfte, die das alte
+    // Ritual ausliess und ohne die »B sieht nichts« nichts bedeutet.
+    let aRead = a.client.from(spec.table).select("id");
+    for (const [column, value] of Object.entries(spec.match(ctx))) {
+      aRead = aRead.eq(column, value as never);
+    }
+    const { data: aSees } = await aRead;
+    record(`${spec.table}: A liest die eigene Zeile`, (aSees ?? []).length === 1, `${(aSees ?? []).length} Zeile(n)`);
+
+    // B sieht nichts davon.
+    const { data: bSees } = await b.client.from(spec.table).select("id");
+    record(`${spec.table}: B sieht nichts davon`, (bSees ?? []).length === 0, `${(bSees ?? []).length} Zeile(n)`);
+
+    // Und B kann nichts hineinschreiben.
+    const { error: bWrite } = await b.client.from(spec.table).insert(spec.row(ctx));
+    const bResult = denied(bWrite);
+    record(`${spec.table}: B kann nicht hineinschreiben`, bResult.ok, bResult.detail);
+  }
+
+  const failed = checks.filter((c) => !c.ok);
+  if (failed.length > 0) {
+    console.error(`\n${failed.length} von ${checks.length} Prüfungen fehlgeschlagen.\n`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`\nAlle ${checks.length} Prüfungen halten.\n`);
+}
+
+try {
+  await main();
+} catch (error: unknown) {
+  console.error(`\n${error instanceof Error ? error.message : String(error)}\n`);
+  process.exitCode = 1;
+}
+
+// Ausdrücklich beenden, statt die Ereignisschleife auslaufen zu lassen: Der
+// Supabase-Client hält offene Handles, und ein natürliches Ende bricht unter
+// Windows mit einem libuv-Fehler ab. Gefahrlos hier — alles ist ausgegeben und
+// es steht keine Arbeit mehr aus.
+process.exit(process.exitCode ?? 0);

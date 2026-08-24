@@ -105,6 +105,10 @@ interface Strings {
     notSaved: string;
     offline: string;
     notFound: string;
+    brokeHeading: string;
+    brokeBody: string;
+    tryAgain: string;
+    loading: string;
   };
   scaffold: {
     heading: string;
@@ -230,6 +234,13 @@ export const DICTIONARY: Record<Locale, Strings> = {
       notSaved: "That could not be saved. Nothing was lost — try again.",
       offline: "No connection at the moment.",
       notFound: "There is nothing here.",
+      // Says what happened and what to do, and nothing about WHY. The reason
+      // belongs in the server log: a database error can name tables and
+      // columns, and a digest number means nothing to the person reading it.
+      brokeHeading: "That did not work.",
+      brokeBody: "Something went wrong on our side. Nothing you have recorded is affected.",
+      tryAgain: "Try again",
+      loading: "One moment…",
     },
     scaffold: {
       heading: "Scaffold",
@@ -348,6 +359,10 @@ export const DICTIONARY: Record<Locale, Strings> = {
       notSaved: "Das konnte nicht gespeichert werden. Nichts ist verloren — bitte noch einmal.",
       offline: "Gerade keine Verbindung.",
       notFound: "Hier ist nichts.",
+      brokeHeading: "Das hat nicht geklappt.",
+      brokeBody: "Auf unserer Seite ist etwas schiefgegangen. An dem, was du erfasst hast, ändert das nichts.",
+      tryAgain: "Nochmal versuchen",
+      loading: "Einen Moment…",
     },
     scaffold: {
       heading: "Gerüst",
