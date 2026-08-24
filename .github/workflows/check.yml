@@ -73,8 +73,7 @@ jobs:
         run: npm ci
 
       # Einzeln benannt, damit die Zusammenfassung zeigt, was tatsächlich
-      # geprüft wurde. web/ hat null Tests; ein grüner Haken darf nicht wie
-      # »die App ist getestet« aussehen.
+      # geprüft wurde — und nicht ein grüner Haken für alles steht.
       - name: Motor — Typen
         run: npm run typecheck --workspace=engine
 
@@ -88,6 +87,13 @@ jobs:
       # abhängt, darf in eine statische Datei gebacken werden.
       - name: App — Build und Prerender-Wächter
         run: npm run build --workspace=web
+
+      # Eigener Schritt, seit es sie gibt: 58 Prüfungen über die
+      # Entscheidungen der App — welcher Wert zulässig ist, welche Sprache ein
+      # Pfad bekommt, welches Profil eine Episode trägt. Zwei der drei Fehler
+      # dieser Woche waren Laufzeitfehler, die tsc und next build durchliessen.
+      - name: App — 58 Tests
+        run: npm run test --workspace=web
 
       # NACH dem Build, mit Absicht. Erst dann existiert .next/types, und die
       # von Next erzeugten Routen-Prüfer sind mit im Programm. Derselbe Befehl,

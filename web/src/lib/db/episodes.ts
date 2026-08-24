@@ -1,6 +1,9 @@
-import { profileByKey, profileFor, type BodyRegion, type Profile, type Side } from "loadwise-engine";
+import type { BodyRegion, Side } from "loadwise-engine";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { EpisodeRow } from "./types";
+
+// Weiterhier von hier exportiert, damit die Seiten sich nicht umgewöhnen müssen.
+export { profileOf } from "@/lib/profile-view";
 
 export type NewEpisode = {
   bodyRegion: BodyRegion;
@@ -9,19 +12,6 @@ export type NewEpisode = {
   startedOn: string | null;
   label: string | null;
 };
-
-/**
- * The profile an episode is judged under.
- *
- * Same order as `evaluateEpisode`: a named profile first, the region's default
- * second. Kept in one function so a page can show the person which profile
- * their episode actually uses — including when the key in the database no
- * longer matches any profile, which is what happens when one is renamed.
- */
-export function profileOf(episode: Pick<EpisodeRow, "body_region" | "profile_key">): Profile {
-  const named = episode.profile_key === null ? undefined : profileByKey(episode.profile_key);
-  return named ?? profileFor(episode.body_region);
-}
 
 export async function listEpisodes(): Promise<EpisodeRow[]> {
   const supabase = await supabaseServer();

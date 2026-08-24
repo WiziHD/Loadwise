@@ -12,7 +12,8 @@
  * component receives strings and never imports the engine.
  */
 
-import type { Locale, Profile } from "loadwise-engine";
+import { profileByKey, profileFor } from "loadwise-engine";
+import type { BodyRegion, Locale, Profile } from "loadwise-engine";
 
 export type PickerProfile = {
   key: string;
@@ -38,3 +39,17 @@ export function toPickerProfile(profile: Profile, locale: Locale): PickerProfile
     tests: [...profile.tests],
   };
 }
+
+/**
+ * The profile an episode is judged under.
+ *
+ * Same order as `evaluateEpisode`: a named profile first, the region's default
+ * second. Kept in one function so a page can show the person which profile
+ * their episode actually uses — including when the key in the database no
+ * longer matches any profile, which is what happens when one is renamed.
+ */
+export function profileOf(episode: { body_region: BodyRegion; profile_key: string | null }): Profile {
+  const named = episode.profile_key === null ? undefined : profileByKey(episode.profile_key);
+  return named ?? profileFor(episode.body_region);
+}
+

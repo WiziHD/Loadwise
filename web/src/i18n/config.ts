@@ -50,3 +50,69 @@ export function localeFrom(value: string | undefined): Locale {
  * it outside the segment that failed.
  */
 export const LOCALE_HEADER = "x-loadwise-locale";
+
+/**
+ * Pfadanfänge, die KEINE Sprache bekommen dürfen.
+ *
+ * `/auth/callback` liegt absichtlich ausserhalb von `[locale]`: Seine Adresse
+ * steht in einer E-Mail, die Tage später geöffnet wird, und darf nicht davon
+ * abhängen, auf welche Sprache der Browser damals eingestellt war.
+ *
+ * Ohne diese Ausnahme machte die Umleitung daraus `/de/auth/callback`, was es
+ * nicht gibt — und JEDER Anmeldelink des Produkts lief in einen 404. Die Route
+ * sagte in ihrem eigenen Kommentar, sie liege bewusst ausserhalb; die
+ * Middleware hat das lautlos zunichtegemacht, und nichts schlug laut genug fehl,
+ * um es zu sagen.
+ */
+const LOCALE_EXEMPT = new Set(["auth"]);
+
+/**
+ * Die erste unterstützte Sprache in der Reihenfolge, die der Browser wünscht.
+ *
+ * Hier und nicht im Proxy, damit sie prüfbar ist: Ein Header wie
+ * `de-CH,de;q=0.9,en;q=0.8` ist genau die Sorte Zeichenkette, bei der eine
+ * Zerlegung von Hand danebengreift, und der Proxy ist von aussen nicht
+ * aufrufbar.
+ */
+export function preferredLocale(header: string | null): Locale {
+  if (header === null) return DEFAULT_LOCALE;
+
+  const ranked = header
+    .split(",")
+    .map((part) => {
+      const [tag = "", ...params] = part.trim().split(";");
+      const q = params.find((p) => p.trim().startsWith("q="));
+      const quality = q === undefined ? 1 : Number.parseFloat(q.split("=")[1] ?? "1");
+      return { base: tag.split("-")[0]?.toLowerCase() ?? "", quality };
+    })
+    .filter((entry) => Number.isFinite(entry.quality))
+    .sort((a, b) => b.quality - a.quality);
+
+  const match = ranked.find((entry) => (LOCALES as readonly string[]).includes(entry.base));
+  return isLocale(match?.base ?? "") ? (match!.base as Locale) : DEFAULT_LOCALE;
+}
+
+/**
+ * Welche Sprache dieser Pfad bekommt, und ob er dafür umgeleitet werden muss.
+ *
+ * `redirectTo` ist null, wenn der Pfad bleiben darf — entweder weil er schon
+ * eine Sprache trägt oder weil er ausgenommen ist. Die Sprache steht trotzdem
+ * dabei, denn die Kopfzeile für die Nicht-gefunden-Grenze wird in beiden Fällen
+ * gebraucht.
+ *
+ * Als reine Funktion, damit der Fehler, der jeden Anmeldelink zerstört hat, ein
+ * Testfall sein kann statt einer Erinnerung.
+ */
+export function localeRouteFor(
+  pathname: string,
+  acceptLanguage: string | null,
+): { locale: Locale; redirectTo: string | null } {
+  const first = pathname.split("/")[1] ?? "";
+
+  if (isLocale(first)) return { locale: first, redirectTo: null };
+
+  const locale = preferredLocale(acceptLanguage);
+  if (LOCALE_EXEMPT.has(first)) return { locale, redirectTo: null };
+
+  return { locale, redirectTo: `/${locale}${pathname === "/" ? "" : pathname}` };
+}
