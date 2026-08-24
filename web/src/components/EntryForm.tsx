@@ -93,7 +93,17 @@ function deviceToday(): string {
 }
 
 const field: React.CSSProperties = {
+  // 44 px ist die kleinste Fläche, die ein Daumen zuverlässig trifft — die
+  // Zahl steht so in den Richtlinien beider Plattformen. Gemessen waren es
+  // 36 bis 39 px: am Rechner unauffällig, am Telefon jeden Abend ein Ärgernis.
+  //
+  // Und das Tagebuch wird am Telefon geführt. Ein Formular, das dort mühsam
+  // ist, wird nicht neunzig Tage lang ausgefüllt — und dann hat der ganze
+  // Motor nichts zu rechnen.
+  minHeight: "2.75rem",
   padding: "0.5rem 0.55rem",
+  // 16 px, nicht kleiner: iOS zoomt beim Antippen in jedes Feld mit kleinerer
+  // Schrift hinein, und der Zoom bleibt danach stehen.
   fontSize: "1rem",
   border: "1px solid var(--line)",
   borderRadius: "0.375rem",
@@ -290,6 +300,7 @@ export function EntryForm({
         <input
           id="morningScore"
           type="number"
+          inputMode="numeric"
           min={0}
           max={10}
           step={1}
@@ -325,6 +336,7 @@ export function EntryForm({
             <span style={{ fontSize: "0.85rem" }}>{strings.duration}</span>
             <input
               type="number"
+              inputMode="numeric"
               min={1}
               step={1}
               value={draft.durationMin}
@@ -337,6 +349,7 @@ export function EntryForm({
             <span style={{ fontSize: "0.85rem" }}>{strings.rpe}</span>
             <input
               type="number"
+              inputMode="numeric"
               min={1}
               max={10}
               step={1}
@@ -357,6 +370,7 @@ export function EntryForm({
           <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{strings.symptom}</span>
           <input
             type="number"
+            inputMode="numeric"
             min={0}
             max={10}
             step={1}
@@ -401,7 +415,8 @@ export function EntryForm({
         type="submit"
         disabled={pending}
         style={{
-          padding: "0.6rem 1rem",
+          minHeight: "2.75rem",
+          padding: "0.6rem 1.25rem",
           fontSize: "1rem",
           borderRadius: "0.375rem",
           border: "1px solid var(--fg)",

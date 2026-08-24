@@ -53,7 +53,8 @@ export async function AppHeader({ locale }: { locale: Locale }) {
               // Deliberately quiet. It has to be findable without hunting and
               // impossible to press by accident on a phone — which is why it is
               // a real button with padding rather than a link in a row of links.
-              padding: "0.3rem 0.7rem",
+              minHeight: "2.75rem",
+              padding: "0.3rem 0.9rem",
               fontSize: "0.85rem",
               borderRadius: "0.375rem",
               border: "1px solid var(--line)",
