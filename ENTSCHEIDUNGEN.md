@@ -260,3 +260,50 @@ Das ist kein Widerspruch zur Entscheidung — es ist ihr Preis. Genau zwei Hebel
 - **Physio-Kanal:** sobald der Physio-Bericht steht (Karte 4.1) und einmal einer echten Physiotherapeutin gezeigt wurde. Die Frage ist dann nicht mehr theoretisch.
 - **Prävention:** wenn die Bindungszahlen aus Konzept Abschnitt 14 stehen — 20 % mit mindestens 30 Tagen.
 - **Beide sofort**, wenn die Suchmaschinen-Gewinnung nach sechs Monaten Inhaltsarbeit nicht trägt. Dann ist die Reihenfolge widerlegt und nicht nur unbequem.
+
+---
+
+## E10 — Die ersten vierzehn Tage: der Spiegel
+
+**Entschieden 25.08.2026** · betrifft Karte 2.1 und 4.4
+
+### Das Loch, um das es geht
+
+Zwei bekannte Befunde ergeben zusammen einen dritten, der schwerer wiegt als beide:
+
+- **Konzept, Abschnitt 8:** »Das grösste Risiko dieses Produkts ist nicht die Technik und nicht der Wettbewerb. Es ist, dass morgen kein zweiter Eintrag kommt.«
+- **Karte 4.4:** In den ersten zwei Wochen ist das offensichtlichste Signal — Morgenwerte, die 2 → 4 → 5 → 7 steigen — für den Motor **unsichtbar**. Die 24-Stunden-Regel braucht zehn Einträge in vierzehn Tagen, die Ausgangswerte 28.
+
+Zusammengelesen: **In genau dem Fenster, in dem jemand gehalten oder verloren wird, schweigt die App — und ist gleichzeitig blind für das Einzige, was die Person selbst sieht.** Wer merkt, dass es schlechter wird, während die App nichts sagt, zieht einen naheliegenden Schluss über die App.
+
+Der Hauptbildschirm aus E7 hat in dieser Zeit keinen Satz, den er zeigen könnte.
+
+### Was nicht die Lösung ist
+
+**Eine achte Regel für die Frühphase.** Sie bräuchte eine Schwelle, und für diesen Zeitraum gibt es keine belegte. Das wäre die erste geratene Zahl im Motor — an der empfindlichsten Stelle, mit der dünnsten Datenlage. Genau der Fehler, den dieses Projekt sonst überall vermeidet.
+
+### Was die Lösung ist
+
+**Die App gibt zurück, was sie gesehen hat, ohne es zu deuten.**
+
+> Deine Morgenwerte der letzten fünf Tage: **2 · 4 · 5 · 5 · 7**
+>
+> Ab zehn Einträgen in vierzehn Tagen kann ich sagen, ob das mit deiner Belastung zusammenhängt.
+
+Das ist keine Auswertung, sondern ein Spiegel. Es fügt der Person keine Information hinzu, die sie nicht hat — sie hat die Zahlen selbst eingetippt. Was es hinzufügt, ist **Aufmerksamkeit**: Die App schaut hin, auch wenn sie noch nichts sagen darf.
+
+### Drei Bedingungen, ohne die es kippt
+
+1. **Keine Deutung, in keiner Form.** Kein »steigend«, kein Pfeil, keine Farbe der Urteile. Ein »↑« wäre eine Behauptung über einen Trend aus fünf Punkten — genau das, was der Motor über eine Regel verweigert. Wer das Zeichen hinzufügt, hat die achte Regel gebaut, nur ohne Test.
+
+2. **Der Satz darunter nennt das ECHTE Hindernis, nicht »bald mehr«.** Der Motor liefert die Blockade-Gründe samt Zahlen bereits: *»Beurteilt: 0 von 5 erwarteten Tagen, 1 von 7 Regeln haben gesprochen.«* Der Fortschrittsbalken zeigt damit, **wie nah die App daran ist, etwas sagen zu können** — nicht, wie fleissig jemand einträgt. Das ist der Unterschied zwischen E10 und einem Streak (E8), und er ist der ganze Punkt.
+
+3. **Der Spiegel tritt zurück, sobald der Motor spricht.** Sonst konkurrieren wieder zwei Dinge um dieselbe Stelle — der Fehler, den E7 vermeidet. Rangfolge auf dem Hauptbildschirm: **Befund → Genesung → Spiegel.**
+
+### Gestaltung
+
+Der Spiegel ist die eine Stelle, an der die App Daten zeigt, **ohne sie zu beurteilen** — und muss sich deshalb sichtbar von einem Urteil unterscheiden. Dafür gibt es bereits eine Farbe: `--unjudged`, angelegt als »die Farbe, die nie nach Grün aussehen darf«. Hier bekommt sie ihren zweiten Einsatz.
+
+### Wann man das wieder aufmacht
+
+Wenn sich an echten Verläufen zeigt, dass der Spiegel **beunruhigt** statt zu binden. Das ist messbar — nicht an einer Zahl, sondern an der Frage aus Konzept Abschnitt 14: Was sagen Leute, wenn man sie fragt. Fällt das Urteil negativ aus, ist die Antwort Bedingung 1 zu verschärfen, nicht den Spiegel abzuschaffen: Zahlen zurückzugeben, die jemand selbst eingetippt hat, kann für sich nicht beunruhigen.
