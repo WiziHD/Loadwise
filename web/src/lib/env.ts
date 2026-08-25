@@ -23,14 +23,31 @@ export const PUBLIC_ENV = {
 };
 
 /**
- * Server only. NEVER import this into a client component.
+ * ---------------------------------------------------------------------------
+ * HIER STAND `SERVER_ENV` MIT DEM SERVICE-ROLE-SCHLÜSSEL, UND NIEMAND HAT ES
+ * BENUTZT.
  *
- * The service role key bypasses Row Level Security completely — it is the one
- * credential that can read every user's diary. It exists here for exactly one
- * job: writing `flags` and `evaluations`, which user accounts are forbidden to
- * write so that a manipulated client cannot award itself an all-clear.
+ * Der Schlüssel umgeht den zeilenbasierten Zugriffsschutz vollständig — die
+ * eine Zugangsberechtigung, die jedes Tagebuch jedes Nutzers lesen kann. Die
+ * App liest ihn nirgends: Sowohl `supabaseServer()` als auch der Browserclient
+ * nehmen den anon key, damit jede Abfrage durch die Regeln geht. Nur die beiden
+ * Entwicklerskripte brauchen ihn, und die lesen `.env.local` direkt.
+ *
+ * Ein ungenutzter Export ist die H15-Familie mit Einsatz: Er lag in DERSELBEN
+ * Datei, aus der `lib/supabase/client.ts` — ein Client-Modul — sich `PUBLIC_ENV`
+ * holt. Ein Wort in der Autovervollständigung daneben, und der Zugriff stünde
+ * in einem Client-Bündel.
+ *
+ * Ehrlich dazu, wie schlimm das gewesen wäre: Next ersetzt Umgebungsvariablen
+ * ohne `NEXT_PUBLIC_`-Präfix im Browserbündel durch `undefined`. Der Schlüssel
+ * selbst wäre also NICHT ausgeliefert worden; es hätte einen Laufzeitfehler
+ * gegeben. Belegt ist beides: Der Wert kommt in keiner der 336 Build-Dateien
+ * vor, und die Gegenprobe mit dem anon key findet ihn in 26 — die Suche
+ * funktioniert also.
+ *
+ * Trotzdem gelöscht. Wenn `flags` und `evaluations` in Woche 2 serverseitig
+ * geschrieben werden, wird der Zugang dort geschrieben, wo er gebraucht wird,
+ * mit der Begründung von dann. Ein Vorrat für später ist kein Vorrat, sondern
+ * eine offene Tür ohne Wächter.
+ * ---------------------------------------------------------------------------
  */
-export const SERVER_ENV = {
-  supabaseServiceRoleKey: () =>
-    required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY),
-};

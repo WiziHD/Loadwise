@@ -1,6 +1,22 @@
 import type { NextConfig } from "next";
+import { STATIC_SECURITY_HEADERS } from "./src/lib/security-headers";
 
 const config: NextConfig = {
+  /**
+   * `X-Powered-By: Next.js` stand in jeder Antwort. Kein Loch für sich, aber
+   * es sagt einem Scanner kostenlos, welche Angriffe sich überhaupt lohnen.
+   */
+  poweredByHeader: false,
+
+  /**
+   * Die Kopfzeilen ohne Anfragebezug — hier und nicht im Proxy, weil der
+   * statische Dateien absichtlich auslässt. Die Inhaltsrichtlinie braucht
+   * dagegen einen Nonce je Anfrage und steht deshalb im Proxy.
+   */
+  async headers() {
+    return [{ source: "/:path*", headers: STATIC_SECURITY_HEADERS }];
+  },
+
   /**
    * The engine ships as TypeScript source, not as a built bundle.
    *

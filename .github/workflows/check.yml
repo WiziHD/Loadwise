@@ -72,6 +72,15 @@ jobs:
       - name: Abhängigkeiten
         run: npm ci
 
+      # Vor allem anderen: Womit wird hier eigentlich gebaut?
+      #
+      # Dieses Projekt hatte schon einmal zwei kritische Verwundbarkeiten in
+      # einer festgenagelten Testbibliothek — gefunden, weil jemand hinsah,
+      # nicht weil etwas anschlug. Bei einem Produkt mit Gesundheitsdaten ist
+      # das die falsche Reihenfolge.
+      - name: Abhängigkeiten — bekannte Schwachstellen
+        run: npm audit --audit-level=high
+
       # Einzeln benannt, damit die Zusammenfassung zeigt, was tatsächlich
       # geprüft wurde — und nicht ein grüner Haken für alles steht.
       - name: Motor — Typen
@@ -80,7 +89,10 @@ jobs:
       # `coverage` und nicht `test`: dieselbe Suite plus die Schwellen. Darin
       # steckt die 100-%-Zweigabdeckung auf src/rules/**, mit der die README
       # wirbt und die vorher von keiner Kette erreicht wurde.
-      - name: Motor — 316 Tests und Abdeckungsschwellen
+      # Ohne Zahl im Namen: Die stand hier auf 316, als es 364 waren. Eine
+      # Zahl, die niemand nachzieht, ist eine Behauptung — und die Ausgabe des
+      # Laufs nennt sie ohnehin.
+      - name: Motor — Tests und Abdeckungsschwellen
         run: npm run coverage --workspace=engine
 
       # Enthält den Prerender-Wächter: nichts, was von der anmeldenden Person
@@ -88,11 +100,11 @@ jobs:
       - name: App — Build und Prerender-Wächter
         run: npm run build --workspace=web
 
-      # Eigener Schritt, seit es sie gibt: 58 Prüfungen über die
+      # Eigener Schritt, seit es sie gibt: Prüfungen über die
       # Entscheidungen der App — welcher Wert zulässig ist, welche Sprache ein
       # Pfad bekommt, welches Profil eine Episode trägt. Zwei der drei Fehler
       # dieser Woche waren Laufzeitfehler, die tsc und next build durchliessen.
-      - name: App — 58 Tests
+      - name: App — Tests
         run: npm run test --workspace=web
 
       # NACH dem Build, mit Absicht. Erst dann existiert .next/types, und die
@@ -101,7 +113,7 @@ jobs:
       - name: App — Typen
         run: npm run typecheck --workspace=web
 
-      # 248 Motorsätze dürfen in keiner App-Datei auftauchen. Die Wortwahl ist
+      # Die Motorsätze dürfen in keiner App-Datei auftauchen. Die Wortwahl ist
       # hier eine regulatorische Grenze, keine Geschmacksfrage. Eigener Schritt,
       # seit sie nicht mehr in `typecheck` versteckt ist.
       - name: App — Wortgrenze

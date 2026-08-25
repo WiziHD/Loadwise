@@ -105,11 +105,29 @@ export async function createEpisode(input: NewEpisode): Promise<{ id: string }> 
  * Schnittstelle ohne Transaktion — und ein Fehlschlag dazwischen ergäbe
  * entweder einen Profilwechsel ohne Erklärung oder eine Erklärung für einen
  * Wechsel, der nie stattfand. Siehe 0006_episode_edit.sql.
+ *
+ * ---------------------------------------------------------------------------
+ * `.select("id")` IST HIER KEINE ZIER, SONDERN DIE FEHLERERKENNUNG.
+ *
+ * Ein UPDATE, das die Zugriffsregel verbietet, liefert KEINEN Fehler. Gemessen
+ * an der echten Datenbank: Konto B ändert die Episode von Konto A, PostgREST
+ * antwortet mit 204 und `error === null`. Die Zeile bleibt unangetastet — RLS
+ * filtert sie einfach aus der Menge heraus, die das UPDATE sieht —, aber die
+ * App erfuhr davon nichts und meldete »Gespeichert.«
+ *
+ * Das ist derselbe Fehler wie beim Tageseintrag: ein Schreibvorgang, der nicht
+ * stattgefunden hat, sieht aus wie einer, der stattgefunden hat. Mit
+ * `.select("id")` kommen die geänderten Zeilen zurück, und null Zeilen heissen
+ * null Zeilen.
+ *
+ * Was dabei ABSICHTLICH nicht unterschieden wird: eine fremde Episode und eine,
+ * die es gar nicht gibt. Beide liefern null Zeilen — gemessen, nicht vermutet.
+ * Wer Kennungen durchprobiert, lernt daraus nichts.
  * ---------------------------------------------------------------------------
  */
 export async function updateEpisode(id: string, patch: EpisodePatchInput): Promise<void> {
   const supabase = await supabaseServer();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("episodes")
     .update({
       profile_key: patch.profileKey,
@@ -118,9 +136,11 @@ export async function updateEpisode(id: string, patch: EpisodePatchInput): Promi
       started_on: patch.startedOn,
       label: patch.label,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
 
   if (error !== null) throw new Error(error.message);
+  if ((data ?? []).length === 0) throw new Error("episode-not-writable");
 }
 
 /**
@@ -128,15 +148,20 @@ export async function updateEpisode(id: string, patch: EpisodePatchInput): Promi
  *
  * Ein Zeitstempel statt eines Wahrheitswerts: Wann etwas weggeräumt wurde, ist
  * eine Auskunft; dass es weggeräumt ist, ist daraus ableitbar. Umgekehrt nicht.
+ *
+ * `.select("id")` aus demselben Grund wie oben: Ohne es meldet auch das
+ * Archivieren einer fremden Episode Erfolg.
  */
 export async function setArchived(id: string, archived: boolean): Promise<void> {
   const supabase = await supabaseServer();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("episodes")
     .update({ archived_at: archived ? new Date().toISOString() : null })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
 
   if (error !== null) throw new Error(error.message);
+  if ((data ?? []).length === 0) throw new Error("episode-not-writable");
 }
 
 /**

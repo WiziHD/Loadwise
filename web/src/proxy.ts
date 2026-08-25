@@ -1,10 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { LOCALE_HEADER, localeRouteFor } from "@/i18n/config";
+import { contentSecurityPolicy } from "@/lib/security-headers";
 
 /**
- * Two jobs on every request: keep the session alive, and make sure the URL
- * carries a language.
+ * Drei Aufgaben bei jeder Anfrage: die Sitzung am Leben halten, dafür sorgen
+ * dass die Adresse eine Sprache trägt — und die Inhaltsrichtlinie setzen.
  *
  * The session part has to happen here rather than in a page. Supabase refresh
  * tokens rotate, and a server component cannot write cookies — so without this
@@ -30,9 +31,28 @@ export async function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set(LOCALE_HEADER, wanted);
 
+  // ------------------------------------------------------------------------
+  // DER NONCE MUSS SICH JE ANFRAGE ÄNDERN, SONST IST ER KEINER.
+  //
+  // `crypto.randomUUID` steht in der Edge-Laufzeit zur Verfügung. Er wird als
+  // Kopfzeile an die ANFRAGE gehängt, weil Next ihn von dort liest und an
+  // seine eigenen Inline-Skripte schreibt — und zusätzlich in der ANTWORT
+  // mitgeschickt, weil der Browser die Richtlinie dort erwartet.
+  // ------------------------------------------------------------------------
+  const nonce = crypto.randomUUID();
+  const csp = contentSecurityPolicy(
+    nonce,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NODE_ENV !== "production",
+  );
+  headers.set("x-nonce", nonce);
+  headers.set("content-security-policy", csp);
+
   let response = NextResponse.next({ request: { headers } });
+  response.headers.set("content-security-policy", csp);
 
   response = await refreshSession(request, headers, response);
+  response.headers.set("content-security-policy", csp);
 
   if (redirectTo === null) return response;
 

@@ -37,6 +37,29 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+/**
+ * Der Riegel, der dieses Skript von der Produktion fernhält.
+ *
+ * ---------------------------------------------------------------------------
+ * DIESES SKRIPT IST NICHT HARMLOS.
+ *
+ * Es legt zwei Konten an, meldet sich als beide an und schreibt Sondenzeilen in
+ * zehn Tabellen. In einer Entwicklungsdatenbank ist das genau richtig. In einer
+ * Produktionsdatenbank wären es zwei echte Konten mit Zugang zu einem Bereich
+ * für Gesundheitsdaten, die niemand angelegt hat und die in keiner Liste
+ * stehen.
+ *
+ * Bisher entschied darüber allein, worauf `.env.local` gerade zeigte. Ein
+ * kopierter Schlüssel, ein umgestelltes Projekt, ein Lauf aus Gewohnheit — und
+ * die Testkonten wären dort, wo sie nie sein dürfen.
+ *
+ * Deshalb eine ausdrückliche Erlaubnis, die in einer Produktionsumgebung
+ * niemand gesetzt hat. Sie zu setzen ist eine Handlung; sie zu vergessen ist
+ * keine.
+ * ---------------------------------------------------------------------------
+ */
+const ERLAUBNIS = "LOADWISE_ALLOW_PROBE_ACCOUNTS";
+
 const A_EMAIL = "rls-probe-a@loadwise.test";
 const B_EMAIL = "rls-probe-b@loadwise.test";
 const PROBE_LABEL = "RLS-Sonde";
@@ -307,6 +330,18 @@ async function main(): Promise<void> {
     console.error(
       "NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY und " +
         "SUPABASE_SERVICE_ROLE_KEY werden in .env.local gebraucht.",
+    );
+    process.exit(1);
+  }
+
+  if (env[ERLAUBNIS] !== "ja") {
+    console.error(
+      `Dieses Skript legt zwei Konten an und schreibt Sondenzeilen. Es läuft nur,\n` +
+        `wenn in .env.local ausdrücklich steht:\n\n` +
+        `  ${ERLAUBNIS}=ja\n\n` +
+        `Dort steht es für die Entwicklungsdatenbank. In einer Produktionsumgebung\n` +
+        `steht es nicht — und dann bricht dieser Lauf ab, statt Konten anzulegen,\n` +
+        `die niemand angelegt hat und die in keiner Liste stehen.\n`,
     );
     process.exit(1);
   }

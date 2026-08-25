@@ -24,15 +24,46 @@ export async function requestSignInLink(
   // or it does not, and that is the real check.
   if (!email.includes("@") || email.length < 5) return { ok: false, reason: "invalid-email" };
 
-  const origin = (await headers()).get("origin") ?? "";
   const supabase = await supabaseServer();
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${origin}/auth/callback?locale=${locale}` },
+    options: { emailRedirectTo: `${await siteOrigin()}/auth/callback?locale=${locale}` },
   });
 
   return error === null ? { ok: true } : { ok: false, reason: "send-failed" };
+}
+
+/**
+ * Wohin der Anmeldelink zeigt — aus der Konfiguration, nicht aus der Anfrage.
+ *
+ * ---------------------------------------------------------------------------
+ * HIER STAND `headers().get("origin")`.
+ *
+ * Eine Server-Aktion ist ein öffentlicher Endpunkt: Wer sie aufruft, bestimmt
+ * die Kopfzeilen. Der `Origin` war damit ein vom Aufrufer gesetzter Wert, aus
+ * dem die Adresse gebaut wurde, an die ein ANMELDELINK geschickt wird — und ein
+ * Anmeldelink trägt einen Token, der ein Konto öffnet.
+ *
+ * Ausnutzbar war es heute nicht: Supabase prüft `emailRedirectTo` gegen die
+ * Liste erlaubter Rückkehradressen des Projekts und fällt sonst auf die
+ * Site-URL zurück. Die Sicherheit lag also an einer Einstellung im
+ * Verwaltungsbereich, nicht an dieser Datei. Diese Liste ist genau die, die
+ * beim Einrichten von eigenem SMTP angefasst wird (Karte H3) — der Zeitpunkt,
+ * zu dem jemand versucht ist, ein Platzhalterzeichen hineinzuschreiben.
+ *
+ * `NEXT_PUBLIC_SITE_URL` ist absichtlich OPTIONAL: Ohne sie läuft die
+ * Entwicklung wie bisher weiter. Ist sie gesetzt, hängt nichts mehr an der
+ * Kopfzeile. Vor einer Auslieferung gehört sie gesetzt, und das steht in
+ * .env.example.
+ * ---------------------------------------------------------------------------
+ */
+async function siteOrigin(): Promise<string> {
+  const konfiguriert = process.env.NEXT_PUBLIC_SITE_URL;
+  if (konfiguriert !== undefined && konfiguriert.trim() !== "") {
+    return konfiguriert.replace(/\/+$/, "");
+  }
+  return (await headers()).get("origin") ?? "";
 }
 
 export async function signOut(locale: Locale): Promise<never> {
