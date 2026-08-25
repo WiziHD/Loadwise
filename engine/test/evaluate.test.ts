@@ -4,6 +4,7 @@ import type { Overall, Severity } from "../src/types.js";
 import {
   ACHILLES_CTX,
   overloadWeek,
+  session,
   poorResponse,
   steadyRecovery,
   symmetricTests,
@@ -115,5 +116,57 @@ describe("episode evaluation", () => {
       return f ? (f.detail as { acute: number }).acute : 0;
     };
     expect(loadOf(achilles)).toBeGreaterThan(loadOf(shoulder) * 5);
+  });
+});
+
+describe("der Rand des Tagebuchs — heute ist eben heute", () => {
+  /**
+   * -------------------------------------------------------------------------
+   * EIN FEHLENDES MORGEN IST KEINE LÜCKE.
+   *
+   * Die 24-Stunden-Regel braucht bei einer mittleren Reaktion den ÜBERNÄCHSTEN
+   * Tag, um zu entscheiden, ob sie sich gelegt hat. Fehlt der, weil das
+   * Tagebuch dort einfach aufhört, ist das kein blinder Fleck, sondern der
+   * Kalender.
+   *
+   * `isTrailingEdge` unterscheidet die beiden Fälle. Für `next-day-missing`
+   * war das belegt, für `second-day-missing` nie — der Zweig war in 340 Tests
+   * kein einziges Mal gelaufen. Ohne ihn meldete jedes Tagebuch an seinem
+   * letzten Trainingstag eine Lücke, die keine ist, und diese Meldung würde
+   * jeden Tag aufs Neue erscheinen.
+   *
+   * Der Gegenfall steht daneben: dasselbe Loch MITTEN im Verlauf muss gemeldet
+   * werden. Sonst prüfte dieser Test nur, dass die Regel schweigt.
+   * -------------------------------------------------------------------------
+   */
+  const tag = (n: number): string => `2026-03-${String(n).padStart(2, "0")}`;
+
+  /** Training, am Tag darauf eine mittlere Reaktion, danach nichts mehr. */
+  const bisTag = (letzter: number) => {
+    const entries = [];
+    for (let i = 1; i <= letzter; i++) {
+      const date = tag(i) as `${number}-${number}-${number}`;
+      if (i === letzter - 1) entries.push({ date, morningScore: 2, sessions: [session(6, 45)] });
+      else if (i === letzter) entries.push({ date, morningScore: 5, sessions: [] });
+      else entries.push({ date, morningScore: 2, sessions: [] });
+    }
+    return entries;
+  };
+
+  const gruende = (entries: ReturnType<typeof bisTag>) =>
+    evaluateEpisode({ entries, context: ACHILLES_CTX }).pending.map((p) => p.reason);
+
+  it("meldet keinen fehlenden Folgetag am Ende des Tagebuchs", () => {
+    expect(gruende(bisTag(20))).not.toContain("second-day-missing");
+  });
+
+  it("meldet ihn aber, sobald das Tagebuch danach weitergeht", () => {
+    // Dasselbe Loch, nur nicht mehr am Rand: Nach der Reaktion kommen weitere
+    // Tage, der übernächste fehlt trotzdem. Jetzt ist es ein blinder Fleck.
+    const entries = bisTag(20);
+    for (let i = 23; i <= 30; i++) {
+      entries.push({ date: tag(i) as `${number}-${number}-${number}`, morningScore: 2, sessions: [] });
+    }
+    expect(gruende(entries)).toContain("second-day-missing");
   });
 });

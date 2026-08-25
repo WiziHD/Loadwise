@@ -443,6 +443,15 @@ export interface LoadSpikeDetail {
 
 export interface AsymmetryDetail {
   type: TestType;
+  /**
+   * Der Tag der NEUESTEN Messung, die in dieses Urteil eingegangen ist.
+   *
+   * Nicht der Tag der neuesten Messung dieses Typs überhaupt. Eine Messung
+   * ohne brauchbaren Index — die gesunde Seite bei null, also kein Divisor —
+   * wird von der Regel verworfen, und ein Flag darauf zu datieren würde auf
+   * eine Zahl zeigen, die das Urteil nie gesehen hat.
+   */
+  measuredOn: DateStr;
   lsi: number;
   history: number[];
   /** Absolute values of the reference side, so a shrinking reference is visible. */

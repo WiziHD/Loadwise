@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from "vitest";
 import { EXPECTATIONS, violations } from "../src/expectations.js";
-import { SCENARIOS } from "../src/fixtures.js";
+import { SCENARIOS, type Scenario } from "../src/fixtures.js";
 import { DEFAULT_CONFIG, type Config } from "../src/types.js";
 
 describe("every scenario has an oracle", () => {
@@ -134,5 +134,60 @@ describe("the oracle can actually fail", () => {
       c.drift.redRise = 10;
     });
     expect(found.some((v) => v.startsWith("grinder:"))).toBe(false);
+  });
+});
+
+describe("und das Orakel kann auch an einem Szenario scheitern", () => {
+  /**
+   * -------------------------------------------------------------------------
+   * DREI WÄCHTER, DIE ÜBER DIE KONFIGURATION NICHT ERREICHBAR SIND.
+   *
+   * Die Fälle oben drehen an Schwellen. Diese hier greifen, wenn ein SZENARIO
+   * aufhört, das zu sein, was seine Erwartung behauptet — und das kann keine
+   * Konfiguration herbeiführen.
+   *
+   * Warum das zählt: Ein Szenario ist eine Behauptung über die Wirklichkeit
+   * (»so sieht ein lückenhaftes Tagebuch aus«). Wer die Lücken herausnimmt,
+   * damit ein Test grün wird, hat die Behauptung still verändert — und genau
+   * dagegen sind diese drei Zeilen da. Sie waren bis hierher nie ausgeführt.
+   * -------------------------------------------------------------------------
+   */
+  const szenario = (key: string): Scenario => {
+    const gefunden = SCENARIOS.find((s) => s.key === key);
+    if (gefunden === undefined) throw new Error(`kein Szenario ${key}`);
+    return gefunden;
+  };
+
+  it("meldet ein Szenario, für das niemand eine Erwartung geschrieben hat", () => {
+    // Vorher stand hier ein stilles `continue`. Der Waisentest oben fängt so
+    // etwas ab — aber `npm run mutate` ruft `violations` direkt auf, ohne ihn,
+    // und hätte ein Szenario mitgezählt, das nichts behauptet.
+    const waise: Scenario = { ...szenario("steady"), key: "niemandes_kind" };
+    const found = violations(DEFAULT_CONFIG, [waise]);
+    expect(found).toEqual(["niemandes_kind: keine Erwartung — dieses Szenario behauptet nichts"]);
+  });
+
+  it("merkt, wenn jemand die Löcher aus einem lückenhaften Verlauf herausnimmt", () => {
+    // `sparse` behauptet: jeder zweite Tag fehlt, daraus lässt sich nichts
+    // entwarnen. Wer die Einträge gegen einen vollständigen Verlauf tauscht,
+    // lässt den Namen stehen und die Behauptung fallen.
+    const gefaelscht: Scenario = { ...szenario("sparse"), entries: szenario("steady").entries };
+    const found = violations(DEFAULT_CONFIG, [gefaelscht]);
+
+    expect(found).toContain("sparse: entwarnt auf zu dünner Grundlage");
+    expect(found).toContain("sparse: nennt nicht, was am Verlauf selbst fehlt");
+  });
+
+  it("und beides greift getrennt", () => {
+    // Der zweite Wächter ist nicht bloss ein Anhängsel des ersten: Ein
+    // Verlauf kann ohne Entwarnung enden und trotzdem verschweigen, was ihm
+    // fehlt. `grinder` ist lückenlos geführt und endet mit einer Warnung —
+    // also keine Entwarnung —, und der Wächter, der nach dem Fehlenden fragt,
+    // greift allein.
+    const gefaelscht: Scenario = { ...szenario("sparse"), entries: szenario("grinder").entries };
+    const found = violations(DEFAULT_CONFIG, [gefaelscht]);
+
+    expect(found).not.toContain("sparse: entwarnt auf zu dünner Grundlage");
+    expect(found).toContain("sparse: nennt nicht, was am Verlauf selbst fehlt");
   });
 });

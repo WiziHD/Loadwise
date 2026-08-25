@@ -7,6 +7,9 @@ import {
   wideningWhileStillGreen,
 } from "../src/fixtures.js";
 import { evaluateAsymmetry, limbSymmetryIndex, worstOf } from "../src/rules/asymmetry.js";
+import { evaluateEpisode } from "../src/evaluate.js";
+import { profileFor } from "../src/profiles/registry.js";
+import { steadyRecovery } from "../src/fixtures.js";
 import { DEFAULT_CONFIG, type SelfTest } from "../src/types.js";
 
 const cfg = DEFAULT_CONFIG;
@@ -168,5 +171,67 @@ describe("asymmetry rule", () => {
       expect(result.detail.lsi).toBeCloseTo(92, 5);
       expect(result.detail.history).toHaveLength(3);
     }
+  });
+});
+
+describe("der Tag, auf den ein Urteil datiert wird", () => {
+  /**
+   * -------------------------------------------------------------------------
+   * EIN URTEIL VOM MÄRZ, DATIERT AUF JUNI.
+   *
+   * Die Regel verwirft Messungen ohne brauchbaren Index — gesunde Seite bei
+   * null, also kein Divisor. `evaluate.ts` suchte den Flag-Tag aber getrennt,
+   * über ALLE Messungen dieses Typs, ungefiltert. Ist ausgerechnet die jüngste
+   * eine verworfene, trug das Flag ihr Datum.
+   *
+   * Sichtbar wäre das als »Stand 14.06.« neben einer Zahl vom 02.03. gewesen —
+   * plausibel, still, und in einem Bericht an eine Physiotherapie schlicht
+   * falsch.
+   * -------------------------------------------------------------------------
+   */
+  // Beide Tage liegen im Tagebuch von `steadyRecovery(56)` (02.03. bis
+  // 26.04.) und innerhalb der 42 Tage, ab denen eine Messung als veraltet
+  // gilt. Sonst greift die Staleness-Sperre, und der Fall käme nie zustande.
+  const brauchbar: SelfTest = {
+    type: "calf_raise",
+    date: "2026-04-06",
+    involved: 18,
+    uninvolved: 20,
+  };
+  // Später gemessen, aber ohne Divisor: die Regel liest sie nicht.
+  const unbrauchbar: SelfTest = {
+    type: "calf_raise",
+    date: "2026-04-20",
+    involved: 5,
+    uninvolved: 0,
+  };
+
+  it("nennt den Tag der Messung, die tatsächlich gelesen wurde", () => {
+    const result = evaluateAsymmetry([brauchbar, unbrauchbar], "calf_raise", cfg);
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("unerreichbar");
+    expect(result.detail.measuredOn).toBe("2026-04-06");
+    expect(result.detail.lsi).toBe(90);
+  });
+
+  it("und der Motor datiert das Flag genauso", () => {
+    // Die Hälfte, die zählt: Der Fehler sass nicht in der Regel, sondern im
+    // Aufrufer. Ein Test allein auf der Regel hätte ihn nie gefunden.
+    const result = evaluateEpisode({
+      entries: steadyRecovery(56),
+      tests: [brauchbar, unbrauchbar],
+      profile: profileFor("achilles"),
+      context: { bodyRegion: "achilles" },
+    });
+    const asymmetrie = result.flags.filter((f) => f.kind === "asymmetry");
+    expect(asymmetrie.length).toBeGreaterThan(0);
+    for (const flag of asymmetrie) expect(flag.forDate).toBe("2026-04-06");
+  });
+
+  it("nimmt sonst den jüngsten brauchbaren Tag", () => {
+    const spaeter: SelfTest = { ...brauchbar, date: "2026-04-20", involved: 19 };
+    const result = evaluateAsymmetry([brauchbar, spaeter], "calf_raise", cfg);
+    if (result.status !== "ok") throw new Error("unerreichbar");
+    expect(result.detail.measuredOn).toBe("2026-04-20");
   });
 });

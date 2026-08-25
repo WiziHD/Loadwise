@@ -48,7 +48,6 @@ import {
   type ReasonCode,
   type SelfTest,
   type Severity,
-  type TestType,
 } from "./types.js";
 
 /** Every rule that can contribute a verdict. Used for the coverage count. */
@@ -167,24 +166,40 @@ export function evaluateEpisode(input: EvaluationInput): Evaluation {
   let blockedDays = 0;
   const blockedByReason = new Map<BlockingReason, number>();
 
-  for (const entry of index.entries) {
-    const result = evaluateResponse24h(index, entry.date, config);
+  // ------------------------------------------------------------------------
+  // DIE PRÜFUNG AUF »GAR KEIN TAG« STEHT HIER — UND HIER LÄUFT SIE AUCH.
+  //
+  // In `isTrailingEdge` stand dafür eine Wache, und die konnte nie greifen:
+  // Aufgerufen wurde sie ausschliesslich aus dieser Schleife, und eine
+  // Schleife über `index.entries` läuft nicht, wenn es keine gibt. In 364
+  // Tests kein einziges Mal ausgeführt.
+  //
+  // Hier oben ist derselbe Vergleich lebendig: Ein leeres Tagebuch ist eine
+  // zulässige Eingabe (test/edge.test.ts), und dann wird dieser Block
+  // übersprungen — was er vorher auch tat, nur ohne dass es jemand sagen
+  // konnte.
+  // ------------------------------------------------------------------------
+  const letzterTag = index.last;
+  if (letzterTag !== null) {
+    for (const entry of index.entries) {
+      const result = evaluateResponse24h(index, entry.date, config);
 
-    if (result.status === "ok") {
-      judgedDays++;
-      flags.push(flagFrom("response_24h", entry.date, result.severity, result.reason, result.detail));
-      continue;
+      if (result.status === "ok") {
+        judgedDays++;
+        flags.push(flagFrom("response_24h", entry.date, result.severity, result.reason, result.detail));
+        continue;
+      }
+
+      // A rest day carries no reaction; a missing entry is not a diary day.
+      if (!isBlocking(result.reason)) continue;
+
+      // The last days of a diary legitimately have no tomorrow yet. That is the
+      // diary catching up with the calendar, not a gap in the record.
+      if (isTrailingEdge(letzterTag, entry.date, result.reason)) continue;
+
+      blockedDays++;
+      blockedByReason.set(result.reason, (blockedByReason.get(result.reason) ?? 0) + 1);
     }
-
-    // A rest day carries no reaction; a missing entry is not a diary day.
-    if (!isBlocking(result.reason)) continue;
-
-    // The last days of a diary legitimately have no tomorrow yet. That is the
-    // diary catching up with the calendar, not a gap in the record.
-    if (isTrailingEdge(index, entry.date, result.reason)) continue;
-
-    blockedDays++;
-    blockedByReason.set(result.reason, (blockedByReason.get(result.reason) ?? 0) + 1);
   }
 
   // One line per distinct reason, not per day and not collapsed to a single
@@ -263,10 +278,25 @@ export function evaluateEpisode(input: EvaluationInput): Evaluation {
       continue;
     }
 
-    const lastDate = lastTestDate(tests, type);
-    if (!lastDate) continue;
+    // ---------------------------------------------------------------------
+    // DER TAG KOMMT AUS DEM URTEIL, NICHT AUS EINER ZWEITEN SUCHE.
+    //
+    // Hier stand `lastTestDate(tests, type)` — die jüngste Messung dieses Typs
+    // ÜBERHAUPT — und danach eine Wache `if (!lastDate) continue`, die nie
+    // greifen konnte: Sagt die Regel »ok«, gibt es mindestens eine Messung,
+    // also auch ein Datum.
+    //
+    // Beim Nachsehen, warum sie tot ist, kam der eigentliche Fehler heraus:
+    // Die beiden Mengen sind NICHT dieselbe. Die Regel verwirft Messungen ohne
+    // brauchbaren Index — gesunde Seite bei null, also kein Divisor —, die
+    // Suche hier verwarf sie nicht. Ist ausgerechnet die jüngste Messung so
+    // eine, trug das Flag ihr Datum: ein Urteil vom 6. April, datiert auf den
+    // 20., zeigend auf eine Zahl, die es nie gelesen hat.
+    // ---------------------------------------------------------------------
     anyAsymmetryVerdict = true;
-    flags.push(flagFrom("asymmetry", lastDate, result.severity, result.reason, result.detail));
+    flags.push(
+      flagFrom("asymmetry", result.detail.measuredOn, result.severity, result.reason, result.detail),
+    );
   }
 
   // Reported once, not per test type — three identical lines would be noise.
@@ -323,10 +353,9 @@ export function evaluateEpisode(input: EvaluationInput): Evaluation {
  * A gap in the middle of the record is a real blind spot. The final two days
  * having no follow-up is just today being today.
  */
-function isTrailingEdge(index: EntryIndex, date: DateStr, reason: BlockingReason): boolean {
-  if (index.last === null) return false;
-  if (reason === "next-day-missing") return compareDates(addDays(date, 1), index.last) > 0;
-  if (reason === "second-day-missing") return compareDates(addDays(date, 2), index.last) > 0;
+function isTrailingEdge(last: DateStr, date: DateStr, reason: BlockingReason): boolean {
+  if (reason === "next-day-missing") return compareDates(addDays(date, 1), last) > 0;
+  if (reason === "second-day-missing") return compareDates(addDays(date, 2), last) > 0;
   return false;
 }
 
@@ -490,11 +519,6 @@ function makeFlag<K extends FlagKind>(
     ruleVersion: RULE_VERSION,
     profileVersion,
   } as FlagOf<K>;
-}
-
-function lastTestDate(tests: SelfTest[], type: TestType): DateStr | null {
-  const dates = tests.filter((t) => t.type === type).map((t) => t.date).sort(compareDates);
-  return dates[dates.length - 1] ?? null;
 }
 
 function worstSeverity(flags: Flag[]): Severity {

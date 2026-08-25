@@ -39,11 +39,24 @@ export default defineConfig({
         // today, not aspirations. What is left uncovered is defensive code and
         // a handful of import-parser branches; `src/rules/**` above stays at
         // 100 and that is the number the README promises.
+        //
         // -------------------------------------------------------------------
-        statements: 97,
-        branches: 93,
+        // ANGEHOBEN, NACHDEM DIE DREI SCHWÄCHSTEN DATEIEN DURCHGESEHEN WURDEN.
+        //
+        // Nicht durch Tests, die Zeilen abhaken, sondern durch die Frage, ob
+        // jede Stelle überhaupt erreichbar ist. Drei waren es nicht und sind
+        // weg; der Rest hat jetzt Tests mit einer Aussage — kaputte
+        // Tagebuchdateien, ein Orakel, das an einem Szenario scheitert, der
+        // Rand des Tagebuchs.
+        //
+        // Wieder Böden gegen Rückschritt, knapp unter dem, was heute hält —
+        // keine Zielwerte. Wer sie durch Tests ohne Aussage erreichen will,
+        // hat das Werkzeug missverstanden.
+        // -------------------------------------------------------------------
+        statements: 98,
+        branches: 95,
         functions: 100,
-        lines: 97,
+        lines: 99,
       },
     },
   },

@@ -107,6 +107,10 @@ export function evaluateAsymmetry(
 
   const detail: AsymmetryDetail = {
     type,
+    // `newest` und nicht die jüngste Messung dieses Typs: Beides fällt nur
+    // auseinander, wenn die jüngste keinen Index hergibt — und dann darf das
+    // Flag nicht auf sie zeigen.
+    measuredOn: newest.date,
     lsi,
     history,
     uninvolvedHistory,

@@ -24,7 +24,7 @@
  */
 
 import { evaluateEpisode } from "./evaluate.js";
-import { SCENARIOS } from "./fixtures.js";
+import { SCENARIOS, type Scenario } from "./fixtures.js";
 import { DEFAULT_CONFIG, type Config, type ReasonCode } from "./types.js";
 
 export interface ScenarioExpectation {
@@ -423,13 +423,44 @@ export const EXPECTATIONS: Record<string, ScenarioExpectation> = {
  * Shared by `test/oracle.test.ts` and `src/mutate.ts` on purpose: the mutation
  * harness has to ask exactly the question the test asks, or "the suite would
  * have caught this" becomes a guess.
+ *
+ * ---------------------------------------------------------------------------
+ * WARUM `scenarios` EIN PARAMETER IST.
+ *
+ * Nicht, um andere Bibliotheken zu prüfen — beide Aufrufer nehmen den
+ * Standard, die geteilte Frage bleibt dieselbe. Sondern weil zwei der Wächter
+ * hier ÜBER DIE KONFIGURATION NICHT AUSLÖSBAR sind: Sie greifen, wenn ein
+ * SZENARIO nicht mehr das ist, was seine Erwartung behauptet — wenn jemand die
+ * Löcher aus `sparse` herausnimmt, oder ein Szenario ohne Erwartung dazukommt.
+ *
+ * Ohne diesen Parameter wären beide Zweige unprüfbar, und ein Wächter, der nie
+ * ausgelöst hat, ist in diesem Projekt Dekoration. Siehe test/oracle.test.ts.
+ * ---------------------------------------------------------------------------
  */
-export function violations(config: Config = DEFAULT_CONFIG): string[] {
+export function violations(
+  config: Config = DEFAULT_CONFIG,
+  scenarios: Scenario[] = SCENARIOS,
+): string[] {
   const found: string[] = [];
 
-  for (const scenario of SCENARIOS) {
+  for (const scenario of scenarios) {
     const expectation = EXPECTATIONS[scenario.key];
-    if (!expectation) continue;
+    if (!expectation) {
+      // ---------------------------------------------------------------------
+      // HIER STAND `continue`, UND DAS WAR EIN LOCH IM PRÜFER SELBST.
+      //
+      // Ein Szenario ohne Erwartung wurde stillschweigend übersprungen. Der
+      // Test in oracle.test.ts fängt so einen Waisen zwar ab — aber
+      // `npm run mutate` ruft diese Funktion direkt auf, ohne jenen Test. Wer
+      // ein Szenario hinzufügt und die Erwartung vergisst, bekam dort einen
+      // Mutationsscore, der ein Szenario mitzählte, das nichts behauptet.
+      //
+      // Ein Prüfer, der leise weniger prüft, ist schlimmer als einer, der
+      // fehlschlägt.
+      // ---------------------------------------------------------------------
+      found.push(`${scenario.key}: keine Erwartung — dieses Szenario behauptet nichts`);
+      continue;
+    }
 
     const result = evaluateEpisode({
       entries: scenario.entries,
@@ -461,12 +492,29 @@ export function violations(config: Config = DEFAULT_CONFIG): string[] {
       // never a warning. What must hold is that the engine does not CLEAR the
       // episode, and that it names what it is waiting for.
       if (judgedGreen) found.push(`${scenario.key}: entwarnt auf zu dünner Grundlage`);
-      // `no-tests` is excluded on purpose. It is present in almost every
-      // scenario — self-tests are a separate input from the diary — so
-      // counting it would make this check vacuously true, which is exactly
-      // what it did until a deliberately broken configuration failed to
-      // trigger it. What must be named here is the thinness of the RECORD.
-      const aboutTheRecord = result.pending.filter((p) => p.reason !== "no-tests");
+      // ---------------------------------------------------------------
+      // ZWEI GRÜNDE ZÄHLEN HIER NICHT, UND DER ZWEITE HAT DIE PRÜFUNG
+      // LEERLAUFEN LASSEN.
+      //
+      // `no-tests` war schon ausgenommen: Selbsttests sind eine eigene
+      // Eingabe neben dem Tagebuch, in 29 von 51 Szenarien fehlen sie, und sie
+      // mitzuzählen machte diese Prüfung einmal trivial wahr.
+      //
+      // `baseline-unavailable` ist derselbe Fehler eine Ebene tiefer, und er
+      // stand hier noch: Der Grund erscheint in 48 von 51 Szenarien. Er MUSS
+      // das, denn die ersten `baseline.windowDays` Tage einer Episode können
+      // per Konstruktion keinen Ausgangswert haben — auch bei einem lückenlos
+      // geführten Tagebuch. Solange er zählte, war »der Motor nennt etwas«
+      // für JEDEN Verlauf erfüllt, dünn oder nicht. Ein Wächter, der nie
+      // scheitern kann, prüft nichts.
+      //
+      // Was übrig bleibt, sagt etwas über DIESEN Verlauf: zu wenige Tage, zu
+      // grosse Lücken, ein fehlender Folgetag, zu wenige Beschwerdeangaben.
+      // Alle vier dünnen Szenarien nennen weiterhin mindestens einen davon;
+      // ein vollständiger Verlauf nennt keinen, und dann greift diese Zeile.
+      // ---------------------------------------------------------------
+      const strukturell = new Set(["no-tests", "baseline-unavailable"]);
+      const aboutTheRecord = result.pending.filter((p) => !strukturell.has(p.reason));
       if (aboutTheRecord.length === 0) {
         found.push(`${scenario.key}: nennt nicht, was am Verlauf selbst fehlt`);
       }
