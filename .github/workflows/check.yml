@@ -113,3 +113,10 @@ jobs:
       # Aufgelöst über den Typprüfer; eine Namenssuche fand nur 7 davon.
       - name: App — jeder Wörterbucheintrag kommt an
         run: npm run check:dictionary --workspace=web
+
+      # Kontrast lässt sich nicht ansehen: Zwei Paare, die auf einem guten
+      # Monitor beide »gut lesbar« aussehen, können 6:1 und 3:1 sein. Sechs von
+      # dreissig lagen unter AA, darunter die Farbe JEDER Formularwarnung.
+      # Beide Themen, hell und dunkel — die dunkle Palette ist eine eigene.
+      - name: App — Kontrast nach WCAG AA
+        run: npm run check:contrast --workspace=web

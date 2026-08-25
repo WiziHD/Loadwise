@@ -6,17 +6,7 @@ import { currentUser } from "@/lib/supabase/server";
 import { createEpisodeAction } from "@/app/actions/episodes";
 import { ProfilePicker } from "@/components/ProfilePicker";
 import { toPickerProfile } from "@/lib/profile-view";
-
-const field: React.CSSProperties = {
-  padding: "0.55rem 0.6rem",
-  fontSize: "1rem",
-  border: "1px solid var(--line)",
-  borderRadius: "0.375rem",
-  background: "var(--card)",
-  color: "var(--fg)",
-  maxWidth: "26rem",
-  width: "100%",
-};
+import { field, primaryButton } from "@/lib/ui";
 
 export default async function NewEpisodePage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = localeFrom((await params).locale);
@@ -46,7 +36,7 @@ export default async function NewEpisodePage({ params }: { params: Promise<{ loc
 
         <label style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
           <span style={{ fontWeight: 600 }}>{s.episode.side}</span>
-          <select name="side" defaultValue="n/a" style={field}>
+          <select name="side" defaultValue="n/a" style={{ ...field, maxWidth: "26rem" }}>
             <option value="left">{s.episode.sideLeft}</option>
             <option value="right">{s.episode.sideRight}</option>
             <option value="both">{s.episode.sideBoth}</option>
@@ -56,27 +46,18 @@ export default async function NewEpisodePage({ params }: { params: Promise<{ loc
 
         <label style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
           <span style={{ fontWeight: 600 }}>{s.episode.startedOn}</span>
-          <input type="date" name="startedOn" style={field} />
+          <input type="date" name="startedOn" style={{ ...field, maxWidth: "26rem" }} />
           <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{s.episode.startedOnHint}</span>
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
           <span style={{ fontWeight: 600 }}>{s.episode.label}</span>
-          <input type="text" name="label" maxLength={80} style={field} />
+          <input type="text" name="label" maxLength={80} style={{ ...field, maxWidth: "26rem" }} />
         </label>
 
         <button
           type="submit"
-          style={{
-            padding: "0.6rem 1rem",
-            fontSize: "1rem",
-            borderRadius: "0.375rem",
-            border: "1px solid var(--fg)",
-            background: "var(--fg)",
-            color: "var(--bg)",
-            cursor: "pointer",
-            justifySelf: "start",
-          }}
+          style={{ ...primaryButton, justifySelf: "start" }}
         >
           {s.episode.create}
         </button>

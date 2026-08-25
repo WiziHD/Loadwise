@@ -3,6 +3,7 @@ import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions/auth";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { quietButton } from "@/lib/ui";
 
 /**
  * The one bar that is on every page, and the way out of the app.
@@ -55,19 +56,10 @@ export async function AppHeader({ locale }: { locale: Locale }) {
         <form action={signOut.bind(null, locale)} style={{ margin: 0 }}>
           <button
             type="submit"
-            style={{
-              // Deliberately quiet. It has to be findable without hunting and
-              // impossible to press by accident on a phone — which is why it is
-              // a real button with padding rather than a link in a row of links.
-              minHeight: "2.75rem",
-              padding: "0.3rem 0.9rem",
-              fontSize: "0.85rem",
-              borderRadius: "0.375rem",
-              border: "1px solid var(--line)",
-              background: "transparent",
-              color: "var(--muted)",
-              cursor: "pointer",
-            }}
+            // Deliberately quiet. It has to be findable without hunting and
+            // impossible to press by accident on a phone — which is why it is a
+            // real button with padding rather than a link in a row of links.
+            style={quietButton}
           >
             {s.actions.signOut}
           </button>

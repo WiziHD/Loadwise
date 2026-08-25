@@ -5,6 +5,7 @@ import type { Locale } from "loadwise-engine";
 import { updateEpisodeAction } from "@/app/actions/episodes";
 import type { PickerProfile } from "@/lib/profile-view";
 import type { Strings } from "@/i18n/dictionary";
+import { field, primaryButton } from "@/lib/ui";
 
 /**
  * Eine falsch angelegte Episode geradeziehen.
@@ -166,16 +167,7 @@ export function EpisodeForm({
         <button
           type="submit"
           disabled={pending}
-          style={{
-            minHeight: "2.75rem",
-            padding: "0.6rem 1rem",
-            fontSize: "1rem",
-            borderRadius: "0.375rem",
-            border: "1px solid var(--fg)",
-            background: "var(--fg)",
-            color: "var(--bg)",
-            cursor: pending ? "wait" : "pointer",
-          }}
+          style={{ ...primaryButton, cursor: pending ? "wait" : "pointer" }}
         >
           {strings.save}
         </button>
@@ -190,13 +182,3 @@ export function EpisodeForm({
   );
 }
 
-const field: React.CSSProperties = {
-  minHeight: "2.75rem",
-  padding: "0.5rem 0.55rem",
-  fontSize: "1rem",
-  border: "1px solid var(--line)",
-  borderRadius: "0.375rem",
-  background: "var(--card)",
-  color: "var(--fg)",
-  width: "100%",
-};

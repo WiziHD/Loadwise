@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PickerProfile } from "@/lib/profile-view";
 import type { Strings } from "@/i18n/dictionary";
+import { field } from "@/lib/ui";
 
 /**
  * Choosing the profile, and being told at once what it cannot do.
@@ -37,16 +38,7 @@ export function ProfilePicker({
         name="profileKey"
         value={chosen}
         onChange={(e) => setChosen(e.target.value)}
-        style={{
-          width: "100%",
-          maxWidth: "26rem",
-          padding: "0.55rem 0.6rem",
-          fontSize: "1rem",
-          border: "1px solid var(--line)",
-          borderRadius: "0.375rem",
-          background: "var(--card)",
-          color: "var(--fg)",
-        }}
+        style={{ ...field, maxWidth: "26rem" }}
       >
         {profiles.map((p) => (
           <option key={p.key} value={p.key}>

@@ -9,6 +9,7 @@ import {
 } from "loadwise-engine";
 import { saveEntryAction } from "@/app/actions/episodes";
 import type { Strings } from "@/i18n/dictionary";
+import { field, quietButton } from "@/lib/ui";
 
 /** Exactly the fields of a diary day, as strings — because that is what a form holds. */
 /** Eine Einheit im Formular — als Text, denn das ist, was ein Feld hält. */
@@ -81,37 +82,6 @@ function deviceToday(): string {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
-const quietButton: React.CSSProperties = {
-  minHeight: "2.75rem",
-  padding: "0.3rem 0.9rem",
-  fontSize: "0.85rem",
-  borderRadius: "0.375rem",
-  border: "1px solid var(--line)",
-  background: "transparent",
-  color: "var(--muted)",
-  cursor: "pointer",
-  justifySelf: "start",
-};
-
-const field: React.CSSProperties = {
-  // 44 px ist die kleinste Fläche, die ein Daumen zuverlässig trifft — die
-  // Zahl steht so in den Richtlinien beider Plattformen. Gemessen waren es
-  // 36 bis 39 px: am Rechner unauffällig, am Telefon jeden Abend ein Ärgernis.
-  //
-  // Und das Tagebuch wird am Telefon geführt. Ein Formular, das dort mühsam
-  // ist, wird nicht neunzig Tage lang ausgefüllt — und dann hat der ganze
-  // Motor nichts zu rechnen.
-  minHeight: "2.75rem",
-  padding: "0.5rem 0.55rem",
-  // 16 px, nicht kleiner: iOS zoomt beim Antippen in jedes Feld mit kleinerer
-  // Schrift hinein, und der Zoom bleibt danach stehen.
-  fontSize: "1rem",
-  border: "1px solid var(--line)",
-  borderRadius: "0.375rem",
-  background: "var(--card)",
-  color: "var(--fg)",
-  width: "100%",
-};
 
 /**
  * The form that gets used more than everything else in the app combined.
@@ -349,9 +319,16 @@ export function EntryForm({
           required
           value={draft.morningScore}
           onChange={(e) => set("morningScore", e.target.value)}
+          // Der Hinweis steht daneben und wurde nie vorgelesen: Eine
+          // Vorlesesoftware liest die Beschriftung und den Bereich, nicht den
+          // Absatz darunter. »0 heisst gar nichts« ist aber genau die Auskunft,
+          // ohne die die Skala verkehrt herum verstanden wird.
+          aria-describedby="morningScore-hint"
           style={field}
         />
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.morningHint}</span>
+        <span id="morningScore-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+          {strings.morningHint}
+        </span>
       </div>
 
       <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
@@ -365,9 +342,12 @@ export function EntryForm({
           step={1}
           value={draft.morningStiffnessMin}
           onChange={(e) => set("morningStiffnessMin", e.target.value)}
+          aria-describedby="stiffness-hint"
           style={{ ...field, maxWidth: "12rem" }}
         />
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.stiffnessHint}</span>
+        <span id="stiffness-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+          {strings.stiffnessHint}
+        </span>
       </div>
 
       <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
@@ -376,11 +356,17 @@ export function EntryForm({
             type="checkbox"
             checked={draft.painMedication}
             onChange={(e) => setMedication(e.target.checked)}
+            // Der wichtigste Hinweis im ganzen Formular: Er sagt vorher, dass
+            // dieses Kreuz die Entwarnung verweigert. Wer ihn nicht hört,
+            // erlebt die Folge ohne den Grund.
+            aria-describedby="medication-hint"
             style={{ width: "1.25rem", height: "1.25rem" }}
           />
           {strings.medication}
         </label>
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.medicationHint}</span>
+        <span id="medication-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+          {strings.medicationHint}
+        </span>
       </div>
 
       <fieldset style={{ border: "1px solid var(--line)", borderRadius: "0.5rem", padding: "0.9rem" }}>
@@ -458,6 +444,7 @@ export function EntryForm({
         <label htmlFor="everydayLoad" style={{ fontWeight: 600 }}>{strings.everyday}</label>
         <select
           id="everydayLoad"
+          aria-describedby="everyday-hint"
           value={draft.everydayLoad}
           onChange={(e) => set("everydayLoad", e.target.value)}
           style={field}
@@ -468,7 +455,9 @@ export function EntryForm({
           <option value="on-feet">{strings.everydayOnFeet}</option>
           <option value="very-active">{strings.everydayVeryActive}</option>
         </select>
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.everydayHint}</span>
+        <span id="everyday-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+          {strings.everydayHint}
+        </span>
       </div>
 
       <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit, minmax(9rem, 1fr))", maxWidth: "26rem" }}>
@@ -505,12 +494,15 @@ export function EntryForm({
         <label htmlFor="note" style={{ fontWeight: 600 }}>{strings.note}</label>
         <textarea
           id="note"
+          aria-describedby="note-hint"
           rows={2}
           value={draft.note}
           onChange={(e) => set("note", e.target.value)}
           style={{ ...field, fontFamily: "inherit" }}
         />
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{strings.noteHint}</span>
+        <span id="note-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+          {strings.noteHint}
+        </span>
       </div>
 
       {message !== null && (

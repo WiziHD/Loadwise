@@ -14,17 +14,8 @@ import { localeFrom } from "@/i18n/config";
 import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
 import { countArchived, listEpisodes, profileOf } from "@/lib/db/episodes";
+import { navLink, primaryButton } from "@/lib/ui";
 
-const primaryButton: React.CSSProperties = {
-  display: "inline-block",
-  padding: "0.6rem 1rem",
-  fontSize: "1rem",
-  borderRadius: "0.375rem",
-  border: "1px solid var(--fg)",
-  background: "var(--fg)",
-  color: "var(--bg)",
-  textDecoration: "none",
-};
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const locale = localeFrom((await params).locale);
@@ -132,7 +123,7 @@ function ArchiveLink({
   if (count === 0) return null;
   return (
     <p style={{ margin: "1.25rem 0 0", fontSize: "0.9rem" }}>
-      <Link href={`/${locale}/episodes/archive`} style={{ color: "var(--muted)" }}>
+      <Link href={`/${locale}/episodes/archive`} style={{ ...navLink, color: "var(--muted)" }}>
         {s.edit.archiveLink} ({count})
       </Link>
     </p>

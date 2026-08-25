@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { Locale } from "loadwise-engine";
 import { LOCALES, swapLocaleIn } from "@/i18n/config";
+import { navLink } from "@/lib/ui";
 
 const LABEL: Record<Locale, string> = {
   en: "English",
@@ -38,6 +39,7 @@ export function LanguageSwitch({ current }: { current: Locale }) {
           hrefLang={locale}
           aria-current={locale === current ? "true" : undefined}
           style={{
+            ...navLink,
             color: locale === current ? "var(--fg)" : "var(--muted)",
             textDecoration: locale === current ? "none" : "underline",
             fontWeight: locale === current ? 600 : 400,

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { Locale } from "loadwise-engine";
 import { requestSignInLink } from "@/app/actions/auth";
 import type { Strings } from "@/i18n/dictionary";
+import { field, primaryButton } from "@/lib/ui";
 
 export function SignInForm({ locale, strings }: { locale: Locale; strings: Strings["auth"] }) {
   const [state, setState] = useState<"idle" | "sent" | "invalid-email" | "send-failed">("idle");
@@ -39,14 +40,7 @@ export function SignInForm({ locale, strings }: { locale: Locale; strings: Strin
         required
         aria-invalid={state === "invalid-email" ? true : undefined}
         aria-describedby={state === "idle" ? undefined : "signin-problem"}
-        style={{
-          padding: "0.6rem 0.7rem",
-          fontSize: "1rem",
-          border: "1px solid var(--line)",
-          borderRadius: "0.375rem",
-          background: "var(--card)",
-          color: "var(--fg)",
-        }}
+        style={field}
       />
 
       {state !== "idle" && (
@@ -58,16 +52,7 @@ export function SignInForm({ locale, strings }: { locale: Locale; strings: Strin
       <button
         type="submit"
         disabled={pending}
-        style={{
-          padding: "0.6rem 1rem",
-          fontSize: "1rem",
-          borderRadius: "0.375rem",
-          border: "1px solid var(--fg)",
-          background: "var(--fg)",
-          color: "var(--bg)",
-          cursor: pending ? "wait" : "pointer",
-          justifySelf: "start",
-        }}
+        style={{ ...primaryButton, cursor: pending ? "wait" : "pointer", justifySelf: "start" }}
       >
         {strings.send}
       </button>

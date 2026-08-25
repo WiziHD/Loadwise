@@ -2,14 +2,44 @@
   --bg: #fbfaf8;
   --fg: #1a1a1a;
   --muted: #5c5c5c;
+
+  /* Trennendes und Rahmen OHNE Bedienfunktion: Karten, Abschnittslinien, ein
+     Zitatbalken. WCAG verlangt dafür nichts, und ein Rand mit 3:1 liesse jede
+     Karte wie ein Formular aussehen. Siehe --edge daneben. */
   --line: #e2ded8;
+
+  /* Der Umriss von allem, was man antippen oder in das man tippen kann.
+     WCAG 1.4.11 verlangt 3:1 gegen den Grund — sonst ist nicht erkennbar, wo
+     das Feld anfängt. --line lag bei 1,28:1: eine Haarlinie, die auf einem
+     Telefon in der Sonne nicht da ist. */
+  --edge: #8f8880;
+
   --card: #ffffff;
 
   /* The three severities, plus the state that is NOT a shade of green.
      "Not enough judged" gets its own colour on purpose — an audit once found
-     it rendering as a pale green, which is the one thing it must never be. */
+     it rendering as a pale green, which is the one thing it must never be.
+
+     ------------------------------------------------------------------------
+     FARBE TRÄGT NIE ALLEIN.
+
+     Diese vier Farben stehen für Urteile. Ab dem Moment, in dem Urteile auf
+     dem Bildschirm erscheinen, gilt: Wo eine davon steht, steht auch ein Satz
+     oder ein Zeichen, das dasselbe sagt.
+
+     Der Grund ist nicht die Regel (WCAG 1.4.1), sondern wer sonst nichts
+     sieht: Rotgrünblindheit betrifft rund acht Prozent der Männer, und Grün
+     gegen Bernstein ist genau das Paar, das dabei zusammenfällt. »Alles in
+     Ordnung« und »das solltest du anschauen« wären dann derselbe Punkt.
+
+     Heute hält das von selbst — jede farbige Stelle in dieser App ist ein Satz
+     in Farbe, kein Punkt. Aufgeschrieben ist es hier, weil das ab Karte 2.3
+     eine Entscheidung wird und keine Selbstverständlichkeit mehr.
+     ------------------------------------------------------------------------ */
   --green: #2f7d52;
-  --amber: #a86a12;
+  /* Von #a86a12 abgedunkelt: das lag bei 4,43:1 auf Weiss, knapp unter AA —
+     und Bernstein trägt JEDE Warnung im Formular. */
+  --amber: #a16611;
   --red: #a8322a;
   --unjudged: #5b6b8c;
 }
@@ -20,6 +50,7 @@
     --fg: #ececec;
     --muted: #a0a0a0;
     --line: #2c2e33;
+    --edge: #6b7180;
     --card: #1e2024;
 
     --green: #6ec48f;
@@ -52,4 +83,33 @@ main {
   max-width: 46rem;
   margin: 0 auto;
   padding: 3rem 1.25rem 6rem;
+}
+
+/* ---------------------------------------------------------------------------
+   WER MIT DER TASTATUR BEDIENT, MUSS SEHEN, WO ER IST.
+
+   Vorher gab es hier nichts: Es galt der Browserstandard, und der ist ein
+   dünner Ring in der Systemfarbe — auf dunklem Grund kaum zu sehen, und in
+   manchen Browsern beim Klick auf einen Knopf gar nicht.
+
+   `:focus-visible` statt `:focus`: Der Ring erscheint bei Tastaturbedienung
+   und nicht, wenn jemand mit dem Finger auf ein Feld tippt. Das ist genau die
+   Unterscheidung, wegen der viele Projekte den Ring ganz abschalten — und
+   damit die Tastaturbedienung mit abschalten.
+
+   Zwei Ringe übereinander: aussen die Vordergrundfarbe, innen ein Streifen in
+   der Hintergrundfarbe. So bleibt der Ring auf JEDEM Grund sichtbar, hell wie
+   dunkel, ohne dass eine dritte Farbe erfunden werden muss.
+   --------------------------------------------------------------------------- */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Kein Grund, das Ziel zu verkleinern: Wer die Tastatur benutzt, sieht den
+   Ring; wer die Maus benutzt, sieht ihn nicht — und niemand verliert dadurch
+   eine Fläche zum Antippen. */
+:where(a, button, input, select, textarea, summary):focus:not(:focus-visible) {
+  outline: none;
 }

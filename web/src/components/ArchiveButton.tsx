@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { Locale } from "loadwise-engine";
 import { setEpisodeArchivedAction } from "@/app/actions/episodes";
 import type { Strings } from "@/i18n/dictionary";
+import { quietButton } from "@/lib/ui";
 
 /**
  * Ins Archiv und zurück.
@@ -45,17 +46,7 @@ export function ArchiveButton({
             }
           });
         }}
-        style={{
-          minHeight: "2.75rem",
-          padding: "0.3rem 0.9rem",
-          fontSize: "0.9rem",
-          borderRadius: "0.375rem",
-          border: "1px solid var(--line)",
-          background: "transparent",
-          color: "var(--muted)",
-          cursor: pending ? "wait" : "pointer",
-          justifySelf: "start",
-        }}
+        style={{ ...quietButton, cursor: pending ? "wait" : "pointer" }}
       >
         {archived ? strings.unarchive : strings.archive}
       </button>

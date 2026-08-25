@@ -17,8 +17,9 @@ import "./globals.css";
  * gerade kaputtgegangen sein könnte. Eine Fehlerseite, die selbst einen Import
  * braucht, der fehlschlägt, ist eine weisse Seite.
  *
- * `lang` steht hier richtig, im Wurzellayout dagegen fest auf "en" — das ist
- * Karte H8 und wird dort entschieden, nicht nebenbei hier.
+ * `lang` kommt hier aus dem Pfad und nicht aus der Kopfzeile: Diese Seite
+ * erscheint, wenn das Wurzellayout selbst fehlgeschlagen ist — sie darf sich
+ * auf nichts stützen, was gerade kaputtgegangen sein könnte.
  *
  * ---------------------------------------------------------------------------
  * DER FEHLER KAM HIER AN UND WURDE WEGGEWORFEN.

@@ -17,6 +17,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ALL_PROFILES, profileByKey } from "loadwise-engine";
 import { localeFrom } from "@/i18n/config";
+import { navLink } from "@/lib/ui";
 import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
 import { getEpisode, profileChangesOf, profileOf } from "@/lib/db/episodes";
@@ -51,7 +52,7 @@ export default async function EditEpisodePage({
   return (
     <main>
       <p style={{ margin: "0 0 1rem", fontSize: "0.9rem" }}>
-        <Link href={`/${locale}/episodes/${id}`} style={{ color: "var(--muted)" }}>
+        <Link href={`/${locale}/episodes/${id}`} style={{ ...navLink, color: "var(--muted)" }}>
           ← {s.diary.back}
         </Link>
       </p>

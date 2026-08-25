@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { localeFrom } from "@/i18n/config";
+import { navLink } from "@/lib/ui";
 import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
 import { listEpisodes, profileOf } from "@/lib/db/episodes";
@@ -30,7 +31,7 @@ export default async function ArchivePage({
   return (
     <main>
       <p style={{ margin: "0 0 1rem", fontSize: "0.9rem" }}>
-        <Link href={`/${locale}`} style={{ color: "var(--muted)" }}>
+        <Link href={`/${locale}`} style={{ ...navLink, color: "var(--muted)" }}>
           ← {s.diary.back}
         </Link>
       </p>
