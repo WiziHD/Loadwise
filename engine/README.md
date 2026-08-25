@@ -8,12 +8,12 @@ Das ist mit Absicht das erste Stück des Projekts: Wenn diese Regeln auf echten 
 
 ```bash
 npm install
-npm test          # 364 Motortests
+npm test          # 371 Motortests
 npm run demo      # alle Regeln über 51 Verläufe, lesbar ausgegeben
 npm run calibrate # welche Schwellenwerte etwas entscheiden — je Profil
 npm run mutate    # merkt die Suite, wenn eine Schwelle kaputt ist?
 npm run coverage  # Abdeckung, Regeln müssen bei 100 % liegen
-npm run tagebuch -- ../tagebuch.csv achilles ../selbsttests.csv   # echtes Tagebuch plus Selbsttests
+npm run tagebuch -- ../tagebuch.csv achilles_midportion ../selbsttests.csv   # echtes Tagebuch plus Selbsttests
 npm run typecheck
 ```
 

@@ -2,18 +2,41 @@
  * Run the engine over a real, hand-kept diary file.
  *
  *   npm run tagebuch -- ../tagebuch.csv
- *   npm run tagebuch -- ../tagebuch.csv patella
+ *   npm run tagebuch -- ../tagebuch.csv achilles_midportion
+ *   npm run tagebuch -- ../tagebuch.csv achilles_midportion ../selbsttests.csv
  *
  * This is the command that closes the one acceptance condition TECHNIK.md sets
  * for Phase 0. Until it has been run on real data, every threshold in this
  * engine has only ever been checked against fixtures generated from the same
  * assumptions the thresholds encode.
+ *
+ * ---------------------------------------------------------------------------
+ * DAS ZWEITE ARGUMENT WAR EINE KÖRPERREGION, UND DAS WAR SEIT DEM
+ * REGISTRY-UMBAU ZU WENIG.
+ *
+ * Profile werden seither nach SCHLÜSSEL geführt, nicht nach Region — genau
+ * deshalb, weil sich mehrere eine Region teilen: `patellofemoral_pain` und
+ * `acl_reconstruction` liegen beide auf `knee`. Wer hier eine Region angab,
+ * bekam immer das Standardprofil dieser Region; die anderen waren von diesem
+ * Werkzeug aus schlicht unerreichbar.
+ *
+ * Das ist nicht irgendein Werkzeug. Es ist der Weg, auf dem ein echtes
+ * Tagebuch in den Motor kommt — also der Weg für Schritt 5, den EINZIGEN
+ * Schritt des Profilverfahrens, der Schwellen wirklich validiert. Ein
+ * Validierungsschritt, der das zu validierende Profil nicht auswählen kann,
+ * validiert nichts.
+ *
+ * Regionen bleiben zulässig: Der alte Aufruf steht in Dokumenten, und ihn
+ * stillschweigend zu brechen wäre derselbe Fehler in klein. Ein Schlüssel
+ * gewinnt, wenn beides passt.
+ * ---------------------------------------------------------------------------
  */
 
 import { readFileSync } from "node:fs";
 import { parseDiary, parseTests } from "./import.js";
 import { reportScenario } from "./report.js";
-import type { BodyRegion, SelfTest } from "./types.js";
+import { ALL_PROFILES, profileByKey } from "./profiles/registry.js";
+import type { BodyRegion, EpisodeContext, SelfTest } from "./types.js";
 
 const REGIONS: BodyRegion[] = [
   "achilles",
@@ -29,20 +52,43 @@ const REGIONS: BodyRegion[] = [
   "other",
 ];
 
+/**
+ * Das zweite Argument: ein Profilschlüssel oder eine Körperregion.
+ *
+ * Der Schlüssel gewinnt. Beide Formen aufzulösen kostet vier Zeilen und hält
+ * jeden dokumentierten Aufruf am Leben.
+ */
+export function kontextAus(arg: string | undefined): EpisodeContext | { fehler: string } {
+  if (arg === undefined) return { bodyRegion: "other" };
+
+  const profil = profileByKey(arg);
+  if (profil !== undefined) {
+    return { bodyRegion: profil.bodyRegion as BodyRegion, profileKey: profil.key };
+  }
+
+  if (REGIONS.includes(arg as BodyRegion)) return { bodyRegion: arg as BodyRegion };
+
+  return {
+    fehler:
+      `»${arg}« ist weder ein Profil noch eine Körperregion.\n\n` +
+      `Profile:\n  ${ALL_PROFILES.map((p) => p.key).join("\n  ")}\n\n` +
+      `Regionen (nehmen das Standardprofil der Region):\n  ${REGIONS.join(", ")}`,
+  };
+}
+
 function main(): void {
-  const [path, regionArg, testPath] = process.argv.slice(2);
+  const [path, profilArg, testPath] = process.argv.slice(2);
 
   if (!path) {
-    console.error("Aufruf: npm run tagebuch -- <tagebuch.csv> [körperregion] [selbsttests.csv]");
-    console.error(`Regionen: ${REGIONS.join(", ")}`);
+    console.error("Aufruf: npm run tagebuch -- <tagebuch.csv> [profil|körperregion] [selbsttests.csv]");
+    console.error(`Profile: ${ALL_PROFILES.map((p) => p.key).join(", ")}`);
     process.exitCode = 1;
     return;
   }
 
-  const region = (regionArg ?? "other") as BodyRegion;
-  if (!REGIONS.includes(region)) {
-    console.error(`Unbekannte Körperregion »${regionArg}«.`);
-    console.error(`Erlaubt: ${REGIONS.join(", ")}`);
+  const context = kontextAus(profilArg);
+  if ("fehler" in context) {
+    console.error(context.fehler);
     process.exitCode = 1;
     return;
   }
@@ -108,7 +154,7 @@ function main(): void {
       title: `Eigenes Tagebuch — ${path}`,
       entries,
       tests,
-      context: { bodyRegion: region },
+      context,
     }),
   );
 
