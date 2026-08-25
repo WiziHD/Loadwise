@@ -217,6 +217,24 @@ Die vorhandene Maschinerie, je Profil angewandt:
 
 Ein Profil gilt als fertig, wenn: alle Codes erreichbar · Kalibrierung benennt die kritischen Schwellen · mindestens ein echter Verlauf durchgelaufen ist · die Warnzeichenliste steht · der Abschnitt »was dieses Profil nicht weiß« geschrieben ist · `profileVersion` vergeben.
 
+### Der Terminkonflikt, ausgesprochen
+
+**Schritt 5 und 6 stehen für alle neun Profile offen, und sie hängen an einem Tagebuch, das noch geführt werden muss.**
+
+Ein Verlauf, der etwas über Schwellen aussagt, braucht Wochen — nicht weil das Erfassen dauert, sondern weil die Regeln Zeitfenster lesen: Die Ausgangswerte brauchen 28 Tage, die Lastspitze vergleicht 7 gegen 28, der Langzeitverlauf will Wochen. Ein Tagebuch, das heute beginnt, kann frühestens **um Tag 30 herum** etwas beitragen.
+
+Das steht im Konflikt mit dem 25-Tage-Ziel bis Phase 4. **Der Konflikt ist real und lässt sich nicht wegplanen** — er ist eine Eigenschaft des Gegenstands, nicht der Planung. Wer ihn auflösen will, hat genau drei Möglichkeiten:
+
+| Weg | Was er kostet |
+|---|---|
+| Termin verschieben | Nichts inhaltlich. Der ehrlichste Weg. |
+| Ohne Schritt 5 ausliefern | Die Schwellen bleiben unvalidiert — und das Produkt sagt dann Dinge über Körper, die nur gegen selbst geschriebene Szenarien geprüft sind. Genau die Zirkularität, die dieses Dokument als grösste Schwäche benennt. |
+| Schritt 5 auf EIN Profil beschränken | Machbar. Dann gilt die Validierung für die Achillessehne und für sonst nichts — und das muss im Produkt stehen, nicht nur hier. |
+
+**Nicht möglich** ist, Schritt 5 durch mehr Iterationen zu ersetzen. Siehe die Warnung oben: Das konvergiert auf die eigenen Annahmen, nicht auf die Wahrheit.
+
+Die Karte dazu liegt in »Blockiert«. Der Termin ist eine Entscheidung, die dir gehört; hier steht nur, was daran hängt.
+
 ---
 
 ## 6. Meine Ergänzungen

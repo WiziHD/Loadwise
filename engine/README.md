@@ -8,8 +8,8 @@ Das ist mit Absicht das erste Stück des Projekts: Wenn diese Regeln auf echten 
 
 ```bash
 npm install
-npm test          # 316 Tests
-npm run demo      # alle Regeln über 50 Verläufe, lesbar ausgegeben
+npm test          # 364 Motortests
+npm run demo      # alle Regeln über 51 Verläufe, lesbar ausgegeben
 npm run calibrate # welche Schwellenwerte etwas entscheiden — je Profil
 npm run mutate    # merkt die Suite, wenn eine Schwelle kaputt ist?
 npm run coverage  # Abdeckung, Regeln müssen bei 100 % liegen
@@ -92,7 +92,7 @@ src/
     achilles.ts       Das erste recherchierte Profil
   rules/              Die sieben Regeln
   evaluate.ts         Führt alle aus, misst die Abdeckung, liefert Flags
-  fixtures.ts         50 Verläufe — 49 erzeugt, einer von außen
+  fixtures.ts         51 Verläufe — 50 erzeugt, einer von außen
   course-achilles.ts  60 Tage Achillessehne, nicht von uns geschrieben
   report.ts           Lesbare Darstellung
   demo.ts             Ausgabe
@@ -142,9 +142,9 @@ Der präskriptive Teil (Phasen, Freigabekriterien) ist entworfen und **ausgescha
 
 **Freitext geht nie in die Rechnung ein.** Das Feld `note` existiert für Menschen und wird von keiner Regel gelesen.
 
-**Kein Urteil darf unerreichbar sein — auch nicht für eine einzelne Verletzung.** Der Test läuft zusätzlich je Profil: die ganze Bibliothek als diese eine Verletzung gelesen, alle 27 Urteile und alle 8 Blockade-Gründe müssen erreichbar bleiben. Heute schaffen das alle elf, weil sie sich kaum unterscheiden — der Test ist der Stolperdraht für das erste Profil, das eine Schwelle verschiebt. Ein Profil, das neunundneunzig Wochen wartet, bevor der Langzeitverlauf sprechen darf, verliert vier Urteile stumm; ein eingebauter Beweis stellt sicher, dass genau das auffliegt.
+**Kein Urteil darf unerreichbar sein — auch nicht für eine einzelne Verletzung.** Der Test läuft zusätzlich je Profil: die ganze Bibliothek als diese eine Verletzung gelesen, alle 27 Urteile und alle 9 Blockade-Gründe müssen erreichbar bleiben. Heute schaffen das alle zwölf, weil sie sich kaum unterscheiden — der Test ist der Stolperdraht für das erste Profil, das eine Schwelle verschiebt. Ein Profil, das neunundneunzig Wochen wartet, bevor der Langzeitverlauf sprechen darf, verliert vier Urteile stumm; ein eingebauter Beweis stellt sicher, dass genau das auffliegt.
 
-**Kein Urteil darf unerreichbar sein.** `test/invariants.test.ts` prüft zweierlei: dass jeder der 27 Urteilscodes in mindestens einem Szenario vorkommt, **und** dass jeder der acht Blockade-Gründe den Nutzer tatsächlich erreicht. Der erste echte Fehler in diesem Modul war ein toter Zweig — nichts stürzte ab, die Regel schwieg nur. Der Mechanismus hat seither viermal genau diese Fehlerklasse gefunden.
+**Kein Urteil darf unerreichbar sein.** `test/invariants.test.ts` prüft zweierlei: dass jeder der 27 Urteilscodes in mindestens einem Szenario vorkommt, **und** dass jeder der 9 Blockade-Gründe den Nutzer tatsächlich erreicht — über BEIDE Kanäle, `pending` und `overall.blocking`. Dass nur der erste gelesen wurde, war selbst ein Fund: Der neunte Grund, den ein Schmerzmittel auslöst, hätte den Bildschirm nie erreicht. Der erste echte Fehler in diesem Modul war ein toter Zweig — nichts stürzte ab, die Regel schwieg nur. Der Mechanismus hat seither viermal genau diese Fehlerklasse gefunden.
 
 **Ein Kalendertag ist eine Zeile.** Jedes Zeitfenster misst seine Beweislage, indem es Einträge im Bereich zählt. Ein Duplikat oder ein unmögliches Datum wie `2026-03-32` füllte diese Zähler auf und wurde doppelt verrechnet — beides wird in `episode.ts` an der Tür verworfen.
 
@@ -166,8 +166,8 @@ Die letzten beiden sind **Beweis-Tore**, keine Urteilsschwellen — sie entschei
 
 Die Tests zeigen, dass sich die Regeln so verhalten, wie sie beschrieben sind. Sie zeigen **nicht**, dass Schwellenwerte und Gewebefaktoren klinisch richtig sind.
 
-49 der 50 Szenarien stammen aus Formeln derselben Person, die die Schwellen gesetzt hat. Jede Aussage der Kalibrierung ist damit weitgehend eine Aussage über diese Bibliothek, nicht über die Schwelle.
+50 der 51 Szenarien stammen aus Formeln derselben Person, die die Schwellen gesetzt hat. Jede Aussage der Kalibrierung ist damit weitgehend eine Aussage über diese Bibliothek, nicht über die Schwelle.
 
-Das 50. (`course-achilles.ts`) ist der erste Riss in dieser Zirkularität: sechzig Tage, von außen erzeugt, mit eigenen Anmerkungen. Der Motor hat die beiden Tage gefunden, die das Tagebuch selbst als Reaktionsmuster notiert hatte — ohne je eine Notiz zu lesen.
+Das 51. (`course-achilles.ts`) ist der erste Riss in dieser Zirkularität: sechzig Tage, von außen erzeugt, mit eigenen Anmerkungen. Der Motor hat die beiden Tage gefunden, die das Tagebuch selbst als Reaktionsmuster notiert hatte — ohne je eine Notiz zu lesen.
 
 **Auch das ist noch kein klinischer Beleg.** Der Verlauf ist von einem Sprachmodell erzeugt, das dieselben Faustregeln kennen dürfte, die hier codiert sind. Er ist plausibel geformt, nicht gelebt. Was ihn wertvoll macht, ist allein, dass seine Form nicht aus `fixtures.ts` stammt.

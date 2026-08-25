@@ -11,7 +11,8 @@ Der Plan hat **vier Ebenen**, die ineinandergreifen. Wir stehen in Ebene 1 ganz 
 | | Phase | Inhalt | Ergebnis |
 |---|---|---|---|
 | ⏳ | **Phase 0** | **Die Regeln zuerst, ohne jede Oberfläche.** Reine TypeScript-Funktionen mit Tests. Kein Framework, keine Datenbank, keine Seite. | Die Antwort auf die einzige Frage, an der alles hängt: **Sagen diese Regeln auf echten Daten etwas Nützliches?** |
-| | Phase 1 | Woche 1–2: Projektaufbau, Datenbank, Anmeldung per Magic Link, Episode anlegen, Tageseintrag, Verlaufskurve. Mehrsprachigkeit ab der ersten Zeile. | Du selbst kannst dein Tagebuch darin führen. |
+| ⏳ | **Phase 1** | Woche 1–2: Projektaufbau, Datenbank, Anmeldung per Magic Link, Episode anlegen, Tageseintrag, Verlaufskurve. Mehrsprachigkeit ab der ersten Zeile. | Du selbst kannst dein Tagebuch darin führen. **Steht — bis auf den Mailversand.** |
+| ⏳ | **Härtungswoche** | 24.–30.08., als bewusste Verzögerung eingeschoben. Kein neues Feature: die vorhandene Fläche härten, bevor mehr darauf gebaut wird. Siehe unten. | Was steht, hält auch. |
 | | Phase 2 | Woche 3–4: Regelmodul anschließen, Ergebnisse speichern, Bewertungen anzeigen und begründen. | Die App sagt etwas, das man selbst nicht sieht. |
 | | Phase 3 | Woche 5–6: Geführte Selbsttests, LSI-Berechnung, Warnung bei sich öffnender Schere. | Das Alleinstellungsmerkmal steht. |
 | | Phase 4 | Woche 7–8: Physio-Bericht, Erinnerungen, Export und Löschung, englische Fassung vollständig, Bezahlschranke gebaut und **ausgeschaltet**. | Fremde Menschen können es benutzen. |
@@ -58,7 +59,7 @@ Jedes der rund siebzig Profile durchläuft dieselben sechs Schritte. Der Stand g
 
 > **Eine Iteration zählt nur, wenn sie gegen echte Daten oder gegen einen publizierten Wert läuft.** Schwellen tausendfach gegen selbst geschriebene Szenarien zu drehen konvergiert nicht auf die Wahrheit, sondern auf die eigenen Annahmen.
 
-Alles bis hierher prüft **Widerspruchsfreiheit**, nicht Richtigkeit. 43 der 44 Szenarien stammen aus Formeln derselben Person, die die Schwellen gesetzt hat.
+Alles bis hierher prüft **Widerspruchsfreiheit**, nicht Richtigkeit. 50 der 51 Szenarien stammen aus Formeln derselben Person, die die Schwellen gesetzt hat.
 
 **Zwei Dinge stehen offen, und beide brauchen dich:**
 
@@ -110,11 +111,34 @@ Phase 0  ██████████████████████░�
 
 Zwei teilen sich `knee`; dafür musste die Registry von Körperregion auf Profilschlüssel umgebaut werden. Zwei verschieben eigene Schwellen — die Schienbeinkante gleich drei, weil die 24-Stunden-Regel bei Knochenstress nicht unverändert gilt.
 
-**Motor:** 7 Regeln · **316 Tests** · 50 Szenarien · 27 Urteilscodes · 8 Blockade-Gründe · 16 Problemcodes · **9 recherchierte Profile**, zwei davon mit eigenen Schwellen · Meilenstein-Kanal Stufe 1 und 2 nutzbar, Stufe 3 gebaut und aus · drei Ban-Listen
+**Motor:** 7 Regeln · **364 Motortests** · 51 Szenarien · 27 Urteilscodes · 9 Blockade-Gründe · 22 Problemcodes · **9 recherchierte Profile**, zwei davon mit eigenen Schwellen · Meilenstein-Kanal Stufe 1 und 2 nutzbar, Stufe 3 gebaut und aus · drei Ban-Listen
 
 **Was ohne dich weitergehen kann:** Stufe 2 — Ellenbogen, Adduktoren, Knochenstress an Tibia und Mittelfuss, Sprunggelenksdistorsion, Achillessehnenriss nach Versorgung. Dazu die **Kaskade**: zwei gleichzeitige Episoden verschiedener Regionen mit Bezug zueinander — dein eigener Fall, Wade dann Knie.
 
-**Was ohne dich nicht weitergeht:** Schritt 5 und 6, für alle fünf Profile. Sie brauchen gelebte Daten und den JOSPT-Volltext.
+**Was ohne dich nicht weitergeht:** Schritt 5 und 6, für alle neun Profile. Sie brauchen gelebte Daten und den JOSPT-Volltext.
+
+---
+
+## Die Härtungswoche (24.–30.08.)
+
+**Eine bewusste Verzögerung, keine Lücke.** Phase 1 stand bis auf die Anmeldung; statt sofort mit Phase 2 weiterzumachen, ist eine Woche in das gegangen, was schon da war. Der Anlass war ein Befund: Der Tageseintrag — das Bauteil, das mehr benutzt wird als alles andere zusammen — verlor Daten auf sechs verschiedene Arten, und keine davon meldete sich.
+
+**Was dabei herauskam**, in der Reihenfolge, in der es gefunden wurde:
+
+| | Fund |
+|---|---|
+| H1 | Der Tageszähler las die Uhr des SERVERS. In der Entwicklung unsichtbar, weil Server und Browser dieselbe Maschine sind. |
+| H2 | Sechs stille Datenverluste im Tageseintrag. Ein nachgetragener Morgenwert löschte eine erfasste Trainingseinheit — gemeldet als »Gespeichert.« |
+| H17 | Ein Tag konnte nur EINE Einheit tragen. Wer morgens läuft und abends Kraft macht, meldete zu wenig Last — an genau den Tagen mit der höchsten. |
+| H18 | Schmerzmittel senken den Morgenwert chemisch, und vier der sieben Regeln lesen ihn. Der Motor verweigert jetzt die Entwarnung. |
+| H15 | 18 Wörterbucheinträge erreichten nie einen Bildschirm. Darunter der einzige Satz, der einen stillen Profilwechsel benannt hätte. |
+| H12 | Ein Asymmetrie-Urteil vom 6. April kam als »Stand 20. April« heraus — datiert auf eine Messung, die es nie gelesen hatte. |
+| H8 | Sechs Farbpaare unter WCAG AA, darunter die Farbe jeder Formularwarnung. `lang="en"` auf jeder deutschen Seite. |
+| H11 | Ein verbotenes UPDATE meldete Erfolg. Und das Ziel des Anmeldelinks kam aus einer Kopfzeile, die der Aufrufer setzt. |
+
+**Was strukturell dazukam:** sieben Prüfskripte, alle in CI — Wortgrenze, Wörterbuch, Kontrast, Prerender, Migrationen, Zugriffsschutz, Dokumentenzahlen. Jedes mit dem Nachweis, dass es anschlägt; siehe [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md), E6.
+
+**Die Lehre, die bleibt:** Der Standardfehler dieses Projekts ist nicht der Absturz, sondern die stille Falschmeldung. Sechsmal in einer Woche war der Befund derselbe — etwas wird gesetzt, berechnet oder geschrieben und erreicht nie den Bildschirm, oder umgekehrt: etwas wird gemeldet, das nicht stattgefunden hat.
 
 ---
 

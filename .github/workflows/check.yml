@@ -132,3 +132,10 @@ jobs:
       # Beide Themen, hell und dunkel — die dunkle Palette ist eine eigene.
       - name: App — Kontrast nach WCAG AA
         run: npm run check:contrast --workspace=web
+
+      # Die Dokumente tragen die Begründungen dieses Projekts. Eine Zahl darin,
+      # die niemand nachzieht, schlägt nirgends fehl und sieht weiter richtig
+      # aus — 14 solcher Zahlen standen in fünf Dateien, zwei davon erst seit
+      # dieser Woche falsch. Zählt die wahren Werte selbst und vergleicht.
+      - name: Dokumente — keine veraltete Zahl
+        run: npm run check:docs

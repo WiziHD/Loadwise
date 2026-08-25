@@ -13,15 +13,15 @@ Nicht die 30 Minuten beim Physio — die anderen 167 Stunden.
 
 ```
 engine/     Das Regelmodul. Reine Funktionen, kein Framework, keine Datenbank,
-            keine Oberfläche. 316 Tests. Die Wahrheit über das, was das Produkt sagt.
+            keine Oberfläche. 364 Motortests. Die Wahrheit über das, was das Produkt sagt.
 web/        Next.js 16. Importiert den Motor als QUELLE, nicht als Build-Artefakt.
 supabase/   Schema und zeilenbasierter Zugriffsschutz.
 ```
 
 ```bash
 npm install
-npm run check      # Motor: Typen, 316 Tests, Abdeckungsschwellen
-                   # App:   58 Tests, Typen, Wortlaut-Grenze
+npm run check      # Motor: Typen, 364 Motortests, Abdeckungsschwellen
+                   # App:   93 Webtests, Typen, Wortlaut-Grenze
 npm run check:full # dasselbe plus Build und Prerender-Wächter
 npm run dev        # Entwicklungsserver
 ```
@@ -50,8 +50,8 @@ Ein roter Tag von vor sieben Wochen setzt nicht den heutigen Stand — bleibt ab
 im Bericht stehen. Zu entscheiden, dass ein alter Befund nicht mehr zählt, ist
 ein Urteil über ein Wort; ihn zu tilgen wäre das Löschen von Beweisen.
 
-**Kein Urteil darf unerreichbar sein.** Jeder der 27 Urteilscodes, 8
-Blockade-Gründe und 16 Problemcodes muss in mindestens einem Szenario vorkommen —
+**Kein Urteil darf unerreichbar sein.** Jeder der 27 Urteilscodes, 9
+Blockade-Gründe und 22 Problemcodes muss in mindestens einem Szenario vorkommen —
 und zusätzlich unter *jedem* Profil. Diese Disziplin hat sieben tote Zweige
 gefunden. Der siebte: `rom` war seit der ersten Fassung ein deklarierter Testtyp
 mit **null Messungen** in der gesamten Bibliothek.
@@ -72,16 +72,25 @@ Der präskriptive Teil (Phasen, Freigabekriterien) ist gebaut, belegt, versionie
 ## Was hier nicht bewiesen wird
 
 Die Tests zeigen, dass sich die Regeln verhalten, wie sie beschrieben sind. Sie
-zeigen **nicht**, dass die Schwellenwerte klinisch stimmen. 49 von 50 Szenarien
+zeigen **nicht**, dass die Schwellenwerte klinisch stimmen. 50 von 51 Szenarien
 stammen aus Formeln derselben Person, die die Schwellen gesetzt hat.
 
 Das löst nur ein gelebtes Tagebuch.
 
 ## Dokumente
 
-[KONZEPT.md](KONZEPT.md) · [TECHNIK.md](TECHNIK.md) · [FAHRPLAN.md](FAHRPLAN.md) ·
-[PROFILE.md](PROFILE.md) · [MEILENSTEINE.md](MEILENSTEINE.md) ·
-[PROTOKOLLE.md](PROTOKOLLE.md) · [PROFIL-ACHILLES.md](PROFIL-ACHILLES.md)
+Sie tragen die **Begründungen**, nicht bloss Beschreibungen — und `npm run check:docs` sorgt dafür, dass keine Zahl darin veraltet, ohne dass es auffällt.
+
+| | |
+|---|---|
+| [KONZEPT.md](KONZEPT.md) | Was das Produkt ist und für wen |
+| [TECHNIK.md](TECHNIK.md) | Wie es gebaut ist |
+| [FAHRPLAN.md](FAHRPLAN.md) | Wo wir stehen, und was als Nächstes kommt |
+| [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) | Warum eine Alternative verworfen wurde — samt der Bedingung, unter der man sie wieder aufmacht |
+| [SICHERHEIT.md](SICHERHEIT.md) | Die Durchsicht der ganzen Fläche: behoben oder begründet getragen |
+| [PROTOKOLLE.md](PROTOKOLLE.md) | Das Verfahren je Profil, und die Grenze zum Medizinprodukt |
+| [PROFILE.md](PROFILE.md) · [PROFIL-ACHILLES.md](PROFIL-ACHILLES.md) | Was bei welcher Verletzung gemessen wird, mit Quelle je Wert |
+| [MEILENSTEINE.md](MEILENSTEINE.md) | Heilungsverläufe, Kriterien, und warum Stufe 3 aus bleibt |
 
 ---
 

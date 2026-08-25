@@ -385,7 +385,7 @@ Gemessen, je Profil, die ganze Bibliothek als diese eine Verletzung gelesen:
 
 | | |
 |---|---|
-| Alle 11 Profile | **27/27 Urteilscodes, 8/8 Blockade-Gründe** |
+| Alle 11 Profile, Stand Schritt 4 | **27/27 Urteilscodes, 8/8 Blockade-Gründe** |
 
 Das ist ein sauberes Ergebnis, aber aus einem Grund, den ich benenne: Die Profile sind bislang fast identisch. Der Test ist heute keine Prüfung, sondern ein **Stolperdraht für das erste Profil, das eine Schwelle verschiebt.**
 
