@@ -126,9 +126,17 @@ export default async function EditEpisodePage({
           strings={s.edit}
           errorStrings={s.errors}
         />
-        <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.85rem", lineHeight: 1.55 }}>
-          {s.edit.archiveHint}
-        </p>
+        {/*
+          Nur solange der Knopf »Ins Archiv legen« sagt. Im Archiv sagt er
+          »Zurückholen«, und dann beschriebe dieser Satz die Gegenrichtung —
+          eine Erklärung, die zur Handlung daneben nicht passt, ist schlimmer
+          als keine. Was der Zustand bedeutet, steht dann oben.
+        */}
+        {episode.archived_at === null && (
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.85rem", lineHeight: 1.55 }}>
+            {s.edit.archiveHint}
+          </p>
+        )}
         <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.85rem", lineHeight: 1.55 }}>
           {s.edit.noDelete}
         </p>
