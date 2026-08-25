@@ -17,7 +17,7 @@ Der Plan hat **vier Ebenen**, die ineinandergreifen. Wir stehen in Ebene 1 ganz 
 | | Phase 3 | Woche 5–6: Geführte Selbsttests, LSI-Berechnung, Warnung bei sich öffnender Schere. | Das Alleinstellungsmerkmal steht. |
 | | Phase 4 | Woche 7–8: Physio-Bericht, Erinnerungen, Export und Löschung, englische Fassung vollständig, Bezahlschranke gebaut und **ausgeschaltet**. | Fremde Menschen können es benutzen. |
 | | Danach | Präventionsstufe, sportartspezifisch — sobald die Bindungszahlen stimmen. | |
-| | Durchgehend | Inhalte schreiben. Ab Woche 1, nicht später. | |
+| ⏳ | **Aussenspur** | Design, Landingpage, technisches SEO, Inhalte. **Eigene Bahn, parallel** — siehe unten. | Wer sucht, findet etwas, das erklärt statt anzumelden. |
 
 > **Abbruchkriterium für Phase 0, vereinbart:** Die Liste ist abgearbeitet **und** ein erneuter Audit-Lauf findet nichts Neues ab Schweregrad „major".
 >
@@ -143,3 +143,47 @@ Zwei teilen sich `knee`; dafür musste die Registry von Körperregion auf Profil
 ---
 
 *Arbeitsdokument. Wird bei jedem abgeschlossenen Schritt fortgeschrieben.*
+
+---
+
+## Die Aussenspur — Design, Website, SEO
+
+**Neu am 25.08.** Bis dahin war der Fahrplan reine Produktarbeit; die Zeile »Durchgehend: Inhalte schreiben, ab Woche 1« stand seit dem ersten Tag da und **es existiert keine einzige Zeile Inhalt.** Dasselbe Muster wie beim Deployment: im Plan benannt, nie eingeplant, still nicht gemacht.
+
+Deshalb bekommt das eine eigene Bahn statt einer Fussnote.
+
+### Warum zwei Bahnen und nicht eine längere Reihe
+
+Weil sie **verschiedene Menschen brauchen.** Die Produktspur ist meine Arbeit, die Inhaltsspur ist deine. Sie laufen wirklich parallel, nicht nur auf dem Papier — während ich baue, kannst du sprechen.
+
+Und Inhalt hat keine Dauer, sondern einen **Vorlauf**. Wirkung kommt nach Monaten. Jede Woche ohne Text hängt sich hinten an, nicht vorne — deshalb ist der Startzeitpunkt wichtiger als die Menge.
+
+### Die Reihenfolge, und warum sie so ist
+
+| | Was | Aufwand | Hängt an |
+|---|---|---|---|
+| **A1** | Designsystem | ~1 Tag ich · 2 Entscheidungen du | Name, Haltung |
+| **2.1** | Hauptbildschirm | Woche 2 | A1 |
+| **1.1b** | Deployment | ~½ Tag ich · Konto + Domain du | — |
+| **A2** | Landingpage | 1–2 Tage | A1 **und** 2.1 |
+| **A3** | Technisches SEO | ~1 Tag, fast ohne dich | 1.1b |
+| **A4** | Inhalte, je Seite | ~2 h ich · ~3–4 h du | nichts — **beginnt sofort** |
+
+Zwei Abhängigkeiten sind echt und nicht verhandelbar:
+
+**A1 kommt vor 2.1.** Der Hauptbildschirm ist das, was die Landingpage später als Beweis zeigt. Ihn schlicht zu bauen und danach neu zu gestalten ist die Arbeit zweimal.
+
+**A2 kommt nach 2.1.** Der stärkste Beweis der Landingpage *ist* dieser Bildschirm. Vorher müsste sie behaupten, was sie danach zeigen kann.
+
+### Was die Aussenspur kostet, ehrlich
+
+Rund **vier Arbeitstage** von mir für A1 bis A3, plus etwa zwei Stunden je Inhaltsseite. Von dir: eine halbe Stunde Entscheidungen, ein Konto samt Domain, und danach der Rhythmus für die Inhalte.
+
+**Das verschiebt Phase 4.** Der 25-Tage-Termin stand schon vor dieser Änderung im Konflikt mit dem Echtdaten-Abgleich (frühestens Tag 30). Mit der Aussenspur liegt Phase 4 realistisch bei **Tag 38 bis 42** — es sei denn, aus Woche 4 fällt etwas weg. Der offensichtlichste Kandidat ist die vollständige englische Fassung: Das Konzept hält selbst fest, dass die ersten echten Nutzer wahrscheinlich deutschsprachig sind.
+
+### Was dabei nicht verhandelbar ist
+
+- **Zweisprachig ab der ersten Zeile**, auch auf der Website. Nachträglich ist es teuer, und die Entscheidung steht seit Tag 1.
+- **Kein Wort des Motors auf einer Seite.** `check:boundary` prüft 250 Motorsätze gegen alle App-Dateien, und die Website ist eine davon.
+- **Kein Analysewerkzeug eines Dritten.** Ein Produkt mit Gesundheitsdaten lädt kein Skript, das jeden Aufruf meldet — `connect-src` hat heute genau zwei Einträge, und das bleibt so.
+- **`/episodes/*` gehört in keinen Index.** Hinter der Anmeldung, ja — aber die Adresse selbst ist eine Auskunft.

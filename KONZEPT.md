@@ -218,6 +218,18 @@ Der Vorteil gegenüber allen bisher geprüften Ideen: Verletzte suchen **hochspe
 
 **Der Preis dafür:** zusätzliche Arbeit neben dem Bauen, mit Wirkung erst nach Monaten. Wer diesen Teil nicht macht, hat ein Produkt ohne Nutzer.
 
+### Nachtrag 25.08.2026 — der Satz oben war richtig und ist nicht befolgt worden
+
+**Es existiert keine einzige Zeile Inhalt.** Ein Jahr Vorlauf, den dieses Konzept selbst als den längsten von allen bezeichnet, ist bisher nicht angelaufen.
+
+Und zwei Befunde kommen dazu, die beim Nachsehen aufgefallen sind:
+
+**Wer heute abgemeldet auf die Startseite kommt, sieht Name, Untertitel und einen Knopf »Anmelden«.** Das ist keine Landingpage. Jeder Besucher aus einer Suchmaschine stünde vor einer Anmeldung für ein Produkt, über das er nichts weiss — der Verkehr wäre verschwendet, bevor er entsteht. **Die Landingpage ist deshalb keine Ergänzung zur Inhaltsarbeit, sondern deren Voraussetzung.**
+
+**Das Produkt heisst an zwei Orten verschieden.** Abschnitt 15 nennt »Belastbar« als Arbeitstitel, Code und README sagen »Loadwise«. Eine Landingpage für ein Produkt mit zwei Namen gibt es nicht; die Entscheidung aus Abschnitt 15 ist damit von »offen« zu »blockierend« geworden.
+
+Beides hat jetzt eine eigene Bahn im Fahrplan, statt als Zeile mitzulaufen.
+
 ---
 
 ## 12. Ausbaustufe: Prävention
@@ -293,7 +305,7 @@ Grobe Reihenfolge, keine Terminzusage. Am Ende jedes Abschnitts steht etwas Benu
 | **Woche 3–4** | Auswertung: 24-Stunden-Regel und Belastungsspitzen. Ab hier sagt die App etwas, das man selbst nicht sieht. |
 | **Woche 5–6** | Selbsttests und Asymmetrie-Warnung. Erst jetzt unterscheidet sich das Produkt von einem besseren Notizbuch. |
 | **Woche 7–8** | Konto, Physio-Bericht, Mehrsprachigkeit fertigstellen. Bezahlschranke gebaut, aber aus. |
-| **Parallel ab Woche 1** | Schreiben. Die Inhaltsarbeit braucht den längsten Vorlauf von allem. |
+| **Eigene Bahn, ab sofort** | Design, Landingpage, technisches SEO, Inhalte. Siehe [FAHRPLAN.md](FAHRPLAN.md), Abschnitt »Die Aussenspur«. Stand als Fussnote hier und ist deshalb ein Jahr lang nicht passiert. |
 | **Danach** | Präventionsstufe, sobald die Bindungszahlen aus Abschnitt 14 stimmen. |
 
 ---
