@@ -3,8 +3,9 @@
 # ---------------------------------------------------------------------------
 # WARUM DAS HIER STEHT UND NICHT IN EINER ERINNERUNG.
 #
-# Bis heute liefen 316 Tests, die Wortgrenze, der Prerender-Wächter und die
-# Abdeckungsschwellen nur, wenn jemand daran dachte. Genau dadurch stand die
+# Bis zu dem Tag, an dem diese Datei entstand, liefen die Tests, die
+# Wortgrenze, der Prerender-Wächter und die Abdeckungsschwellen nur, wenn
+# jemand daran dachte. Genau dadurch stand die
 # Schwelle für `functions` unbemerkt auf Rot — niemand weiss, seit wann, weil
 # `npm run coverage` in keiner Kette steckte.
 #
@@ -22,6 +23,7 @@
 #               Datenbank. Ein solcher Schlüssel in CI ist der Weg, auf dem er
 #               irgendwann in einem Protokoll landet. Ausserdem benutzt es
 #               feste Testkonten und würde mit einem lokalen Lauf kollidieren.
+#   check:signin dasselbe, plus: es braucht einen laufenden Entwicklungsserver.
 #   mutate      Der Wert steht bei 38 % und kann legitim erst mit echten
 #               Verläufen steigen. Als Tor würde er dazu verleiten, ihn
 #               künstlich zu heben.

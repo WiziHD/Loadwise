@@ -12,6 +12,7 @@
     "check:dictionary": "tsx scripts/check-dictionary.ts",
     "check:prerender": "tsx scripts/check-no-prerendered-private.ts",
     "check:rls": "tsx scripts/check-rls.mts",
+    "check:signin": "tsx scripts/check-signin.mts",
     "check:migrations": "tsx scripts/check-migrations.mts",
     "test": "vitest run"
   },

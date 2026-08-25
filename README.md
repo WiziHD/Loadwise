@@ -88,6 +88,7 @@ Sie tragen die **Begründungen**, nicht bloss Beschreibungen — und `npm run ch
 | [FAHRPLAN.md](FAHRPLAN.md) | Wo wir stehen, und was als Nächstes kommt |
 | [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) | Warum eine Alternative verworfen wurde — samt der Bedingung, unter der man sie wieder aufmacht |
 | [SICHERHEIT.md](SICHERHEIT.md) | Die Durchsicht der ganzen Fläche: behoben oder begründet getragen |
+| [ANMELDUNG.md](ANMELDUNG.md) | Warum passwortlos, und was zum Einrichten des Mailversands noch fehlt |
 | [PROTOKOLLE.md](PROTOKOLLE.md) | Das Verfahren je Profil, und die Grenze zum Medizinprodukt |
 | [PROFILE.md](PROFILE.md) · [PROFIL-ACHILLES.md](PROFIL-ACHILLES.md) | Was bei welcher Verletzung gemessen wird, mit Quelle je Wert |
 | [MEILENSTEINE.md](MEILENSTEINE.md) | Heilungsverläufe, Kriterien, und warum Stufe 3 aus bleibt |
