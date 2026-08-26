@@ -66,8 +66,10 @@ function fail(message: string): never {
 }
 
 /** Wie viele Tests ein Arbeitsbereich wirklich hat — gezählt, nicht geglaubt. */
-function testAnzahl(workspace: string): number {
-  const out = execFileSync(process.execPath, [VITEST, "run"], {
+function testAnzahl(workspace: string, projekt?: string): number {
+  const args = [VITEST, "run"];
+  if (projekt !== undefined) args.push("--project=" + projekt);
+  const out = execFileSync(process.execPath, args, {
     cwd: resolve(WURZEL, workspace),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
@@ -134,6 +136,11 @@ type Behauptung = {
 const BEHAUPTUNGEN: Behauptung[] = [
   { wendung: /(\d+)\s+Motortests\b/g, name: "Motortests" },
   { wendung: /(\d+)\s+Webtests\b/g, name: "Webtests" },
+  // Eigene Wendung, weil diese Zahl mich beim Schreiben von E11 selbst erwischt
+  // hat: »24 Bauteiltests« stand in drei Dokumenten, es waren 22. Nachgezählt
+  // habe ich nur, weil die Zahl im Bericht komisch aussah — die Prüfung hier
+  // kannte das Wort nicht, also gab es keine.
+  { wendung: /(\d+)\s+Bauteiltests\b/g, name: "Bauteiltests" },
   { wendung: /(\d+)\s+Szenarien\b/g, name: "Szenarien" },
   { wendung: /(\d+)\s+Urteilscodes\b/g, name: "Urteilscodes" },
   { wendung: /(\d+)\s+Blockade-Gründe\b/g, name: "Blockade-Gründe" },
@@ -204,6 +211,7 @@ function main(): void {
   const werte = new Map<string, number>(Object.entries(motorZahlen()));
   werte.set("Motortests", testAnzahl("engine"));
   werte.set("Webtests", testAnzahl("web"));
+  werte.set("Bauteiltests", testAnzahl("web", "bauteile"));
 
   const fehlend = BEHAUPTUNGEN.filter((b) => !werte.has(b.name));
   if (fehlend.length > 0) {

@@ -4,9 +4,13 @@
  * ---------------------------------------------------------------------------
  * EIN TEST, DER NICHT FEHLSCHLAGEN KANN, IST KEIN TEST.
  *
- * 24 grüne Bauteiltests sagen für sich genommen nichts. Sie sagen erst dann
- * etwas, wenn gezeigt ist, dass sie rot werden, sobald das Bauteil kaputtgeht —
- * und zwar auf genau die Art, gegen die sie wachen sollen.
+ * Grüne Bauteiltests sagen für sich genommen nichts. Sie sagen erst dann etwas,
+ * wenn gezeigt ist, dass sie rot werden, sobald das Bauteil kaputtgeht — und
+ * zwar auf genau die Art, gegen die sie wachen sollen.
+ *
+ * (Ohne Zahl, mit Absicht: `check:docs` liest nur Dokumente, eine Zahl in
+ * diesem Kommentar wäre also ungeprüft. Genau so ist »24 Bauteiltests« hier
+ * hineingeraten, als es 22 waren.)
  *
  * Dieses Skript nimmt jede Zeile, die einen dokumentierten Datenverlust
  * verhindert, macht sie wirkungslos, lässt die Bauteiltests laufen und stellt
