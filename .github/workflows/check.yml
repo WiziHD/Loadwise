@@ -102,11 +102,18 @@ jobs:
       - name: App — Build und Prerender-Wächter
         run: npm run build --workspace=web
 
-      # Eigener Schritt, seit es sie gibt: Prüfungen über die
-      # Entscheidungen der App — welcher Wert zulässig ist, welche Sprache ein
-      # Pfad bekommt, welches Profil eine Episode trägt. Zwei der drei Fehler
-      # dieser Woche waren Laufzeitfehler, die tsc und next build durchliessen.
-      - name: App — Tests
+      # Zwei Umgebungen, seit Woche 2. `rein` prüft Entscheidungen ohne
+      # Dokument — welcher Wert zulässig ist, welche Sprache ein Pfad bekommt.
+      # `bauteile` prüft, was tatsächlich auf dem Bildschirm steht; sechs der
+      # acht Funde der Härtungswoche lagen dort und in keinem Modul.
+      #
+      # NICHT `vitest run` DIREKT, und das ist hier besonders wichtig: Ein Pool,
+      # der nicht startet, beendet vitest mit 0. Beim ersten kalten Lauf ist
+      # genau das passiert — das jsdom-Projekt lief nicht, der Lauf meldete
+      # grün. CI hat bei JEDEM Lauf einen kalten Cache. `run-tests.ts` vergleicht
+      # deshalb die Testdateien auf der Platte mit denen, die einen Befund
+      # gemeldet haben.
+      - name: App — Tests, reine und Bauteile
         run: npm run test --workspace=web
 
       # NACH dem Build, mit Absicht. Erst dann existiert .next/types, und die

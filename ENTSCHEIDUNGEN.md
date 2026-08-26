@@ -307,3 +307,41 @@ Der Spiegel ist die eine Stelle, an der die App Daten zeigt, **ohne sie zu beurt
 ### Wann man das wieder aufmacht
 
 Wenn sich an echten Verläufen zeigt, dass der Spiegel **beunruhigt** statt zu binden. Das ist messbar — nicht an einer Zahl, sondern an der Frage aus Konzept Abschnitt 14: Was sagen Leute, wenn man sie fragt. Fällt das Urteil negativ aus, ist die Antwort Bedingung 1 zu verschärfen, nicht den Spiegel abzuschaffen: Zahlen zurückzugeben, die jemand selbst eingetippt hat, kann für sich nicht beunruhigen.
+
+---
+
+## E11 — Zwei Testumgebungen, und die Dateiendung entscheidet
+
+**Entschieden 26.08.2026** · `web/vitest.config.mts`, `web/scripts/run-tests.ts`
+
+`.test.ts` läuft unter node, `.test.tsx` unter jsdom. Zwei Projekte, keine Anmerkung pro Datei.
+
+### Warum nicht einfach jsdom für alles
+
+Das wäre eine Zeile weniger und würde eine Prüfung wegnehmen: **Ein Servermodul, das versehentlich nach `window` oder `document` greift, liefe unter jsdom durch** und bräche erst im Betrieb. Diese App hat genau das schon einmal getroffen — eine Client-Funktion, die der Server rief.
+
+Die reinen Tests brauchen kein Dokument. Was sie prüfen, sind Entscheidungen: welcher Wert zulässig ist, welche Sprache ein Pfad bekommt, welches Profil eine Episode trägt.
+
+### Der Fund, der `run-tests.ts` erzwungen hat
+
+Der erste kalte Lauf mit der zweiten Umgebung sah so aus:
+
+```
+Failed to start forks worker for .../umgebung.test.tsx
+Caused by: Timeout waiting for worker to respond
+Test Files  8 passed (8)   Tests  95 passed (95)   Errors  1 error
+EXITCODE=0
+```
+
+**Das ganze jsdom-Projekt lief nicht, und der Lauf meldete grün.** In CI wäre das ein Haken bei »App — Tests« mit null Bauteiltests gewesen — und CI hat bei jedem Lauf einen kalten Cache, das ist dort also der Normalfall.
+
+Der Startfehler selbst ist behoben: `pool: "threads"` statt der voreingestellten forks, kalt 4,5 s statt Zeitüberschreitung. Nachgemessen wurde ausserdem die Gegenrichtung — ein **Importfehler** in einer Testdatei beendet den Lauf mit 1. Der Fail-Open betrifft also nur den Pool, nicht das Laden.
+
+Geblieben ist trotzdem die Bauform, und die überlebt jede Ursache. `run-tests.ts` vergleicht deshalb zwei unabhängig ermittelte Tatsachen: **welche Testdateien unter `test/` liegen** und **welche einen Befund gemeldet haben.** Keine Mindestzahl — die wäre die Sorte Zahl, gegen die `check:docs` gebaut wurde.
+
+Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.mts` lässt den Lauf mit 1 enden und benennt die stumme Datei.
+
+### Wann man das wieder aufmacht
+
+- **Vitest beendet einen Lauf mit ungestartetem Pool nicht mehr mit 0.** Dann fällt der Grund für `run-tests.ts` weg — die Prüfung selbst darf trotzdem bleiben, sie kostet nichts und deckt auch verengte Suchmuster ab.
+- **Die App bekommt einen dritten Testtyp** (Browserlauf, Vertragstest). Dann ist neu zu beantworten, ob die Dateiendung noch das richtige Unterscheidungsmerkmal ist — nicht, ob die Trennung bleibt.

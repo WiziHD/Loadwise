@@ -14,7 +14,8 @@
     "check:rls": "tsx scripts/check-rls.mts",
     "check:signin": "tsx scripts/check-signin.mts",
     "check:migrations": "tsx scripts/check-migrations.mts",
-    "test": "vitest run"
+    "test": "tsx scripts/run-tests.ts",
+    "test:roh": "vitest run"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
@@ -25,9 +26,13 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
     "@types/node": "^26.2.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "jsdom": "^30.0.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^4.1.11"
