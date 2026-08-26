@@ -15,7 +15,8 @@
     "check:signin": "tsx scripts/check-signin.mts",
     "check:migrations": "tsx scripts/check-migrations.mts",
     "test": "tsx scripts/run-tests.ts",
-    "test:roh": "vitest run"
+    "test:roh": "vitest run",
+    "check:ui-mutation": "tsx scripts/check-ui-mutation.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

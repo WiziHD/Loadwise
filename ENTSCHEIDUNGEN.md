@@ -341,6 +341,14 @@ Geblieben ist trotzdem die Bauform, und die überlebt jede Ursache. `run-tests.t
 
 Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.mts` lässt den Lauf mit 1 enden und benennt die stumme Datei.
 
+### Und die Tests selbst brauchen denselben Beweis
+
+24 grüne Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. **Neun von neun Mutationen gefangen**, beide Richtungen der Gerätetag-Korrektur.
+
+Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
+
+Nicht in CI, aus demselben Grund wie `npm run mutate` im Motor: Ein Wert als Tor verleitet dazu, ihn künstlich zu heben.
+
 ### Wann man das wieder aufmacht
 
 - **Vitest beendet einen Lauf mit ungestartetem Pool nicht mehr mit 0.** Dann fällt der Grund für `run-tests.ts` weg — die Prüfung selbst darf trotzdem bleiben, sie kostet nichts und deckt auch verengte Suchmuster ab.
