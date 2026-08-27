@@ -28,6 +28,32 @@
  * Braucht den Service-Role-Key, der RLS umgeht — genau das erlaubt es, den
  * Aufbau zu stellen und von aussen zu prüfen. Es ist damit ein
  * Entwicklungswerkzeug und kann nie Teil der App werden.
+ *
+ * ---------------------------------------------------------------------------
+ * DIE PRÜFZEILEN BLEIBEN LIEGEN. ABSICHTLICH — ABER ES MUSS JEMAND WISSEN.
+ *
+ * `findOrCreate` statt anlegen-und-wieder-löschen: Der nächste Lauf verwendet
+ * dieselben Zeilen wieder, und ein Lauf, der mittendrin abbricht, hinterlässt
+ * damit keinen halben Aufbau, den der übernächste nicht mehr versteht.
+ *
+ * **Die Folge ist, dass diese Tabellen nach dem ersten Lauf nie wieder leer
+ * sind**, und das ist nicht folgenlos: Migration `0007_evaluation_run.sql` setzt
+ * Spalten auf `not null` ohne Standardwert, was nur auf leeren Tabellen geht.
+ * Sie ist genau daran gescheitert, und ihre Fehlermeldung sagt inzwischen, wie
+ * man die Prüfzeilen — und nur die — wieder loswird.
+ *
+ * Jede Zeile hier trägt deshalb eine erkennbare Marke — aber nicht dieselbe:
+ * `PROBE_LABEL` auf der Episode, `probe` in `rule_version`, `profile_version`
+ * und `profile_key`, `sonde` beim Messschlüssel, `sonde_start`/`sonde_ziel`
+ * beim Profilwechsel. Gewachsen, nicht entworfen; wer aufräumt, braucht
+ * deshalb mehrere Bedingungen und nicht eine.
+ *
+ * Wer eine neue Prüfzeile ergänzt, gibt ihr eine Marke, sonst ist sie später
+ * von echten Daten nicht mehr zu unterscheiden.
+ *
+ * Die Zeilen gehören den Prüfkonten, nicht einem echten Nutzer. Solange
+ * Entwicklung und Produktion dasselbe Projekt sind, liegen sie trotzdem in
+ * derselben Datenbank — siehe die offene Stelle am Ende von ANMELDUNG.md.
  * ---------------------------------------------------------------------------
  *
  *   npm run check:rls --workspace=web

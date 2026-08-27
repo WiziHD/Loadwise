@@ -62,23 +62,87 @@
 -- Die drei neuen Spalten sind `not null` ohne Standardwert. Das geht nur auf
 -- leeren Tabellen — und leer sind sie, weil bis heute nichts sie beschreibt.
 --
--- Der Ausweg wäre ein Standardwert, und genau den darf es nicht geben: Ein
+-- Der eine Ausweg wäre ein Standardwert, und genau den darf es nicht geben: Ein
 -- `config` von `{}` hiesse »beurteilt gegen gar keine Schwellen«, und der
 -- Bericht würde das anstandslos rendern. Lieber ein Abbruch mit einem Satz.
+--
+-- Der andere Ausweg wäre, die Spalten nullbar zu lassen — dann liefe diese
+-- Datei überall durch, auch auf einer Datenbank mit echten Zeilen. **Verworfen,
+-- und die Wahl gilt nur, solange sie stimmt:** Es gibt heute keine einzige echte
+-- Auswertung, also gibt es auch keine, der ein Massstab ehrlich fehlt. Jede
+-- Zeile ab hier trägt ihren; kein Leser muss je einen Null-Fall behandeln, und
+-- niemand muss den Satz »diese Auswertung weiss nicht, wonach sie geurteilt
+-- hat« schreiben.
+--
+-- Der Preis ist einmalig und trifft die Entwicklung, nicht den Betrieb: Wer
+-- `check:rls` schon einmal laufen liess, hat Prüfzeilen in beiden Tabellen und
+-- muss sie vorher wegräumen. Die Meldung unten sagt, wie.
+--
+-- **Auf einer Datenbank mit echten Auswertungen wäre diese Migration nicht mehr
+-- anwendbar.** Das ist heute richtig und wäre es nach der ersten Auslieferung
+-- nicht mehr — dann gehört sie ersetzt durch eine, die nullbar ergänzt und den
+-- fehlenden Fall benennt.
 -- ---------------------------------------------------------------------------
 do $$
 declare
   n_flags bigint;
   n_evals bigint;
+  n_sonde_flags bigint;
+  n_sonde_evals bigint;
 begin
   select count(*) into n_flags from flags;
   select count(*) into n_evals from evaluations;
 
-  if n_flags > 0 or n_evals > 0 then
-    raise exception
-      'flags (%) und evaluations (%) sind nicht leer. Diese Migration setzt Spalten auf not null ohne Standardwert; ein Standardwert waere hier eine erfundene Schwellenmenge. Zeilen erst pruefen und entfernen.',
-      n_flags, n_evals;
+  if n_flags = 0 and n_evals = 0 then
+    return;
   end if;
+
+  -- Wer hier steht, ist fast immer `check:rls`. Das Skript legt mit dem
+  -- Service-Role-Schluessel je eine Pruefzeile an — und loescht sie NICHT: es
+  -- benutzt `findOrCreate` und verwendet sie beim naechsten Lauf wieder. Nach
+  -- dem ersten Lauf sind diese Tabellen also nie wieder leer.
+  --
+  -- Das steht hier, weil die erste Fassung dieser Meldung nur »Zeilen erst
+  -- pruefen und entfernen« sagte und niemanden weiterbrachte. Eine
+  -- Fehlermeldung, die den wahrscheinlichsten Grund kennt und verschweigt, ist
+  -- eine halbe Meldung.
+  select count(*) into n_sonde_flags
+    from flags where rule_version = 'probe' and profile_version = 'probe';
+  select count(*) into n_sonde_evals
+    from evaluations where rule_version = 'probe' and profile_key = 'probe';
+
+  -- Dollar-Quoting statt aneinandergereihter Literale: In der ersten Fassung
+  -- trug nur das ERSTE Literal das E-Praefix, also waeren aus allen weiteren
+  -- `\n` zwei woertliche Zeichen geworden. Eine Fehlermeldung, die als eine
+  -- lange Zeile mit sichtbaren Backslashes ankommt, ist keine Hilfe mehr.
+  raise exception '%', format($hinweis$flags (%s) und evaluations (%s) sind nicht leer.
+
+Diese Migration setzt Spalten auf not null OHNE Standardwert. Ein Standardwert
+waere hier eine erfundene Schwellenmenge: ein config von {} hiesse "beurteilt
+gegen gar keine Schwellen", und der Bericht wuerde das anstandslos rendern.
+
+Davon sehen %s bzw. %s nach Pruefzeilen von check:rls aus. Das Skript legt sie
+mit findOrCreate an und loescht sie NIE, damit der naechste Lauf sie
+wiederverwendet — nach dem ersten Lauf sind diese Tabellen also nie wieder leer.
+
+Erst anschauen:
+
+  select 'flags' as tabelle, id::text, episode_id::text, computed_at,
+         kind || ' / ' || reason as inhalt, rule_version, profile_version
+  from flags
+  union all
+  select 'evaluations', id::text, episode_id::text, computed_at,
+         overall_status, rule_version, profile_version
+  from evaluations;
+
+Sind es die Pruefzeilen, entfernt dieses Paar sie und NUR sie:
+
+  delete from flags where rule_version = 'probe' and profile_version = 'probe';
+  delete from evaluations where rule_version = 'probe' and profile_key = 'probe';
+
+Danach diese Migration erneut. Der naechste check:rls-Lauf legt die Zeilen neu
+an, dann mit evaluation_id und config.$hinweis$,
+    n_flags, n_evals, n_sonde_flags, n_sonde_evals);
 end $$;
 
 -- ---------------------------------------------------------------------------
