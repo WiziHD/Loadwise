@@ -52,11 +52,29 @@ const TONE: Record<Severity, string> = {
   red: "var(--red)",
 };
 
-/** Der Zustand als Farbe UND als Wort. Nie nur das eine. */
+/**
+ * Der Zustand als Farbe, als Wort UND als Form. Nie nur das eine.
+ *
+ * ---------------------------------------------------------------------------
+ * `unjudged` IST KEINE DRITTE FARBE, SONDERN EINE ANDERE SORTE ANTWORT.
+ *
+ * Grün, Bernstein und Rot sind eine Skala: Sie beantworten dieselbe Frage
+ * verschieden stark. »Nicht genug beurteilt« beantwortet sie GAR NICHT — und
+ * eine vierte Farbe auf derselben Skala liest sich unweigerlich als vierte
+ * Stufe, meistens als die schwächste. Genau so ist der Zustand in einer
+ * früheren Fassung zu blassem Grün geworden.
+ *
+ * Deshalb bekommt er eine eigene FORM: einen abgesetzten Kasten mit
+ * gestricheltem Rand. Ein Urteil steht als Text da, eine Nicht-Antwort in einem
+ * Rahmen. Der Unterschied ist auf einen Blick sichtbar, bevor irgendein Wort
+ * gelesen ist, und er überlebt jede Farbenfehlsichtigkeit — gestrichelt gegen
+ * gar kein Rahmen ist keine Farbfrage.
+ * ---------------------------------------------------------------------------
+ */
 function overallLook(
   run: StoredRun,
   s: Strings["report"],
-): { text: string; tone: string } {
+): { text: string; tone: string; unjudged: boolean } {
   switch (run.overall.status) {
     case "judged":
       return {
@@ -64,15 +82,16 @@ function overallLook(
           run.overall.severity
         ],
         tone: TONE[run.overall.severity],
+        unjudged: false,
       };
     case "insufficient":
       // NICHT grün, und das ist der Grund, aus dem `--unjudged` als eigene
       // Farbe existiert: »nicht genug beurteilt« ist eine eigene Antwort und
       // kein schwaches »alles in Ordnung«. Eine Durchsicht hat genau diesen
       // Fehler schon einmal gefunden.
-      return { text: s.stateInsufficient, tone: "var(--unjudged)" };
+      return { text: s.stateInsufficient, tone: "var(--unjudged)", unjudged: true };
     case "no-data":
-      return { text: s.stateNoData, tone: "var(--unjudged)" };
+      return { text: s.stateNoData, tone: "var(--unjudged)", unjudged: true };
   }
 }
 
@@ -150,17 +169,39 @@ export function ReportView({
 
       <section style={{ ...section, borderTop: "none", paddingTop: 0 }}>
         <h2 style={heading}>{s.overallHeading}</h2>
-        <p style={{ margin: "0 0 0.5rem", fontSize: "1.35rem", fontWeight: 600, color: zustand.tone }}>
-          {zustand.text}
-        </p>
-        <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.9rem" }}>
-          {fill(s.coverage, {
-            judged: run.coverage.judgedDays,
-            expected: run.coverage.judgedDays + run.coverage.blockedDays,
-            reporting: run.coverage.rulesReporting,
-            total: run.coverage.rulesTotal,
-          })}
-        </p>
+        {/* Der Kasten steht immer, nur seine Form hängt am Zustand.
+            Zuerst wurde er nur bei »nicht beurteilt« gerendert — dann prüfte
+            der Test das VORHANDENSEIN des Elements statt seiner Form, und eine
+            Mutation, die JEDEM Zustand den Rahmen gibt, überlebte. Ein
+            Anhaltspunkt, den es in beiden Fällen gibt, macht beide Richtungen
+            prüfbar. */}
+        <div
+          data-overall={run.overall.status}
+          style={
+            zustand.unjudged
+              ? {
+                  // Die Form, nicht nur die Farbe. Siehe `overallLook`.
+                  border: "1px dashed var(--unjudged)",
+                  borderRadius: "0.5rem",
+                  padding: "0.9rem 1rem",
+                }
+              : { border: "none", padding: 0 }
+          }
+        >
+          <p
+            style={{ margin: "0 0 0.5rem", fontSize: "1.35rem", fontWeight: 600, color: zustand.tone }}
+          >
+            {zustand.text}
+          </p>
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.9rem" }}>
+            {fill(s.coverage, {
+              judged: run.coverage.judgedDays,
+              expected: run.coverage.judgedDays + run.coverage.blockedDays,
+              reporting: run.coverage.rulesReporting,
+              total: run.coverage.rulesTotal,
+            })}
+          </p>
+        </div>
       </section>
 
       {(run.pending.length > 0 || weitereGruende.length > 0) && (

@@ -105,14 +105,14 @@ const MUTATIONEN: Mutation[] = [
   {
     name: "ReportView: nicht genug beurteilt sieht aus wie eine Entwarnung",
     datei: "src/components/ReportView.tsx",
-    von: 'return { text: s.stateInsufficient, tone: "var(--unjudged)" };',
-    nach: 'return { text: s.stateGreen, tone: "var(--green)" };',
+    von: 'return { text: s.stateInsufficient, tone: "var(--unjudged)", unjudged: true };',
+    nach: 'return { text: s.stateGreen, tone: "var(--green)", unjudged: false };',
   },
   {
     name: "ReportView: die Farbe stimmt, das Wort nicht mehr",
     datei: "src/components/ReportView.tsx",
-    von: 'return { text: s.stateInsufficient, tone: "var(--unjudged)" };',
-    nach: 'return { text: s.stateGreen, tone: "var(--unjudged)" };',
+    von: 'return { text: s.stateInsufficient, tone: "var(--unjudged)", unjudged: true };',
+    nach: 'return { text: s.stateGreen, tone: "var(--unjudged)", unjudged: true };',
   },
   {
     name: "ReportView: Gruende ohne Regel werden nicht gezeigt",
@@ -131,6 +131,45 @@ const MUTATIONEN: Mutation[] = [
     datei: "src/components/ReportView.tsx",
     von: "{frueher.length > 0 && (",
     nach: "{false && frueher.length > 0 && (",
+  },
+  {
+    // -----------------------------------------------------------------------
+    // HIER STAND EINE GLEICHWERTIGE MUTATION, UND SIE WAR NICHT ZU FANGEN.
+    //
+    // »Zeige AKTUELLE Befunde nur, wenn beurteilt wurde« änderte nichts — nicht,
+    // weil ein Test fehlte, sondern weil der Zustand unmöglich ist:
+    // `evaluateEpisode` schliesst kurz, `if (worst !== "green") return judged`
+    // steht VOR dem Abdeckungstor. Wo `insufficient` steht, gibt es keinen
+    // aktuellen nicht-grünen Befund, den man verstecken könnte.
+    //
+    // Eine Mutation, die dasselbe Programm ergibt, ist kein offener Wächter,
+    // sondern eine falsche Frage. Entfernt, statt sie mit einem Test zu
+    // erschlagen, den es nicht geben kann.
+    //
+    // Für ZURÜCKLIEGENDE Befunde gilt das nicht: `worst` wird nur über die
+    // aktuellen gebildet, ein roter Tag von vor fünf Wochen hält `insufficient`
+    // nicht auf. Genau dort kann die Ansicht die Asymmetrie umdrehen — und
+    // genau das prüft die Mutation hier.
+    // -----------------------------------------------------------------------
+    name: "ReportView: zurueckliegende Befunde haengen an der Abdeckung",
+    datei: "src/components/ReportView.tsx",
+    von: '  const frueher = run.flags.filter((f) => f.severity !== "green" && !aktuell.has(f));',
+    nach:
+      "  const frueher = run.flags.filter(\n" +
+      '    (f) => run.overall.status === "judged" && f.severity !== "green" && !aktuell.has(f),\n' +
+      "  );",
+  },
+  {
+    name: "ReportView: der Zustand hat keine eigene Form mehr",
+    datei: "src/components/ReportView.tsx",
+    von: "border: \"1px dashed var(--unjudged)\",",
+    nach: "border: \"none\",",
+  },
+  {
+    name: "ReportView: jeder Zustand bekommt den Rahmen",
+    datei: "src/components/ReportView.tsx",
+    von: "            zustand.unjudged\n              ? {",
+    nach: "            true\n              ? {",
   },
   {
     name: "ArchiveButton: ein Fehlschlag wird nicht gemerkt",

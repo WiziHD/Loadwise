@@ -280,3 +280,119 @@ describe("ReportView — was nicht mehr lesbar ist", () => {
     expect(container.textContent).not.toContain(s.unreadableMany.slice(s.unreadableMany.indexOf(" ")));
   });
 });
+
+/**
+ * Ein Verlauf mit Besserung, einem roten Tag in der Mitte — und Schmerzmitteln
+ * am Ende.
+ *
+ * ---------------------------------------------------------------------------
+ * DIESE FIXTUR IST DIE EINZIGE, DIE DIE ASYMMETRIE PRÜFEN KANN.
+ *
+ * »Abdeckung begrenzt die Entwarnung, nie die Warnung.« Beim Bau von Karte 2.4
+ * stellte sich heraus, dass die naheliegende Prüfung — ein AKTUELLER Befund bei
+ * »nicht genug beurteilt« — gar nicht konstruierbar ist: `evaluateEpisode`
+ * schliesst kurz, `if (worst !== "green") return { status: "judged", ... }`
+ * steht VOR dem Abdeckungstor. Ein aktueller Befund erzwingt also immer
+ * `judged`. Die Zusicherung ist eine Ebene tiefer garantiert.
+ *
+ * Was sehr wohl zusammentrifft — und was die Ansicht falsch machen KANN:
+ * **ein zurückliegender Befund bei dünner aktueller Datenlage.** `worst` wird
+ * nur über die aktuellen Flags gebildet; ein roter Tag von vor fünf Wochen
+ * hält `insufficient` nicht auf.
+ *
+ * Genau diesen Fall baut die Fixtur: Besserung (damit die Stagnationsregel
+ * schweigt), gleichmässige Belastung (damit die Lastverteilung schweigt), eine
+ * Spitze an Tag 25 (der rote Tag) und Schmerzmittel ab Tag 50 (die Entwarnung
+ * wird verweigert).
+ *
+ * Das Gegenstück `mitBesserungOhneMedikament` ist dieselbe Fixtur ohne die
+ * Schmerzmittel. Der einzige Unterschied zwischen beiden ist die ENTWARNUNG —
+ * der rote Tag steht in beiden. Ohne dieses Paar liesse sich nicht zeigen,
+ * dass die Ansicht die Warnung nicht an die Abdeckung koppelt.
+ * ---------------------------------------------------------------------------
+ */
+function mitBesserung(medikamenteAb: number | null) {
+  return evaluateEpisode({
+    entries: Array.from({ length: 60 }, (_, i) => {
+      const d = new Date(2026, 5, 1 + i);
+      const datum = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+        d.getDate(),
+      ).padStart(2, "0")}`;
+      const grund = Math.max(1, 6 - Math.floor(i / 10));
+      return {
+        date: datum,
+        morningScore: i === 26 ? Math.min(10, grund + 6) : grund,
+        sessions:
+          i === 25
+            ? [{ activityKind: "run" as const, durationMin: 110, rpe: 9 }]
+            : [{ activityKind: "walk" as const, durationMin: 30, rpe: 3 }],
+        ...(medikamenteAb !== null && i >= medikamenteAb ? { painMedication: true } : {}),
+      };
+    }),
+    context: kontext,
+  });
+}
+
+describe("ReportView — Abdeckung begrenzt die Entwarnung, nie die Warnung", () => {
+  it("zeigt einen zurückliegenden Befund auch dann, wenn nichts beurteilt werden konnte", () => {
+    const auswertung = mitBesserung(50);
+    expect(auswertung.overall.status).toBe("insufficient");
+
+    const roter = auswertung.flags.find((f) => f.severity === "red");
+    expect(roter, "Fixtur ohne roten Tag prüft nichts").toBeDefined();
+
+    const { container } = zeichnen(laufAus(auswertung));
+
+    // Der Zustand sagt »nicht genug beurteilt« UND der rote Tag steht da.
+    // Ihn zu verstecken, weil die Abdeckung dünn ist, hiesse die Asymmetrie
+    // umzudrehen: ein echtes Signal verschwiegen, um eine Nicht-Aussage
+    // aufzuräumen.
+    expect(screen.getByText(s.stateInsufficient)).toBeDefined();
+    expect(container.textContent).toContain(roter!.forDate);
+    expect(container.textContent).toContain(verdictText(roter!.reason, "de"));
+  });
+
+  it("und dieselben Tage ohne Schmerzmittel werden beurteilt — der rote Tag bleibt", () => {
+    // Das Gegenstück. Einziger Unterschied: keine Schmerzmittel. Der Zustand
+    // kippt auf »beurteilt«, der Befund bleibt unverändert stehen.
+    //
+    // Ohne diese Prüfung liesse sich die obige mit einer Ansicht bestehen, die
+    // Befunde IMMER zeigt und den Zustand nie unterscheidet.
+    const auswertung = mitBesserung(null);
+    expect(auswertung.overall.status).toBe("judged");
+
+    const roter = auswertung.flags.find((f) => f.severity === "red");
+    expect(roter).toBeDefined();
+
+    const { container } = zeichnen(laufAus(auswertung));
+    expect(screen.queryByText(s.stateInsufficient)).toBeNull();
+    expect(container.textContent).toContain(roter!.forDate);
+  });
+});
+
+describe("ReportView — der Zustand hat eine eigene Form", () => {
+  it("»nicht genug beurteilt« steht in einem abgesetzten Rahmen", () => {
+    // Grün, Bernstein und Rot sind eine Skala; »nicht genug beurteilt«
+    // beantwortet die Frage gar nicht. Eine vierte Farbe auf derselben Skala
+    // liest sich als vierte Stufe — so ist der Zustand einmal zu blassem Grün
+    // geworden. Die Form ist der Unterschied, der keine Farbfrage ist.
+    const kasten = zeichnen(laufAus(mitBesserung(50))).container.querySelector(
+      '[data-overall="insufficient"]',
+    ) as HTMLElement | null;
+    expect(kasten).not.toBeNull();
+    expect(kasten!.style.border).toContain("dashed");
+  });
+
+  it("ein Urteil steht ohne Rahmen da", () => {
+    // Gegenprobe, und sie prüft die FORM, nicht das Vorhandensein eines
+    // Elements. Zuerst stand hier `querySelector("[data-unjudged]")` — und eine
+    // Mutation, die JEDEM Zustand den gestrichelten Rahmen gibt, überlebte,
+    // weil das Attribut davon unberührt blieb. Der Kasten steht jetzt immer,
+    // damit beide Richtungen an derselben Eigenschaft hängen.
+    const kasten = zeichnen(laufAus(mitBesserung(null))).container.querySelector(
+      '[data-overall="judged"]',
+    ) as HTMLElement | null;
+    expect(kasten).not.toBeNull();
+    expect(kasten!.style.border).not.toContain("dashed");
+  });
+});
