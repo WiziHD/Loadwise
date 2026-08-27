@@ -16,7 +16,7 @@ Ein Grundsatz durchzieht die ganze Durchsicht: **Ein Befund ohne Gegenprobe ist 
 
 | # | Punkt | Ergebnis |
 |---|---|---|
-| 1 | Service-Role-Schlüssel | **behoben** — nirgends im Build, nirgends in der Historie; der ungenutzte Zugang im Code ist gelöscht |
+| 1 | Service-Role-Schlüssel | **gelöscht, dann zurückgeholt** — siehe den Nachtrag: seit Karte 2.2 gibt es einen Benutzer, also auch einen Wächter |
 | 2 | Server-Aktionen als öffentliche Endpunkte | **behoben** — ein verbotenes UPDATE meldete Erfolg |
 | 3 | Aufzählen fremder Episoden | **geprüft, hält** — fremd und nicht vorhanden sind ununterscheidbar |
 | 4 | Anmeldung verrät keine Konten | **geprüft, hält** in der Antwort; Zeitkanal ungemessen |
@@ -43,6 +43,32 @@ Ein ungenutzter Export ist an sich die Familie aus Karte H15. Hier kam Einsatz d
 **Wie schlimm es tatsächlich gewesen wäre, ehrlich:** Next ersetzt Umgebungsvariablen ohne `NEXT_PUBLIC_`-Präfix im Browserbündel durch `undefined`. Der Schlüssel wäre also **nicht** ausgeliefert worden; es hätte einen Laufzeitfehler gegeben. Das ist eine echte strukturelle Sicherung, und sie zu verschweigen wäre so falsch wie sich darauf zu verlassen.
 
 **Behoben:** gelöscht. Wenn `flags` und `evaluations` in Woche 2 serverseitig geschrieben werden, entsteht der Zugang dort, wo er gebraucht wird — mit der Begründung von dann. Ein Vorrat für später ist eine offene Tür ohne Wächter.
+
+### Nachtrag 26.08.2026 — der Zugang ist entstanden
+
+Genau wie angekündigt. Karte 2.2 schreibt Urteile serverseitig, und die Zugriffsregeln erlauben einem Konto auf `flags` und `evaluations` nur das Lesen — absichtlich, damit sich niemand selbst ein »alles in Ordnung« einträgt.
+
+**Die Alternative wurde geprüft und verworfen.** Die Karte nannte eine Postgres-Funktion mit `security definer`, so wie der Trigger, der Profilwechsel festhält. Sie hilft hier nicht, und der Grund ist der Unterschied zwischen einem Trigger und einer Funktion: Der Trigger zeichnet `old → new` auf — Werte, die das Konto ihm nicht übergibt. Eine Funktion `record_evaluation(episode_id, status, severity, …)` bekäme das Urteil **vom Konto**. Jeder Angemeldete könnte sie mit `severity = 'green'` rufen. Die Zusicherung wäre vollständig weg, und sie sähe sicher aus, weil »security definer« im Quelltext steht. Sicher wäre sie nur mit den sieben Regeln in PL/pgSQL — zwei Kopien der Regeln, siehe E2.
+
+Was stattdessen gilt, steht in **E12**. Der Kern: Der Schlüssel schreibt, er liest nie, und **von aussen kommt nur eine Episodenkennung.** Ein Aufrufer kann sagen »werte X aus«, nie »trag grün ein«; ob X ihm gehört, entscheidet der anon key und damit RLS.
+
+**Gemessen, gegen den aktuellen Build** (`npm run check:service-role --workspace=web`, 9 Prüfungen):
+
+```
+genau eine Datei unter src/ nennt ihn      src/lib/db/verdict-write.ts
+Gegenprobe: dieselbe Suche findet anon     2 von 40 Dateien
+sie trägt import "server-only"             ja
+sie fasst nur flags und evaluations an     flags, evaluations
+und liest mit ihm nichts                   kein .select()
+kein Client-Bündel nennt ihn               31 Bündel durchsucht
+Gegenprobe: ein Zeuge steht drin           1 Bündel
+der WERT kommt in keiner Build-Datei vor   150 Dateien durchsucht
+Gegenprobe: der anon key kommt vor         7 Dateien
+```
+
+**Und der Wächter selbst wurde gebrochen**, sieben Mal, einmal je Zusicherung: eine zweite Datei mit dem Namen, ein entferntes `server-only`, ein `.from("entries")`, ein `.select()`, der Name in ein Bündel geschrieben, der Zeuge auf eine nicht vorhandene Zeichenkette gesetzt, der echte Wert in eine Build-Datei gelegt. **Sieben von sieben gefangen**, jedes Mal Exitcode 1.
+
+In CI läuft er ohne die letzten beiden Zeilen — den Wert gibt es dort nicht. Das Skript sagt das selbst, statt es zu verschweigen.
 
 ---
 

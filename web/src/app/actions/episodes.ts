@@ -23,6 +23,7 @@ import {
 } from "@/lib/episode-validation";
 import { createEpisode, setArchived, updateEpisode } from "@/lib/db/episodes";
 import { saveEntry } from "@/lib/db/entries";
+import { evaluateAndStore } from "@/lib/db/verdicts";
 
 function optionalText(value: FormDataEntryValue | null): string | null {
   const text = String(value ?? "").trim();
@@ -88,10 +89,28 @@ export async function saveEntryAction(
     return { ok: false, reason: "failed" };
   }
 
-  // Outside the try above, and deliberately in its own: the write has already
-  // happened. A revalidation that throws must not be reported as "could not be
-  // saved" — that sentence would send somebody to type the day in again on top
-  // of a row that is already correct.
+  // ---------------------------------------------------------------------
+  // Ab hier ist der Tag gespeichert, und nichts darf das mehr in Frage stellen.
+  //
+  // Beide Schritte unten stehen ausserhalb des try oben und in je eigenen:
+  // Der Schreibvorgang hat stattgefunden. Ein Fehlschlag danach als »konnte
+  // nicht gespeichert werden« zu melden, schickte jemanden dazu, den Tag ein
+  // zweites Mal einzutippen — auf eine Zeile, die schon stimmt.
+  // ---------------------------------------------------------------------
+
+  // Das Urteil neu rechnen. Ein neuer Tag ändert es fast immer: Die
+  // 24-Stunden-Regel vergleicht Nachbartage, und ohne diesen Lauf bliebe das
+  // gespeicherte Urteil auf dem Stand von gestern stehen.
+  try {
+    await evaluateAndStore(episodeId);
+  } catch {
+    // Der Eintrag steht, das Urteil ist älter als er. Was hier NICHT passiert:
+    // eine Meldung an dieses Formular. »Nicht gespeichert« wäre falsch, und
+    // »gespeichert, aber das Urteil hinkt« ist ein Satz für die Seite, die das
+    // Urteil zeigt — die Auswertung trägt `last_date` und `computed_at`, damit
+    // sie das selbst erkennen kann. Karte 2.3 rendert es.
+  }
+
   try {
     revalidatePath(`/${locale}/episodes/${episodeId}`);
   } catch {
@@ -142,6 +161,34 @@ export async function updateEpisodeAction(
     });
   } catch {
     return { ok: false, reason: "failed" };
+  }
+
+  // ---------------------------------------------------------------------
+  // EIN PROFILWECHSEL VERÄNDERT VERGANGENE URTEILE. GENAU DESHALB HIER.
+  //
+  // Die Schwellen sind andere, die Selbsttests sind andere, der Gewebefaktor
+  // ist ein anderer — ein rotes Flag von letzter Woche kann grün werden, ohne
+  // dass sich ein einziger Tagebuchtag geändert hat. Der Warnsatz im Formular
+  // sagt das vorher.
+  //
+  // Ohne diesen Lauf bliebe im Bericht stehen, was unter dem ALTEN Profil
+  // geurteilt wurde, während die Überschrift schon das neue nennt. Beides sähe
+  // richtig aus, und niemand könnte den Widerspruch sehen.
+  //
+  // Der alte Lauf bleibt liegen; ein Bericht löscht nichts. Was den Sprung
+  // erklärt, steht in `episode_profile_changes`, geschrieben vom Trigger in
+  // derselben Transaktion wie das UPDATE.
+  //
+  // Auch bei Seite und Beginn, nicht nur beim Profil: `startedOn` entscheidet,
+  // ob zeitbasierte Prüfungen überhaupt greifen. Zu unterscheiden, was ein
+  // Urteil bewegt und was nicht, wäre eine vierte Stelle, die das wissen muss.
+  // ---------------------------------------------------------------------
+  try {
+    await evaluateAndStore(episodeId);
+  } catch {
+    // Wie beim Tageseintrag: Die Korrektur steht. Das Urteil ist dann älter
+    // als das Profil, unter dem es gelesen wird — sichtbar über `computed_at`
+    // gegen den Wechsel in `episode_profile_changes`.
   }
 
   revalidate(locale, episodeId);

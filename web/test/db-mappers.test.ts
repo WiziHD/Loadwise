@@ -22,9 +22,11 @@
 import { describe, expect, it } from "vitest";
 import {
   toEntry,
+  toEpisodeContext,
   toMeasurement,
   toSelfTest,
   type EntryRow,
+  type EpisodeRow,
   type MeasureKeyRow,
   type MeasurementRow,
   type SessionRow,
@@ -171,5 +173,62 @@ describe("toMeasurement", () => {
     expect(toMeasurement(row, key).unit).toBe("reps");
     expect(toMeasurement(row, inCm).unit).toBe("cm");
     expect(toMeasurement(row, inCm).key).toBe("hüpfweite");
+  });
+});
+
+/**
+ * Die Episodenzeile als Kontext für den Motor.
+ *
+ * ---------------------------------------------------------------------------
+ * DER GEFÄHRLICHE TEIL IST DAS, WAS DIESER ÜBERSETZER NICHT TUT.
+ *
+ * Er löst das Profil NICHT auf. Weitergereicht wird der Schlüssel; auflösen tut
+ * `evaluateEpisode` — und für die Anzeige `profileOf`. Täte es diese Funktion
+ * ein drittes Mal, gäbe es drei Stellen, an denen dieselbe Frage beantwortet
+ * wird, und der Tag, an dem eine abweicht, wäre der Tag, an dem die Überschrift
+ * ein anderes Profil nennt als das, unter dem geurteilt wurde.
+ * ---------------------------------------------------------------------------
+ */
+describe("toEpisodeContext", () => {
+  const zeile: EpisodeRow = {
+    id: "ep1",
+    user_id: "u1",
+    created_at: "2026-08-01T10:00:00Z",
+    body_region: "knee",
+    profile_key: "patellar_tendinopathy",
+    side: "left",
+    started_on: "2026-06-15",
+    ended_on: null,
+    label: "linkes Knie",
+    archived_at: null,
+  };
+
+  it("reicht den Profilschlüssel durch, statt ihn aufzulösen", () => {
+    expect(toEpisodeContext(zeile).profileKey).toBe("patellar_tendinopathy");
+    expect(toEpisodeContext(zeile).bodyRegion).toBe("knee");
+  });
+
+  it("macht aus einem fehlenden Schlüssel undefined, nicht null", () => {
+    // `profileKey: null` wäre ein Schlüssel, der zu nichts passt, statt gar
+    // keiner — und der Motor unterscheidet »nicht angegeben« von »leer«.
+    const ohne = toEpisodeContext({ ...zeile, profile_key: null, started_on: null });
+    expect(ohne.profileKey).toBeUndefined();
+    expect(ohne.startedOn).toBeUndefined();
+  });
+
+  it("nimmt Seite und Beginn mit", () => {
+    // `startedOn` entscheidet, ob zeitbasierte Prüfungen überhaupt greifen —
+    // das Feld war im Motor einmal deklariert und wurde von nichts gelesen.
+    expect(toEpisodeContext(zeile).side).toBe("left");
+    expect(toEpisodeContext(zeile).startedOn).toBe("2026-06-15");
+  });
+
+  it("ein zu falscher Region gespeicherter Schlüssel bleibt, wie er ist", () => {
+    // Gegenprobe zur ersten Prüfung: Ein Übersetzer, der »repariert«, würde
+    // hier den Schlüssel gegen das Standardprofil der Region tauschen — und die
+    // Substitution wäre still. `profileOf` markiert sie stattdessen sichtbar.
+    const krumm = toEpisodeContext({ ...zeile, profile_key: "gibt-es-nicht" });
+    expect(krumm.profileKey).toBe("gibt-es-nicht");
+    expect(krumm.bodyRegion).toBe("knee");
   });
 });

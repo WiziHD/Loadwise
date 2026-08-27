@@ -353,3 +353,48 @@ Nicht in CI, aus demselben Grund wie `npm run mutate` im Motor: Ein Wert als Tor
 
 - **Vitest beendet einen Lauf mit ungestartetem Pool nicht mehr mit 0.** Dann fällt der Grund für `run-tests.ts` weg — die Prüfung selbst darf trotzdem bleiben, sie kostet nichts und deckt auch verengte Suchmuster ab.
 - **Die App bekommt einen dritten Testtyp** (Browserlauf, Vertragstest). Dann ist neu zu beantworten, ob die Dateiendung noch das richtige Unterscheidungsmerkmal ist — nicht, ob die Trennung bleibt.
+
+---
+
+## E12 — Der Service-Role-Schlüssel kommt zurück, unter vier Bedingungen
+
+**Entschieden 26.08.2026** · `web/src/lib/db/verdict-write.ts`, `web/scripts/check-service-role.ts`, Karte 2.2
+
+In der Härtungswoche wurde er gelöscht, weil ihn niemand benutzte. Jetzt gibt es einen Benutzer: Urteile entstehen serverseitig, und die Zugriffsregeln erlauben einem Konto auf `flags` und `evaluations` nur das Lesen.
+
+### Warum `security definer` hier nicht hilft
+
+Der naheliegende Ausweg — eine Postgres-Funktion, wie der Trigger für Profilwechsel — funktioniert nicht, und der Grund lohnt das Aufschreiben, weil er beim nächsten Mal wieder naheliegen wird.
+
+**Der Trigger ist sicher, weil er ein Trigger ist.** Er feuert auf ein UPDATE, das dem Konto ohnehin erlaubt ist, und schreibt `old.profile_key → new.profile_key` — Werte, die das Konto der Aufzeichnung nicht übergibt. Es kann ihn nicht belügen.
+
+**Eine Funktion ist das Gegenteil.** `record_evaluation(episode_id, status, severity, flags)` bekäme das Urteil vom Konto. Jeder Angemeldete könnte sie mit `severity = 'green'` rufen. Die eine Zusicherung, für die diese Tabellen nur lesbar sind, wäre weg — und sie sähe sicher aus, weil »security definer« im Quelltext steht.
+
+Sicher wäre sie nur, wenn sie das Urteil selbst berechnete, also mit den sieben Regeln in PL/pgSQL. Das sind zwei Kopien der Regeln, und E2 nennt das »der Tag, an dem sich ein Urteil ändert, ohne dass es jemand entschieden hat«. `revoke execute from authenticated` wäre der letzte Ausweg — dann könnte nur `service_role` rufen, und dafür braucht es den Schlüssel. Im Kreis.
+
+### Die vier Bedingungen
+
+1. **`import "server-only"`** — der Import aus einem Client-Bauteil ist ein Build-Fehler, kein Kommentar. Die Sperre ist echt: Sie hat beim ersten Testlauf sofort geworfen.
+2. **Eine Datei, eine Aufgabe.** Kein allgemeiner Admin-Client, kein Export des Clients.
+3. **Er liest nie.** Lesen läuft über den anon key, damit jede Abfrage durch die Regeln geht.
+4. **Von aussen kommt nur eine Episodenkennung.** Der Server prüft die Zugehörigkeit über den anon key, liest die Daten selbst, lässt den Motor laufen. Ein Aufrufer kann »werte X aus« sagen, nie »trag grün ein«. **Das ist die Bedingung, die die anderen drei trägt.**
+
+`npm run check:service-role --workspace=web` hält alle vier fest, mit Gegenproben. Die Messungen und der Beweis, dass der Wächter feuert (7 von 7 Proben), stehen im Nachtrag zu Punkt 1 in [SICHERHEIT.md](SICHERHEIT.md).
+
+### Die Schreibreihenfolge ist eine eigene Sicherung
+
+supabase-js kennt keine Transaktion über zwei Anweisungen. Ein Lauf schreibt Flags **und** Auswertung, und ein Abbruch dazwischen hinterlässt eine von zwei Halbheiten:
+
+| | |
+|---|---|
+| Auswertung ohne Flags | liest sich als »keine Auffälligkeiten« — **eine stille Entwarnung** |
+| Flags ohne Auswertung | findet kein Leser |
+
+Also erst die Flags, dann die Auswertung. **Die Auswertungszeile ist der Punkt, an dem ein Lauf gilt.** Deshalb trägt `flags.evaluation_id` absichtlich *keinen* Fremdschlüssel — einer würde genau diese Reihenfolge verbieten. Die Migration `0007_evaluation_run.sql` bricht ab, wenn jemand ihn nachträglich anlegt.
+
+Diese Zusicherung steht in keinem Typ und wird von keiner Datenbankregel erzwungen. Wer die zwei Zeilen umstellt, bekommt einen grünen Build und eine App, die sich genauso verhält — bis zu dem einen Netzwerkfehler, der Monate später dazwischenliegt. `test/verdict-write.test.ts` ist das, was sie von einem Kommentar unterscheidet.
+
+### Wann man das wieder aufmacht
+
+- **Wenn die Auswertung aus der Anfrage herauswandert** — ein Hintergrundlauf, eine Edge Function, `pg_cron`. Dann kann der Aufrufer eine Rolle sein statt einer Anfrage, und Bedingung 4 lässt sich strenger fassen als »der Server hat es selbst gelesen«.
+- **Wenn supabase-js Transaktionen bekommt.** Dann fällt der Grund für die Reihenfolge weg — die Reihenfolge selbst darf bleiben, sie kostet nichts.

@@ -122,6 +122,17 @@ jobs:
       - name: App — Typen
         run: npm run typecheck --workspace=web
 
+      # NACH dem Build, weil Punkt 4 die Client-Bündel durchsucht — die gibt es
+      # vorher nicht. Der Service-Role-Schlüssel umgeht JEDE Zugriffsregel; seit
+      # Karte 2.2 hat er wieder einen Benutzer, also auch wieder einen Wächter.
+      #
+      # In CI sagt diese Prüfung WENIGER als lokal, und sie sagt das selbst:
+      # Punkt 5 vergleicht den echten Wert aus .env.local gegen den Build, und
+      # den gibt es hier nicht. Was hier läuft, ist die Eindämmung — eine Datei,
+      # server-only, zwei Tabellen, kein Lesen, kein Bündel.
+      - name: App — der Service-Role-Schlüssel bleibt eingedämmt
+        run: npm run check:service-role --workspace=web
+
       # Die Motorsätze dürfen in keiner App-Datei auftauchen. Die Wortwahl ist
       # hier eine regulatorische Grenze, keine Geschmacksfrage. Eigener Schritt,
       # seit sie nicht mehr in `typecheck` versteckt ist.

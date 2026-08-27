@@ -16,6 +16,7 @@ import type {
   ActivityKind,
   BodyRegion,
   Entry,
+  EpisodeContext,
   SelfTest,
   Side,
   SymptomTiming,
@@ -173,5 +174,34 @@ export function toMeasurement(row: MeasurementRow, key: MeasureKeyRow): Measurem
     value: row.value,
     unit: key.unit,
     note: row.note,
+  };
+}
+
+/**
+ * Eine Episodenzeile als das, was der Motor über sie wissen muss.
+ *
+ * ---------------------------------------------------------------------------
+ * DAS PROFIL WIRD HIER NICHT AUFGELÖST, UND DAS IST ABSICHT.
+ *
+ * Weitergereicht wird der SCHLÜSSEL, nicht das Profil. `evaluateEpisode` löst
+ * ihn selbst auf — benanntes Profil zuerst, sonst das Standardprofil der
+ * Region —, und `profileOf` in `profile-view.ts` tut für die Anzeige dasselbe.
+ *
+ * Hier ein drittes Mal aufzulösen hiesse, eine dritte Stelle zu haben, an der
+ * dieselbe Frage beantwortet wird. Der Tag, an dem eine davon abweicht, ist der
+ * Tag, an dem die Überschrift ein anderes Profil nennt als das, unter dem
+ * geurteilt wurde — und beides sähe richtig aus.
+ * ---------------------------------------------------------------------------
+ */
+export function toEpisodeContext(row: EpisodeRow): EpisodeContext {
+  return {
+    bodyRegion: row.body_region,
+    side: row.side,
+    // undefined statt null: Der Motor unterscheidet »nicht angegeben« von
+    // »ausdrücklich leer«, und `profileKey: null` wäre ein Schlüssel, der zu
+    // nichts passt statt gar keiner.
+    profileKey: row.profile_key ?? undefined,
+    startedOn: row.started_on ?? undefined,
+    endedOn: row.ended_on,
   };
 }

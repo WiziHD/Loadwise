@@ -16,7 +16,8 @@
     "check:migrations": "tsx scripts/check-migrations.mts",
     "test": "tsx scripts/run-tests.ts",
     "test:roh": "vitest run",
-    "check:ui-mutation": "tsx scripts/check-ui-mutation.ts"
+    "check:ui-mutation": "tsx scripts/check-ui-mutation.ts",
+    "check:service-role": "tsx scripts/check-service-role.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
@@ -24,7 +25,8 @@
     "loadwise-engine": "*",
     "next": "^16.3.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
