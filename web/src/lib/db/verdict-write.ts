@@ -1,7 +1,8 @@
 import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
-import { RULE_VERSION, type Evaluation } from "loadwise-engine";
+import type { Evaluation } from "loadwise-engine";
+import { toEvaluationRow, toFlagRow } from "@/lib/db/types";
 
 /**
  * Die EINZIGE Stelle in der App, die den Service-Role-Schlüssel anfasst.
@@ -121,44 +122,16 @@ export async function saveEvaluationRun(
 
   // --- 1. Die Flags. Eine Anweisung, also eine Transaktion: ganz oder gar nicht.
   if (evaluation.flags.length > 0) {
-    const { error } = await db.from("flags").insert(
-      evaluation.flags.map((flag) => ({
-        evaluation_id: laufId,
-        episode_id: episodeId,
-        kind: flag.kind,
-        for_date: flag.forDate,
-        severity: flag.severity,
-        reason: flag.reason,
-        detail: flag.detail,
-        rule_version: flag.ruleVersion,
-        profile_version: flag.profileVersion,
-      })),
-    );
+    const { error } = await db
+      .from("flags")
+      .insert(evaluation.flags.map((flag) => toFlagRow(flag, laufId, episodeId)));
     if (error !== null) throw new Error(`flags: ${error.message}`);
   }
 
   // --- 2. Die Auswertung. Ab hier gilt der Lauf.
-  const { error } = await db.from("evaluations").insert({
-    id: laufId,
-    episode_id: episodeId,
-    overall_status: evaluation.overall.status,
-    // Eine Schwere gibt es nur bei `judged`. Der Typ `Overall` erzwingt, dass
-    // man sie nicht lesen kann, ohne den Status geprüft zu haben; die Datenbank
-    // hält dieselbe Bedingung noch einmal als CHECK.
-    overall_severity: evaluation.overall.status === "judged" ? evaluation.overall.severity : null,
-    coverage: evaluation.coverage,
-    pending: evaluation.pending,
-    problems: evaluation.problems,
-    profile_key: evaluation.profile.key,
-    profile_version: evaluation.profile.version,
-    // Aus dem Motor, nicht von einer Flag abgelesen: Ein Lauf ganz ohne Befund
-    // ist der Normalfall und hätte sonst keine Regelversion. Und abgeschrieben
-    // wäre sie eine zweite Wahrheit, die beim nächsten Regelwechsel
-    // auseinanderliefe, ohne dass irgendwo etwas rot wird.
-    rule_version: RULE_VERSION,
-    config: evaluation.config,
-    last_date: evaluation.lastDate,
-  });
+  const { error } = await db
+    .from("evaluations")
+    .insert(toEvaluationRow(evaluation, laufId, episodeId));
   if (error !== null) throw new Error(`evaluations: ${error.message}`);
 
   return laufId;

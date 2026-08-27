@@ -12,11 +12,14 @@
  * ---------------------------------------------------------------------------
  */
 
+import { RULE_VERSION } from "loadwise-engine";
 import type {
   ActivityKind,
   BodyRegion,
   Entry,
   EpisodeContext,
+  Evaluation,
+  Flag,
   SelfTest,
   Side,
   SymptomTiming,
@@ -203,5 +206,76 @@ export function toEpisodeContext(row: EpisodeRow): EpisodeContext {
     profileKey: row.profile_key ?? undefined,
     startedOn: row.started_on ?? undefined,
     endedOn: row.ended_on,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Engine → rows
+//
+// Die Gegenrichtung, und sie ist neuer: Bis Karte 2.2 floss nur die Datenbank
+// in den Motor, nie zurück.
+//
+// ---------------------------------------------------------------------------
+// WARUM DIESE ZWEI FUNKTIONEN HIER STEHEN UND NICHT IM SCHREIBMODUL.
+//
+// `verdict-write.ts` trägt `import "server-only"` — und das ist keine Zierde:
+// Das Paket WIRFT beim Import ausserhalb einer Serverumgebung. Damit ist von
+// dort nichts erreichbar für ein Prüfskript, das die Zeilen gegen die echte
+// Datenbank schicken will.
+//
+// Und genau das braucht es. Ein Test mit einer Attrappe belegt, dass diese
+// Felder heissen, wie diese Datei sie nennt. Ob eine Spalte wirklich so heisst,
+// ob `severity` den Wert kennt, ob der CHECK `severity_only_when_judged` hält —
+// darüber sagt eine Attrappe nichts. Fünfzehn von Hand geschriebene
+// Feldzuordnungen gegen ein Schema, das jemand einmal gelesen hat.
+//
+// Also: die Zeilen hier, rein und importierbar. Die Reihenfolge — erst Flags,
+// dann Auswertung — bleibt im Schreibmodul, denn sie ist der Teil, der einen
+// Zugang braucht.
+// ---------------------------------------------------------------------------
+
+/**
+ * Eine Flag als Zeile, mit der Kennung des Laufs, zu dem sie gehört.
+ *
+ * `laufId` kommt von aussen und nicht aus der Flag: Alle Flags eines Laufs
+ * tragen dieselbe, und die Auswertung, die sie zusammenhält, gibt es zu diesem
+ * Zeitpunkt noch nicht — sie wird ABSICHTLICH danach geschrieben. Siehe E12.
+ */
+export function toFlagRow(flag: Flag, laufId: string, episodeId: string) {
+  return {
+    evaluation_id: laufId,
+    episode_id: episodeId,
+    kind: flag.kind,
+    for_date: flag.forDate,
+    severity: flag.severity,
+    reason: flag.reason,
+    detail: flag.detail,
+    rule_version: flag.ruleVersion,
+    profile_version: flag.profileVersion,
+  };
+}
+
+/** Der Lauf als Ganzes: Gesamtbild, Abdeckung, Blockaden — und sein Massstab. */
+export function toEvaluationRow(evaluation: Evaluation, laufId: string, episodeId: string) {
+  return {
+    id: laufId,
+    episode_id: episodeId,
+    overall_status: evaluation.overall.status,
+    // Eine Schwere gibt es nur bei `judged`. Der Typ `Overall` erzwingt, dass
+    // man sie nicht lesen kann, ohne den Status geprüft zu haben; die Datenbank
+    // hält dieselbe Bedingung noch einmal als CHECK.
+    overall_severity: evaluation.overall.status === "judged" ? evaluation.overall.severity : null,
+    coverage: evaluation.coverage,
+    pending: evaluation.pending,
+    problems: evaluation.problems,
+    profile_key: evaluation.profile.key,
+    profile_version: evaluation.profile.version,
+    // Aus dem Motor, nicht von einer Flag abgelesen: Ein Lauf ganz ohne Befund
+    // ist der Normalfall und hätte sonst keine Regelversion. Und abgeschrieben
+    // wäre sie eine zweite Wahrheit, die beim nächsten Regelwechsel
+    // auseinanderliefe, ohne dass irgendwo etwas rot wird.
+    rule_version: RULE_VERSION,
+    config: evaluation.config,
+    last_date: evaluation.lastDate,
   };
 }

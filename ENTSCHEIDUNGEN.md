@@ -394,6 +394,14 @@ Also erst die Flags, dann die Auswertung. **Die Auswertungszeile ist der Punkt, 
 
 Diese Zusicherung steht in keinem Typ und wird von keiner Datenbankregel erzwungen. Wer die zwei Zeilen umstellt, bekommt einen grünen Build und eine App, die sich genauso verhält — bis zu dem einen Netzwerkfehler, der Monate später dazwischenliegt. `test/verdict-write.test.ts` ist das, was sie von einem Kommentar unterscheidet.
 
+### Was eine Attrappe nicht prüfen kann
+
+Die Zeilenbauer liegen deshalb in `db/types.ts` und nicht im Schreibmodul: `server-only` **wirft** beim Import ausserhalb einer Serverumgebung, und damit wäre von dort nichts für ein Prüfskript erreichbar.
+
+`npm run check:verdicts --workspace=web` schickt eine echte Motorausgabe durch das echte Schema — fünfzehn von Hand geschriebene Feldzuordnungen gegen ein Schema, das jemand einmal gelesen hat. Elf Prüfungen, darunter die Gegenprobe, dass die Datenbank eine Schwere ohne Beurteilung **selbst** abweist (`23514`); ohne die bewiese der Rest nur, dass sie alles schluckt. Räumt am Ende auf, anders als `check:rls` — hier gibt es nichts wiederzuverwenden.
+
+**Ein Fund dabei, und er lag in der Prüfung:** `config` und `coverage` fielen durch, weil `JSON.stringify(a) === JSON.stringify(b)` verglichen wurde und **Postgres `jsonb` normalisiert** — die Schlüssel kommen in anderer Reihenfolge zurück. Kein Datenverlust, aber die Prüfung sagte nur »ungleich«, und der Unterschied zwischen »die Schlüssel stehen anders« und »eine Schwelle fehlt« ist genau der, auf den es hier ankommt. Der Vergleich nennt jetzt den Pfad.
+
 ### Wann man das wieder aufmacht
 
 - **Wenn die Auswertung aus der Anfrage herauswandert** — ein Hintergrundlauf, eine Edge Function, `pg_cron`. Dann kann der Aufrufer eine Rolle sein statt einer Anfrage, und Bedingung 4 lässt sich strenger fassen als »der Server hat es selbst gelesen«.

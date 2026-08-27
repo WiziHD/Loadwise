@@ -24,6 +24,10 @@
 #               irgendwann in einem Protokoll landet. Ausserdem benutzt es
 #               feste Testkonten und würde mit einem lokalen Lauf kollidieren.
 #   check:signin dasselbe, plus: es braucht einen laufenden Entwicklungsserver.
+#   check:verdicts dasselbe. Es legt eine Probeepisode an, schreibt Urteile mit
+#               dem Service-Role-Key und loescht sie wieder. Prueft das eine,
+#               was keine Attrappe kann: ob die Zeilen des Motors durch das
+#               echte Schema gehen.
 #   mutate      Der Wert steht bei 38 % und kann legitim erst mit echten
 #               Verläufen steigen. Als Tor würde er dazu verleiten, ihn
 #               künstlich zu heben.
