@@ -192,6 +192,32 @@ begin
   raise notice 'Ein Lauf ist jetzt identifizierbar: config, last_date und evaluation_id stehen.';
 end $$;
 
+-- ---------------------------------------------------------------------------
+-- Prüfen, bevor Karte 2.2 als erledigt gilt
+--
+-- Dieselbe Disziplin wie bei 0002: Eine Lücke im Zugriffsschutz macht keinen
+-- Lärm, und ein Schreibweg, den niemand gegen die echte Datenbank gelaufen ist,
+-- ist eine Behauptung.
+--
+--   1. npm run check:migrations --workspace=web
+--      Steht 0007_evaluation_run in der Buchführung?
+--
+--   2. npm run check:rls --workspace=web
+--      DIESE MIGRATION BRICHT DIE PRÜFUNG, WENN SIE NICHT MITGEZOGEN WURDE:
+--      Die Sondenzeilen für flags und evaluations brauchen seit hier
+--      `evaluation_id` und `config`. Beides ist eingetragen — der Lauf muss
+--      also weiter grün sein, und wenn nicht, ist das ein echter Fund und kein
+--      Nebeneffekt.
+--
+--   3. Einen Tag im Tagebuch erfassen, dann in der Datenbank:
+--        select count(*) from evaluations;   -- muss 1 sein
+--        select count(*) from flags
+--          where evaluation_id = (select id from evaluations
+--                                 order by computed_at desc limit 1);
+--      Erst das belegt, dass der Weg vom Formular bis zur Zeile durchgeht.
+--      Die Bauteiltests prüfen die Reihenfolge, nicht die Verbindung.
+-- ---------------------------------------------------------------------------
+
 do $$
 begin
   if to_regclass('public.schema_migrations') is not null then

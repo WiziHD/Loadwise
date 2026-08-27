@@ -287,6 +287,11 @@ const SPECS: Spec[] = [
     match: (c) => ({ episode_id: c.episodeId, for_date: "2026-01-01" }),
     row: (c) => ({
       episode_id: c.episodeId,
+      // Seit 0007 Pflicht: Jede Flag gehoert zu genau einem Lauf. Hier eine
+      // erfundene Kennung — die Sondenzeile hat keinen Lauf und soll auch
+      // keinen vortaeuschen. ABSICHTLICH kein Fremdschluessel in der Datenbank,
+      // siehe E12: Die Flags werden VOR ihrer Auswertung geschrieben.
+      evaluation_id: "00000000-0000-4000-8000-000000000001",
       kind: "response24h",
       for_date: "2026-01-01",
       severity: "green",
@@ -304,6 +309,12 @@ const SPECS: Spec[] = [
       episode_id: c.episodeId,
       overall_status: "insufficient",
       coverage: {},
+      // Seit 0007 Pflicht. Ein leeres Objekt ist als ECHTER Wert wertlos — der
+      // Bericht wuerde gegen gar keine Schwellen rendern —, und genau deshalb
+      // laesst die Migration keinen Standardwert zu. Fuer eine Sondenzeile, die
+      // gleich wieder verschwindet, ist es das Richtige: Sie soll pruefen, WER
+      // schreiben darf, nicht was drinsteht.
+      config: {},
       profile_key: "probe",
       profile_version: "probe",
       rule_version: "probe",
