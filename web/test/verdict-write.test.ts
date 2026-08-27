@@ -243,3 +243,113 @@ describe("saveEvaluationRun — was in den Zeilen steht", () => {
     expect(zeile.rule_version.length).toBeGreaterThan(0);
   });
 });
+
+/**
+ * Kommt alles an, was der Motor ausgibt?
+ *
+ * ---------------------------------------------------------------------------
+ * DIESER TEST ENTSTAND, WEIL EIN FELD STILL VERLOREN GING.
+ *
+ * `Overall` ist eine Union mit drei Varianten, und `insufficient` trägt
+ * `blocking` — die Gründe, warum es keine Entwarnung gab. `toEvaluationRow`
+ * bildete `status` und `severity` ab und liess `blocking` fallen. Der Zustand
+ * war gespeichert, seine Begründung nicht.
+ *
+ * Das ist derselbe Fehler wie in der Härtungswoche, eine Ebene tiefer: Dort
+ * stand `overall.blocking` in der Auswertung und wurde von keiner Ansicht
+ * gezeigt. Aufgefallen ist es beides Mal erst, als jemand es brauchte.
+ *
+ * Deshalb prüft dieser Test nicht »blocking ist da«, sondern **dass jedes Feld
+ * der Ausgabe eine Zuordnung hat.** Ein neues Feld im Motor bricht ihn, bis
+ * jemand entscheidet, ob es gespeichert wird oder ausdrücklich nicht — und die
+ * Entscheidung steht dann hier.
+ * ---------------------------------------------------------------------------
+ */
+describe("toEvaluationRow — nichts geht still verloren", () => {
+  /**
+   * Wie jedes Feld der `Evaluation` abgelegt wird.
+   *
+   * `null` heisst: absichtlich nicht in dieser Zeile, mit dem Grund daneben.
+   */
+  const ZUORDNUNG: Record<string, string[] | null> = {
+    // Eigene Tabelle, verbunden über evaluation_id.
+    flags: null,
+    // Über profile_key und profile_version. Das ganze Profil abzulegen hiesse,
+    // eine Kopie der Registry in jeder Zeile zu halten.
+    profile: ["profile_key", "profile_version"],
+    // Bewusst nicht: Meilensteine und Bestwerte hängen an keiner Regelversion
+    // und sind jederzeit aus dem Tagebuch neu zu haben. Sie sind ausserdem
+    // keine Urteile — siehe E4.
+    progress: null,
+    overall: ["overall_status", "overall_severity", "blocking"],
+    coverage: ["coverage"],
+    pending: ["pending"],
+    problems: ["problems"],
+    config: ["config"],
+    lastDate: ["last_date"],
+  };
+
+  it("jedes Feld der Auswertung hat eine Zuordnung", () => {
+    const auswertung = mitBefund();
+    const ohne = Object.keys(auswertung).filter((k) => !(k in ZUORDNUNG));
+    expect(ohne, `Ohne Zuordnung in ZUORDNUNG: ${ohne.join(", ")}`).toEqual([]);
+  });
+
+  it("und jede zugeordnete Spalte gibt es wirklich", async () => {
+    // Die Gegenrichtung: Eine Zuordnung auf eine Spalte, die niemand schreibt,
+    // wäre eine Behauptung. Beide Listen zusammen halten die Tabelle oben
+    // ehrlich.
+    await saveEvaluationRun("e1", mitBefund());
+    const zeile = (aufrufe.find((a) => a.tabelle === "evaluations")?.zeilen ?? [])[0] as Record<
+      string,
+      unknown
+    >;
+
+    for (const spalten of Object.values(ZUORDNUNG)) {
+      if (spalten === null) continue;
+      for (const spalte of spalten) {
+        expect(spalte in zeile, `Spalte ${spalte} fehlt in der Zeile`).toBe(true);
+      }
+    }
+  });
+
+  it("die Blockadegründe überleben", async () => {
+    // Der konkrete Fall: ruhige Tage, aber zu wenige und ohne Selbsttests. Der
+    // Motor versucht es und kommt nicht durch — und dann steht in `blocking`,
+    // woran es lag.
+    //
+    // Zwei Tage waren es zuerst, und das ergab `no-data`: Da versucht der Motor
+    // es gar nicht erst, und `blocking` gibt es nicht. Der Unterschied ist
+    // genau der zwischen »ich habe nichts« und »ich habe zu wenig«.
+    const kurz = evaluateEpisode({
+      entries: Array.from({ length: 8 }, (_, i) => ({
+        date: `2026-08-0${i + 1}`,
+        morningScore: 2,
+        sessions: [],
+      })),
+      context: { bodyRegion: "achilles", profileKey: "achilles_midportion" },
+    });
+    expect(kurz.overall.status).toBe("insufficient");
+    const gruende = kurz.overall.status === "insufficient" ? kurz.overall.blocking : [];
+    expect(gruende.length).toBeGreaterThan(0);
+
+    await saveEvaluationRun("e1", kurz);
+    const zeile = (aufrufe.find((a) => a.tabelle === "evaluations")?.zeilen ?? [])[0] as {
+      blocking: string[];
+    };
+    expect(zeile.blocking).toEqual(gruende);
+  });
+
+  it("und ein beurteilter Lauf trägt keine", async () => {
+    // Gegenprobe: Eine Umsetzung, die immer die pending-Gründe hineinschreibt,
+    // bestünde die Prüfung darüber — und behauptete bei jedem grünen Lauf, es
+    // habe etwas blockiert.
+    const auswertung = mitBefund();
+    expect(auswertung.overall.status).toBe("judged");
+    await saveEvaluationRun("e1", auswertung);
+    const zeile = (aufrufe.find((a) => a.tabelle === "evaluations")?.zeilen ?? [])[0] as {
+      blocking: string[];
+    };
+    expect(zeile.blocking).toEqual([]);
+  });
+});

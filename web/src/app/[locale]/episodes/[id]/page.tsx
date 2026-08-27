@@ -124,7 +124,15 @@ export default async function EpisodePage({
             />
           )}
         </p>
-        <p style={{ margin: "0.6rem 0 0", fontSize: "0.9rem" }}>
+        <p style={{ margin: "0.6rem 0 0", fontSize: "0.9rem", display: "flex", gap: "1.25rem" }}>
+          {/* Der Bericht steht bewusst NICHT über dem Formular. Wonach jemand
+              diese Seite öffnet, ist einen Tag zu erfassen — das darf nie unter
+              die Falz rutschen, auch nicht für ein Urteil. Siehe E7: Der
+              Hauptbildschirm trägt den einen Satz, der Bericht die Ebene
+              darunter. */}
+          <Link href={`/${locale}/episodes/${id}/report`} style={navLink}>
+            {s.report.link}
+          </Link>
           <Link href={`/${locale}/episodes/${id}/edit`} style={{ ...navLink, color: "var(--muted)" }}>
             {s.edit.link}
           </Link>

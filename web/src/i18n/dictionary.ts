@@ -21,7 +21,7 @@
  * ---------------------------------------------------------------------------
  */
 
-import type { ActivityKind, Locale } from "loadwise-engine";
+import type { ActivityKind, FlagKind, Locale } from "loadwise-engine";
 
 export interface Strings {
   appName: string;
@@ -138,6 +138,71 @@ export interface Strings {
     restDay: string;
     editHint: string;
     back: string;
+  };
+  /**
+   * Der vollständige Bericht — die Ebene unter dem Hauptbildschirm.
+   *
+   * -------------------------------------------------------------------------
+   * WAS HIER STEHT, IST NIE EIN URTEIL.
+   *
+   * Die Urteilssätze kommen aus `wording.ts` im Motor, über `verdictText` und
+   * `blockedText`. Eine Kopie davon HIER wäre der Fehler, gegen den
+   * `check:boundary` gebaut ist: Sie sähe aus wie eine gewöhnliche
+   * Zeichenkette, und die erste gutgemeinte Umformulierung stellte einer
+   * kranken Person eine Anweisung hin, mit nichts mehr dahinter.
+   *
+   * Was hier steht, sind Überschriften, Regelnamen und Sätze ÜBER den Bericht.
+   * -------------------------------------------------------------------------
+   */
+  report: {
+    link: string;
+    heading: string;
+    /** Es gab noch keinen Lauf. Nicht dasselbe wie »der Lauf sagt nichts«. */
+    none: string;
+    noneHint: string;
+    /**
+     * Es GAB einen Lauf, und diese Fassung kann ihn nicht lesen.
+     *
+     * Nicht dasselbe wie »keiner«, und zuerst war es dieselbe Antwort. Einen
+     * gespeicherten Lauf, den die App nicht mehr versteht, als »noch keine
+     * Auswertung« zu zeigen wäre eine Falschaussage über die eigenen Daten —
+     * ausgerechnet gegenüber jemandem, der seit Wochen einträgt.
+     */
+    unreadableRun: string;
+    unreadableRunHint: string;
+    overallHeading: string;
+    /**
+     * Die drei Zustände von `Overall`, und der dritte ist der wichtige.
+     *
+     * »Nicht genug beurteilt« ist eine EIGENE Antwort und kein schwaches Grün.
+     * Eine Durchsicht hat genau diesen Fehler schon einmal gefunden.
+     */
+    stateGreen: string;
+    stateAmber: string;
+    stateRed: string;
+    stateInsufficient: string;
+    stateNoData: string;
+    /** Platzhalter: {judged} {expected} {reporting} {total} */
+    coverage: string;
+    pendingHeading: string;
+    /** Platzhalter: {days} {expected} */
+    pendingScope: string;
+    currentHeading: string;
+    currentNone: string;
+    earlierHeading: string;
+    earlierHint: string;
+    /**
+     * Zwei Formen statt »Befund(e)«, wie bei daysRecordedOne/Many.
+     *
+     * Eine Klammerform ist in keiner der beiden Sprachen ein Satz, den jemand
+     * sagen würde — und ausgerechnet hier steht ein Satz über fehlende
+     * Befunde. Platzhalter im Mehrzahlfall: {n}
+     */
+    unreadableOne: string;
+    unreadableMany: string;
+    computedAt: string;
+    /** Die Regelnamen. Als Record, damit eine neue Regel ein Compilerfehler ist. */
+    rules: Record<FlagKind, string>;
   };
   auth: {
     heading: string;
@@ -291,6 +356,44 @@ export const DICTIONARY: Record<Locale, Strings> = {
       editHint: "Recording a day again replaces it. Filling in yesterday is fine.",
       back: "All episodes",
     },
+    report: {
+      link: "Full report",
+      heading: "Report",
+      none: "No evaluation yet.",
+      noneHint: "One is produced as soon as you record a day.",
+      unreadableRun: "This evaluation cannot be shown.",
+      unreadableRunHint:
+        "It was produced by an earlier version of the rules. Your diary is untouched, and the next entry produces a fresh one.",
+      overallHeading: "Overall",
+      stateGreen: "Nothing standing out",
+      stateAmber: "Worth a look",
+      stateRed: "Needs attention",
+      stateInsufficient: "Not enough judged",
+      stateNoData: "Nothing to say yet",
+      coverage:
+        "{judged} of {expected} expected days judged, {reporting} of {total} rules have spoken.",
+      pendingHeading: "Not yet judgeable",
+      pendingScope: "affects {days} of {expected} expected days",
+      currentHeading: "Findings",
+      currentNone: "Nothing standing out at the moment.",
+      earlierHeading: "Earlier in the course, now behind you",
+      earlierHint:
+        "These findings have not gone away. They just no longer describe where things stand today.",
+      unreadableOne:
+        "One finding comes from an earlier version of the rules and is not shown here.",
+      unreadableMany:
+        "{n} findings come from an earlier version of the rules and are not shown here.",
+      computedAt: "Computed",
+      rules: {
+        response_24h: "24-hour response",
+        load_spike: "Load over time",
+        asymmetry: "Side comparison",
+        baseline_drift: "Baseline",
+        pain_pattern: "Pain pattern",
+        stagnation: "Long-term course",
+        load_spread: "Load spread",
+      },
+    },
     auth: {
       heading: "Sign in",
       intro: "No password. Enter your email address and a sign-in link arrives.",
@@ -435,6 +538,44 @@ export const DICTIONARY: Record<Locale, Strings> = {
       restDay: "keine Aktivität",
       editHint: "Ein Tag noch einmal erfasst ersetzt ihn. Gestern nachtragen ist in Ordnung.",
       back: "Alle Episoden",
+    },
+    report: {
+      link: "Vollständiger Bericht",
+      heading: "Bericht",
+      none: "Noch keine Auswertung.",
+      noneHint: "Sie entsteht, sobald du einen Tag erfasst hast.",
+      unreadableRun: "Diese Auswertung lässt sich nicht anzeigen.",
+      unreadableRunHint:
+        "Sie stammt aus einer früheren Fassung der Regeln. An deinem Tagebuch ist nichts angerührt, und der nächste Eintrag erzeugt eine neue.",
+      overallHeading: "Gesamtbild",
+      stateGreen: "Nichts Auffälliges",
+      stateAmber: "Einen Blick wert",
+      stateRed: "Sollte angeschaut werden",
+      stateInsufficient: "Nicht genug beurteilt",
+      stateNoData: "Noch keine Aussage möglich",
+      coverage:
+        "{judged} von {expected} erwarteten Tagen beurteilt, {reporting} von {total} Regeln haben gesprochen.",
+      pendingHeading: "Noch nicht beurteilbar",
+      pendingScope: "betrifft {days} von {expected} erwarteten Tagen",
+      currentHeading: "Auffälligkeiten",
+      currentNone: "Im Moment nichts Auffälliges.",
+      earlierHeading: "Früher im Verlauf, inzwischen zurückliegend",
+      earlierHint:
+        "Diese Befunde sind nicht verschwunden. Sie beschreiben nur nicht mehr den Stand von heute.",
+      unreadableOne:
+        "Ein Befund stammt aus einer früheren Fassung der Regeln und wird hier nicht gezeigt.",
+      unreadableMany:
+        "{n} Befunde stammen aus einer früheren Fassung der Regeln und werden hier nicht gezeigt.",
+      computedAt: "Gerechnet",
+      rules: {
+        response_24h: "24-Stunden-Reaktion",
+        load_spike: "Belastungsverlauf",
+        asymmetry: "Seitenvergleich",
+        baseline_drift: "Ausgangswert",
+        pain_pattern: "Schmerzmuster",
+        stagnation: "Langzeitverlauf",
+        load_spread: "Lastverteilung",
+      },
     },
     auth: {
       heading: "Anmelden",

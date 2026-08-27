@@ -526,3 +526,32 @@ function worstSeverity(flags: Flag[]): Severity {
   if (flags.some((f) => f.severity === "amber")) return "amber";
   return "green";
 }
+
+/**
+ * Blockadegründe, die zu keiner Regel gehören.
+ *
+ * ---------------------------------------------------------------------------
+ * WARUM DAS EINE EXPORTIERTE FUNKTION IST UND KEINE VIER ZEILEN IM BERICHT.
+ *
+ * `pending` sammelt, was eine EINZELNE Regel nicht beurteilen konnte, und trägt
+ * deshalb den Namen der Regel. Es gibt aber Gründe, die keine Regel haben: dass
+ * an den betrachteten Tagen ein Schmerzmittel genommen wurde, gehört zu keiner
+ * der sieben und hält trotzdem die Entwarnung zurück.
+ *
+ * Genau die standen einmal ausschliesslich in `overall.blocking` — gesetzt und
+ * nie gezeigt. Es war einer der acht Funde der Härtungswoche, und der Grund,
+ * warum er schwer wiegt, steht in `report.ts`: Ein Grund, der den Bildschirm
+ * nicht erreicht, ist für die lesende Person kein Grund, sondern ein Urteil
+ * ohne Begründung.
+ *
+ * Als der Bericht der App entstand, brauchte er dieselbe Auswahl. Sie dort ein
+ * zweites Mal hinzuschreiben hiesse, denselben Fund an einer zweiten Stelle
+ * wieder möglich zu machen — die eine Fassung würde repariert, die andere
+ * nicht, und beide sähen richtig aus.
+ * ---------------------------------------------------------------------------
+ */
+export function unnamedBlocking(overall: Overall, pending: Pending[]): BlockingReason[] {
+  if (overall.status !== "insufficient") return [];
+  const schonGenannt = new Set(pending.map((p) => p.reason));
+  return overall.blocking.filter((r) => !schonGenannt.has(r));
+}

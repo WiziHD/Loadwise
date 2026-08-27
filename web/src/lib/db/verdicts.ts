@@ -3,7 +3,15 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { listEntries } from "@/lib/db/entries";
 import { getEpisode } from "@/lib/db/episodes";
 import { saveEvaluationRun } from "@/lib/db/verdict-write";
-import { toEpisodeContext, toSelfTest, type SelfTestRow } from "@/lib/db/types";
+import {
+  toEpisodeContext,
+  toSelfTest,
+  toStoredRun,
+  type EvaluationRow,
+  type FlagRow,
+  type SelfTestRow,
+  type StoredRun,
+} from "@/lib/db/types";
 
 /**
  * Einen Auswertungslauf ausführen und ablegen.
@@ -63,4 +71,63 @@ async function evaluate(episodeId: string, context: EpisodeContext): Promise<Eva
     tests: ((testRows ?? []) as SelfTestRow[]).map(toSelfTest),
     context,
   });
+}
+
+/**
+ * Der jüngste Auswertungslauf einer Episode, samt seiner Flags.
+ *
+ * ---------------------------------------------------------------------------
+ * DIE FLAGS KOMMEN ÜBER `evaluation_id`, NICHT ÜBER DIE EPISODE.
+ *
+ * Das ist der Grund, aus dem es die Spalte gibt. Über `episode_id` zu lesen
+ * lieferte die Flags ALLER Läufe durcheinander — bei täglicher Erfassung nach
+ * drei Monaten hundertfach dieselbe Auffälligkeit.
+ *
+ * Und es ist zugleich die Sicherung aus E12: Ein Lauf, dessen Flags geschrieben
+ * wurden und dessen Auswertung nicht, hat keine Zeile in `evaluations` — diese
+ * Abfrage findet ihn also gar nicht erst, und seine Flags bleiben unsichtbar
+ * statt sich unter die eines anderen Laufs zu mischen.
+ *
+ * Gelesen wird über den anon key. Gehört die Episode jemand anderem, kommt
+ * nichts zurück.
+ * ---------------------------------------------------------------------------
+ */
+export type LatestRun =
+  /** Es gab noch keinen Lauf. */
+  | { kind: "none" }
+  /**
+   * Es gab einen, und diese Fassung kann ihn nicht lesen.
+   *
+   * Nicht dasselbe wie »keiner« — und das war zuerst dieselbe Antwort. Ein
+   * gespeicherter Lauf, den die App nicht mehr versteht, als »noch keine
+   * Auswertung« zu zeigen wäre eine Falschaussage über die eigenen Daten,
+   * ausgerechnet gegenüber jemandem, der seit Wochen einträgt.
+   */
+  | { kind: "unreadable"; id: string }
+  | { kind: "run"; run: StoredRun };
+
+export async function latestRun(episodeId: string): Promise<LatestRun> {
+  const supabase = await supabaseServer();
+
+  const { data: row, error } = await supabase
+    .from("evaluations")
+    .select("*")
+    .eq("episode_id", episodeId)
+    .order("computed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error !== null) throw new Error(`evaluations: ${error.message}`);
+  if (row === null) return { kind: "none" };
+
+  const lauf = row as EvaluationRow;
+
+  const { data: flagRows, error: flagError } = await supabase
+    .from("flags")
+    .select("*")
+    .eq("evaluation_id", lauf.id)
+    .order("for_date", { ascending: true });
+  if (flagError !== null) throw new Error(`flags: ${flagError.message}`);
+
+  const run = toStoredRun(lauf, (flagRows ?? []) as FlagRow[]);
+  return run === null ? { kind: "unreadable", id: lauf.id } : { kind: "run", run };
 }

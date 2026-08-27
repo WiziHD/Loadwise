@@ -14,7 +14,7 @@
  * numbers are only its evidence.
  */
 
-import { currentFlags, evaluateEpisode } from "./evaluate.js";
+import { currentFlags, evaluateEpisode, unnamedBlocking } from "./evaluate.js";
 import { SCENARIOS, type Scenario } from "./fixtures.js";
 import { DISCLAIMER, blockedText, verdictText } from "./wording.js";
 import { DEFAULT_CONFIG, type Config, type Flag, type Overall, type Pending, type Severity } from "./types.js";
@@ -219,9 +219,12 @@ export function reportScenario(scenario: Scenario): string {
   // nie gezeigt. Ein Grund, der den Bildschirm nicht erreicht, ist für die
   // lesende Person kein Grund, sondern ein Urteil ohne Begründung.
   // ---------------------------------------------------------------------
-  if (result.overall.status === "insufficient") {
-    const schonGenannt = new Set(result.pending.map((p) => p.reason));
-    const weitere = result.overall.blocking.filter((r) => !schonGenannt.has(r));
+  {
+    // Die Auswahl steht in evaluate.ts, nicht hier. Als die App ihren eigenen
+    // Bericht bekam, brauchte sie dieselbe — und sie ein zweites Mal
+    // hinzuschreiben hiesse, diesen Fund an einer zweiten Stelle wieder möglich
+    // zu machen.
+    const weitere = unnamedBlocking(result.overall, result.pending);
     if (weitere.length > 0) {
       if (result.pending.length === 0) {
         out.push(line());

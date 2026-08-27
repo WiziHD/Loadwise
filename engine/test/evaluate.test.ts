@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { evaluateEpisode } from "../src/evaluate.js";
-import type { Overall, Severity } from "../src/types.js";
+import { evaluateEpisode, unnamedBlocking } from "../src/evaluate.js";
+import type { Overall, Pending, Severity } from "../src/types.js";
 import {
   ACHILLES_CTX,
   overloadWeek,
@@ -168,5 +168,53 @@ describe("der Rand des Tagebuchs — heute ist eben heute", () => {
       entries.push({ date: tag(i) as `${number}-${number}-${number}`, morningScore: 2, sessions: [] });
     }
     expect(gruende(entries)).toContain("second-day-missing");
+  });
+});
+
+/**
+ * Blockadegründe, die zu keiner Regel gehören.
+ *
+ * ---------------------------------------------------------------------------
+ * DIE FUNKTION EXISTIERT, DAMIT ES SIE NUR EINMAL GIBT.
+ *
+ * `pending` trägt je Eintrag den Namen einer Regel. Manche Gründe haben keine —
+ * ein Schmerzmittel in den betrachteten Tagen gehört zu keiner der sieben und
+ * hält die Entwarnung trotzdem zurück. Genau diese standen einmal
+ * ausschliesslich in `overall.blocking` und erreichten den Bildschirm nie.
+ *
+ * Der Konsolenbericht und der Bericht der App brauchen beide dieselbe Auswahl.
+ * Ohne diese Funktion gäbe es sie zweimal, und die eine Fassung würde repariert
+ * und die andere nicht.
+ * ---------------------------------------------------------------------------
+ */
+describe("unnamedBlocking", () => {
+  const pending: Pending[] = [
+    { kind: "asymmetry", reason: "no-tests" },
+    { kind: "response_24h", reason: "baseline-unavailable" },
+  ];
+
+  it("nennt den Grund, den keine Regel trägt", () => {
+    const overall: Overall = {
+      status: "insufficient",
+      blocking: ["no-tests", "baseline-unavailable", "medication-in-window"],
+    };
+    expect(unnamedBlocking(overall, pending)).toEqual(["medication-in-window"]);
+  });
+
+  it("und wiederholt nicht, was schon bei einer Regel steht", () => {
+    // Die Gegenprobe zur Zeile darüber: Eine Umsetzung, die einfach
+    // `overall.blocking` zurückgäbe, bestünde die erste Prüfung nicht — aber
+    // eine, die immer alles filtert, käme durch. Hier steht ausdrücklich, dass
+    // die schon genannten WEGfallen.
+    const overall: Overall = { status: "insufficient", blocking: ["no-tests"] };
+    expect(unnamedBlocking(overall, pending)).toEqual([]);
+  });
+
+  it("bei einem beurteilten Lauf gibt es keine", () => {
+    expect(unnamedBlocking({ status: "judged", severity: "green" }, pending)).toEqual([]);
+  });
+
+  it("und bei einem Lauf ohne Daten auch nicht", () => {
+    expect(unnamedBlocking({ status: "no-data" }, pending)).toEqual([]);
   });
 });

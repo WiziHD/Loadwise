@@ -103,6 +103,36 @@ const MUTATIONEN: Mutation[] = [
     nach: "        aria-describedby={undefined}",
   },
   {
+    name: "ReportView: nicht genug beurteilt sieht aus wie eine Entwarnung",
+    datei: "src/components/ReportView.tsx",
+    von: 'return { text: s.stateInsufficient, tone: "var(--unjudged)" };',
+    nach: 'return { text: s.stateGreen, tone: "var(--green)" };',
+  },
+  {
+    name: "ReportView: die Farbe stimmt, das Wort nicht mehr",
+    datei: "src/components/ReportView.tsx",
+    von: 'return { text: s.stateInsufficient, tone: "var(--unjudged)" };',
+    nach: 'return { text: s.stateGreen, tone: "var(--unjudged)" };',
+  },
+  {
+    name: "ReportView: Gruende ohne Regel werden nicht gezeigt",
+    datei: "src/components/ReportView.tsx",
+    von: "const weitereGruende = unnamedBlocking(run.overall, run.pending);",
+    nach: "const weitereGruende: never[] = [];",
+  },
+  {
+    name: "ReportView: nicht lesbare Befunde verschwinden still",
+    datei: "src/components/ReportView.tsx",
+    von: "{run.unreadableFlags > 0 && (",
+    nach: "{false && run.unreadableFlags > 0 && (",
+  },
+  {
+    name: "ReportView: zurueckliegende Befunde werden weggeworfen",
+    datei: "src/components/ReportView.tsx",
+    von: "{frueher.length > 0 && (",
+    nach: "{false && frueher.length > 0 && (",
+  },
+  {
     name: "ArchiveButton: ein Fehlschlag wird nicht gemerkt",
     datei: "src/components/ArchiveButton.tsx",
     von: "              if (!result.ok) setFailed(true);",

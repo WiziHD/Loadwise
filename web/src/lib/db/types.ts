@@ -12,14 +12,23 @@
  * ---------------------------------------------------------------------------
  */
 
-import { RULE_VERSION } from "loadwise-engine";
+import { ALL_BLOCKING_REASONS, ALL_REASON_CODES, RULE_VERSION } from "loadwise-engine";
 import type {
   ActivityKind,
   BodyRegion,
   Entry,
   EpisodeContext,
+  BlockingReason,
+  Config,
+  Coverage,
+  DateStr,
   Evaluation,
   Flag,
+  FlagKind,
+  Overall,
+  Pending,
+  Problem,
+  Severity,
   SelfTest,
   Side,
   SymptomTiming,
@@ -265,6 +274,13 @@ export function toEvaluationRow(evaluation: Evaluation, laufId: string, episodeI
     // man sie nicht lesen kann, ohne den Status geprüft zu haben; die Datenbank
     // hält dieselbe Bedingung noch einmal als CHECK.
     overall_severity: evaluation.overall.status === "judged" ? evaluation.overall.severity : null,
+    // Die dritte Variante der Union, und sie ging in 0007 verloren.
+    //
+    // `insufficient` trägt die Gründe, warum es keine Entwarnung gab. Ohne sie
+    // ist der Zustand gespeichert und seine Begründung nicht — derselbe Fehler
+    // wie in der Härtungswoche, wo `overall.blocking` gesetzt und nie gezeigt
+    // wurde, nur eine Ebene tiefer. Siehe 0008.
+    blocking: evaluation.overall.status === "insufficient" ? evaluation.overall.blocking : [],
     coverage: evaluation.coverage,
     pending: evaluation.pending,
     problems: evaluation.problems,
@@ -277,5 +293,201 @@ export function toEvaluationRow(evaluation: Evaluation, laufId: string, episodeI
     rule_version: RULE_VERSION,
     config: evaluation.config,
     last_date: evaluation.lastDate,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Rows → engine, die Urteilsseite
+//
+// ---------------------------------------------------------------------------
+// HIER STEHT DIE EINZIGE UNGEPRÜFTE ZUSICHERUNG DIESER DATEI, UND SIE MUSS
+// GEPRÜFT WERDEN.
+//
+// `Flag` bindet `kind` an `detail`: Zu `load_spike` gehört ein
+// `LoadSpikeDetail` und nichts anderes. Aus der Datenbank kommt `detail` als
+// jsonb, also als `unknown` — der Typprüfer kann die Bindung von dort aus nicht
+// halten.
+//
+// Das ist nicht theoretisch. Jede Flag trägt `rule_version` und
+// `profile_version`, WEIL sich Regeln ändern. Eine Flag aus einer früheren
+// Fassung kann eine `kind` tragen, die es nicht mehr gibt, oder einen `reason`,
+// den das Wörterbuch nicht kennt. Ungeprüft übernommen ergäbe das eine Zeile
+// mit `undefined` als Regelname und einem leeren Urteilssatz — also eine
+// Auffälligkeit, die niemand lesen kann, aber jeder sieht.
+//
+// Also: prüfen und im Zweifel NICHT übernehmen. Wie viele dabei wegfallen,
+// muss die Seite sagen — stillschweigend weniger Befunde zu zeigen wäre in
+// diesem Produkt die falsche Richtung.
+// ---------------------------------------------------------------------------
+
+const FLAG_KINDS = new Set<string>([
+  "response_24h",
+  "load_spike",
+  "asymmetry",
+  "baseline_drift",
+  "pain_pattern",
+  "stagnation",
+  "load_spread",
+] satisfies FlagKind[]);
+
+const REASON_CODES = new Set<string>(ALL_REASON_CODES);
+const SEVERITIES = new Set<string>(["green", "amber", "red"] satisfies Severity[]);
+
+export interface FlagRow {
+  id: string;
+  evaluation_id: string;
+  episode_id: string;
+  computed_at: string;
+  kind: string;
+  for_date: string;
+  severity: string;
+  reason: string;
+  detail: unknown;
+  rule_version: string;
+  profile_version: string;
+}
+
+/**
+ * Eine gespeicherte Flag als Motortyp — oder `null`, wenn sie es nicht mehr ist.
+ *
+ * Die Zusicherung am Ende ist eine echte: `detail` kommt als jsonb herein und
+ * wird nicht Feld für Feld geprüft. Was geprüft wird, sind die drei Werte, an
+ * denen sich eine veraltete Zeile erkennen lässt und von denen die Anzeige
+ * abhängt.
+ */
+export function fromFlagRow(row: FlagRow): Flag | null {
+  if (!FLAG_KINDS.has(row.kind)) return null;
+  if (!REASON_CODES.has(row.reason)) return null;
+  if (!SEVERITIES.has(row.severity)) return null;
+
+  return {
+    kind: row.kind,
+    forDate: row.for_date,
+    severity: row.severity,
+    reason: row.reason,
+    detail: row.detail,
+    ruleVersion: row.rule_version,
+    profileVersion: row.profile_version,
+  } as Flag;
+}
+
+export interface EvaluationRow {
+  id: string;
+  episode_id: string;
+  computed_at: string;
+  overall_status: string;
+  overall_severity: string | null;
+  blocking: unknown;
+  coverage: unknown;
+  pending: unknown;
+  problems: unknown;
+  profile_key: string;
+  profile_version: string;
+  rule_version: string;
+  config: unknown;
+  last_date: string | null;
+}
+
+/**
+ * Ein gespeicherter Lauf, so wie eine Ansicht ihn braucht.
+ *
+ * Die Motortypen sind wieder zusammengesetzt — `Overall` vor allem, das als
+ * drei Spalten abgelegt wird und als Union zurückkommt.
+ */
+export interface StoredRun {
+  id: string;
+  computedAt: string;
+  overall: Overall;
+  coverage: Coverage;
+  pending: Pending[];
+  problems: Problem[];
+  config: Config;
+  lastDate: DateStr | null;
+  profileKey: string;
+  profileVersion: string;
+  ruleVersion: string;
+  flags: Flag[];
+  /**
+   * Wie viele Flags aus einer Fassung stammen, die es nicht mehr gibt.
+   *
+   * Sie werden nicht gezeigt — ohne Regelnamen und Urteilssatz wären sie eine
+   * Zeile, die niemand lesen kann. Aber sie verschwinden auch nicht still: Die
+   * Zahl gehört auf den Bildschirm, sonst zeigt der Bericht weniger Befunde,
+   * als der Lauf hatte, und niemand kann das sehen.
+   */
+  unreadableFlags: number;
+}
+
+const OVERALL_STATES = new Set<string>(["judged", "insufficient", "no-data"]);
+const BLOCKING_REASONS = new Set<string>(ALL_BLOCKING_REASONS);
+
+/**
+ * Eine Auswertungszeile plus ihre Flags als Motortypen — oder `null`.
+ *
+ * ---------------------------------------------------------------------------
+ * WAS HIER GEPRÜFT WIRD UND WARUM GERADE DAS.
+ *
+ * `coverage`, `pending`, `problems` und `config` kommen als jsonb herein, also
+ * als `unknown`. Feld für Feld zu prüfen wäre ein Schema-Prüfer und eine
+ * zweite Beschreibung derselben Typen.
+ *
+ * Geprüft wird deshalb genau das, wovon die ANZEIGE abhängt und dessen Fehlen
+ * still wäre:
+ *
+ *   `overall_status`         sonst fiele die Ansicht durch alle drei Fälle
+ *   `config.baseline.windowDays`  `currentFlags` teilt danach in »aktuell« und
+ *                            »zurückliegend«. Fehlt der Wert, ist der Vergleich
+ *                            gegen `undefined` immer falsch — und der Bericht
+ *                            schöbe stillschweigend fast jeden Befund in die
+ *                            Vergangenheit.
+ *
+ * Das zweite ist der gefährliche Fall: Er sieht auf dem Bildschirm aus wie
+ * »alles zurückliegend«, also wie eine gute Nachricht.
+ * ---------------------------------------------------------------------------
+ */
+export function toStoredRun(row: EvaluationRow, flagRows: FlagRow[]): StoredRun | null {
+  if (!OVERALL_STATES.has(row.overall_status)) return null;
+
+  const config = row.config as Config | undefined;
+  if (typeof config?.baseline?.windowDays !== "number") return null;
+
+  const overall: Overall =
+    row.overall_status === "judged"
+      ? { status: "judged", severity: (row.overall_severity ?? "red") as Severity }
+      : row.overall_status === "no-data"
+        ? { status: "no-data" }
+        : {
+            status: "insufficient",
+            // Ein Grund, den das Wörterbuch nicht kennt, würde als leere Zeile
+            // erscheinen. Weglassen ist hier richtig: Die übrigen Gründe
+            // stimmen weiter, und die Liste behauptet nicht, vollständig zu
+            // sein.
+            blocking: (Array.isArray(row.blocking) ? row.blocking : []).filter(
+              (r): r is BlockingReason => typeof r === "string" && BLOCKING_REASONS.has(r),
+            ),
+          };
+
+  const flags: Flag[] = [];
+  let unreadableFlags = 0;
+  for (const fr of flagRows) {
+    const flag = fromFlagRow(fr);
+    if (flag === null) unreadableFlags += 1;
+    else flags.push(flag);
+  }
+
+  return {
+    id: row.id,
+    computedAt: row.computed_at,
+    overall,
+    coverage: row.coverage as Coverage,
+    pending: (row.pending ?? []) as Pending[],
+    problems: (row.problems ?? []) as Problem[],
+    config,
+    lastDate: row.last_date,
+    profileKey: row.profile_key,
+    profileVersion: row.profile_version,
+    ruleVersion: row.rule_version,
+    flags,
+    unreadableFlags,
   };
 }
