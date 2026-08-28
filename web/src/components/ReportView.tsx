@@ -3,8 +3,10 @@ import {
   unnamedBlocking,
   blockedText,
   verdictText,
+  DISCLAIMER,
   type Flag,
   type Locale,
+  type RedFlag,
   type Severity,
 } from "loadwise-engine";
 import type { StoredRun } from "@/lib/db/types";
@@ -136,10 +138,21 @@ function Finding({
 
 export function ReportView({
   run,
+  redFlags,
   strings,
   locale,
 }: {
   run: StoredRun;
+  /**
+   * Die Warnzeichen des Profils, unter dem die Episode HEUTE geführt wird —
+   * nicht das des gespeicherten Laufs.
+   *
+   * Der Unterschied zählt nach einem Profilwechsel: Der Lauf trägt die Urteile
+   * unter dem alten Massstab, die Warnzeichen aber sind keine Urteile. Sie
+   * sagen, wann etwas zu einer Fachperson gehört, und das richtet sich nach der
+   * Verletzung, die jemand heute hat.
+   */
+  redFlags: RedFlag[];
   strings: Strings["report"];
   locale: Locale;
 }) {
@@ -267,6 +280,54 @@ export function ReportView({
         </section>
       )}
 
+      {run.problems.length > 0 && (
+        <section style={section}>
+          <h2 style={heading}>{s.problemsHeading}</h2>
+          <p style={{ margin: "0 0 0.5rem" }}>
+            {run.problems.length === 1
+              ? s.problemsOne
+              : fill(s.problemsMany, { n: run.problems.length })}
+          </p>
+          {/* Die Tage, nicht die Codes. `Problem.message` ist englische
+              Entwicklerprosa ohne Wortlauttabelle, und die einer lesenden Person
+              hinzustellen wäre schlechter als sie wegzulassen. Was zählt, steht
+              im Satz darunter. */}
+          <p style={{ margin: "0 0 0.5rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+            {[...new Set(run.problems.map((p) => p.date).filter((d) => d !== null))].join(" · ")}
+          </p>
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.9rem" }}>{s.problemsHint}</p>
+        </section>
+      )}
+
+      {/* ------------------------------------------------------------------
+          WARNZEICHEN UND DISCLAIMER STEHEN IM BAUTEIL, NICHT AUF DER SEITE.
+
+          Beides ist keine Zierde: Der Disclaimer spricht die Zweckbestimmung
+          aus, und die Zweckbestimmung entscheidet, ob dies ein Medizinprodukt
+          ist. Die Warnzeichen sind die Stelle, an der die App ihre eigene
+          Grenze benennt.
+
+          An der SEITE hängend wären beide vergessbar — die nächste Ansicht, die
+          ein Urteil zeigt, hätte sie einfach nicht. Am Bauteil hängend kommen
+          sie mit, wo immer ein Urteil hingeht. `check:boundary` hält das fest:
+          Wer `verdictText` importiert, importiert auch `DISCLAIMER`.
+          ------------------------------------------------------------------ */}
+      {redFlags.length > 0 && (
+        <section style={section}>
+          <h2 style={heading}>{s.redFlagsHeading}</h2>
+          <p style={{ margin: "0 0 0.75rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+            {s.redFlagsHint}
+          </p>
+          <ul style={{ margin: 0, paddingLeft: "1.1rem" }}>
+            {redFlags.map((flag) => (
+              <li key={flag.key} style={{ margin: "0 0 0.4rem" }}>
+                {flag.text[locale]}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {run.unreadableFlags > 0 && (
         // Nicht still weglassen. Der Bericht zeigt sonst weniger Befunde, als
         // der Lauf hatte, und niemand kann das sehen.
@@ -276,6 +337,22 @@ export function ReportView({
             : fill(s.unreadableMany, { n: run.unreadableFlags })}
         </p>
       )}
+
+      {/* Wörtlich aus dem Motor. Eine Kopie im Wörterbuch stünde ausserhalb der
+          drei Sperrlisten — und dieser eine Satz ist der, der sagt, was dieses
+          Produkt IST. */}
+      <p
+        data-disclaimer=""
+        style={{
+          margin: "2.5rem 0 0",
+          paddingTop: "1.25rem",
+          borderTop: "1px solid var(--line)",
+          color: "var(--muted)",
+          fontSize: "0.85rem",
+        }}
+      >
+        {DISCLAIMER[locale]}
+      </p>
     </>
   );
 }

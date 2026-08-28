@@ -201,6 +201,30 @@ export interface Strings {
     unreadableOne: string;
     unreadableMany: string;
     computedAt: string;
+    /**
+     * Warnzeichen des Profils.
+     *
+     * Die Zeichen selbst kommen aus `profile.redFlags` im Motor und stehen
+     * unter derselben Wortgrenze wie die Urteilssätze. Hier steht nur, was um
+     * sie herum gehört.
+     */
+    redFlagsHeading: string;
+    redFlagsHint: string;
+    /**
+     * Eingabefehler.
+     *
+     * Der Motor liefert je Fund einen Code, ein Datum und eine englische
+     * Entwicklermeldung — für einen Wortlaut in beiden Sprachen fehlt die
+     * Tabelle noch (eigene Karte). Gezeigt wird deshalb, WIE VIELE Tage
+     * betroffen sind und WELCHE, nicht was genau daran fehlt. Der Satz, auf den
+     * es ankommt, ist ohnehin ein anderer: Die Urteile oben stehen auf diesen
+     * Daten.
+     */
+    problemsHeading: string;
+    problemsOne: string;
+    /** Platzhalter: {n} */
+    problemsMany: string;
+    problemsHint: string;
     /** Die Regelnamen. Als Record, damit eine neue Regel ein Compilerfehler ist. */
     rules: Record<FlagKind, string>;
   };
@@ -384,6 +408,13 @@ export const DICTIONARY: Record<Locale, Strings> = {
       unreadableMany:
         "{n} findings come from an earlier version of the rules and are not shown here.",
       computedAt: "Computed",
+      redFlagsHeading: "When to see someone",
+      redFlagsHint:
+        "This app records and structures. None of the following is something a diary can judge.",
+      problemsHeading: "Entries that could not be read",
+      problemsOne: "One day could not be evaluated.",
+      problemsMany: "{n} days could not be evaluated.",
+      problemsHint: "The verdicts above rest on the remaining days.",
       rules: {
         response_24h: "24-hour response",
         load_spike: "Load over time",
@@ -567,6 +598,13 @@ export const DICTIONARY: Record<Locale, Strings> = {
       unreadableMany:
         "{n} Befunde stammen aus einer früheren Fassung der Regeln und werden hier nicht gezeigt.",
       computedAt: "Gerechnet",
+      redFlagsHeading: "Wann jemand draufschauen sollte",
+      redFlagsHint:
+        "Diese App zeichnet auf und ordnet. Nichts hiervon ist etwas, das ein Tagebuch beurteilen kann.",
+      problemsHeading: "Einträge, die nicht gelesen werden konnten",
+      problemsOne: "Ein Tag liess sich nicht auswerten.",
+      problemsMany: "{n} Tage liessen sich nicht auswerten.",
+      problemsHint: "Die Urteile oben stehen auf den übrigen Tagen.",
       rules: {
         response_24h: "24-Stunden-Reaktion",
         load_spike: "Belastungsverlauf",

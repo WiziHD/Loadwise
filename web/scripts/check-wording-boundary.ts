@@ -84,6 +84,62 @@ for (const sentence of engineSentences()) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Die zweite Richtung: Wer ein Urteil zeigt, zeigt auch die Zweckbestimmung.
+//
+// ---------------------------------------------------------------------------
+// WARUM DAS IN DIESE DATEI GEHÖRT UND NICHT IN EINE EIGENE.
+//
+// Dieselbe regulatorische Grenze, nur von der anderen Seite. Oben: Die Sätze
+// des Motors dürfen nicht kopiert werden. Hier: Der eine Satz, der SAGT, was
+// dieses Produkt ist, darf nicht fehlen, wo ein Urteil steht.
+//
+// `PROTOKOLLE.md` §1 hält fest, dass die Zweckbestimmung darüber entscheidet,
+// ob dies ein Medizinprodukt nach MepV und MDR ist. Ein Bauteil, das Urteile
+// über einen Körper rendert und den Satz weglässt, verschiebt genau diese
+// Frage — und zwar still, weil auf dem Bildschirm nur etwas FEHLT.
+//
+// Deshalb hängt der Disclaimer am Bauteil und nicht an der Seite, und deshalb
+// wird die Kopplung geprüft statt erinnert. Eine Ansicht, die morgen
+// dazukommt, kann ihn nicht vergessen.
+// ---------------------------------------------------------------------------
+
+const VERDICT_CALLS = ["verdictText", "blockedText"];
+
+/** Importiert diese Datei den Namen aus dem Motor? */
+function importsFromEngine(text: string, name: string): boolean {
+  for (const block of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*["']loadwise-engine["']/g)) {
+    const names = (block[1] ?? "").split(",").map((n) => n.replace(/^\s*type\s+/, "").trim());
+    if (names.includes(name)) return true;
+  }
+  return false;
+}
+
+const judging = files.filter((f) => VERDICT_CALLS.some((fn) => importsFromEngine(f.text, fn)));
+const withoutDisclaimer = judging.filter((f) => !importsFromEngine(f.text, "DISCLAIMER"));
+
+// Gegenprobe: Eine Prüfung, die keine einzige urteilende Datei findet, geht
+// leer durch — und wäre grün an dem Tag, an dem jemand den Import umbenennt.
+if (judging.length === 0) {
+  console.error(
+    "\nKeine einzige Datei unter src/ ruft verdictText oder blockedText auf.\n" +
+      "Entweder rendert die App keine Urteile mehr, oder diese Prüfung sucht am\n" +
+      "falschen Ort. Beides muss jemand anschauen.\n",
+  );
+  process.exit(1);
+}
+
+if (withoutDisclaimer.length > 0) {
+  console.error("\nEin Urteil ohne die Zweckbestimmung:\n");
+  for (const f of withoutDisclaimer) console.error(`  ${f.path}`);
+  console.error(
+    "\nDiese Datei zeigt ein Urteil des Motors und importiert DISCLAIMER nicht.\n" +
+      "Der Satz entscheidet, ob dieses Produkt ein Medizinprodukt ist; er gehört\n" +
+      "an das Bauteil, das das Urteil rendert, nicht an die Seite darum herum.\n",
+  );
+  process.exit(1);
+}
+
 if (offenders.length > 0) {
   console.error("\nThe engine's wording has been copied into the app:\n");
   for (const o of offenders) console.error(`  ${o}\n`);
@@ -107,5 +163,7 @@ if (!`const x = ${JSON.stringify(planted.text)};`.includes(planted.text)) {
 }
 
 console.log(
-  `Wording boundary holds: ${engineSentences().length} engine sentences, none copied into ${files.length} app files.`,
+  `Wording boundary holds: ${engineSentences().length} engine sentences, none copied into ${files.length} app files.
+` +
+    `Und jede der ${judging.length} urteilenden Dateien traegt die Zweckbestimmung.`,
 );

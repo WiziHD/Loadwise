@@ -68,7 +68,12 @@ export default async function ReportPage({
       </p>
 
       {run.kind === "run" ? (
-        <ReportView run={run.run} strings={s.report} locale={locale} />
+        <ReportView
+          run={run.run}
+          redFlags={profile.redFlags}
+          strings={s.report}
+          locale={locale}
+        />
       ) : (
         <>
           <p style={{ margin: "0 0 0.35rem", fontSize: "1.1rem" }}>

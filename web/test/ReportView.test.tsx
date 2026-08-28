@@ -19,10 +19,13 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import {
   evaluateEpisode,
+  profileByKey,
   verdictText,
   blockedText,
+  DISCLAIMER,
   type Entry,
   type Evaluation,
+  type RedFlag,
 } from "loadwise-engine";
 import { ReportView } from "@/components/ReportView";
 import { toEvaluationRow, toStoredRun, type EvaluationRow, type FlagRow, type StoredRun } from "@/lib/db/types";
@@ -120,8 +123,18 @@ const langerVerlauf = () =>
     context: kontext,
   });
 
-const zeichnen = (run: StoredRun) =>
-  render(<ReportView run={run} strings={s} locale="de" />);
+/**
+ * Die Warnzeichen kommen als eigene Eigenschaft herein, nicht aus dem Lauf.
+ *
+ * Nach einem Profilwechsel trägt der gespeicherte Lauf die Urteile unter dem
+ * alten Massstab; die Warnzeichen sind aber keine Urteile, sondern eine Aussage
+ * über die Verletzung, die jemand HEUTE hat. Deshalb reicht die Seite sie aus
+ * dem aktuellen Profil hinein.
+ */
+const WARNZEICHEN = profileByKey("achilles_midportion")!.redFlags;
+
+const zeichnen = (run: StoredRun, warnzeichen: RedFlag[] = WARNZEICHEN) =>
+  render(<ReportView run={run} redFlags={warnzeichen} strings={s} locale="de" />);
 
 describe("ReportView — das Gesamtbild", () => {
   it("sagt bei sieben Einträgen NICHT, dass alles in Ordnung ist", () => {
@@ -394,5 +407,93 @@ describe("ReportView — der Zustand hat eine eigene Form", () => {
     ) as HTMLElement | null;
     expect(kasten).not.toBeNull();
     expect(kasten!.style.border).not.toContain("dashed");
+  });
+});
+
+describe("ReportView — was keine Kür ist", () => {
+  it("trägt den Disclaimer, wörtlich aus dem Motor", () => {
+    // -----------------------------------------------------------------------
+    // DIESER EINE SATZ SAGT, WAS DIESES PRODUKT IST.
+    //
+    // Er spricht die Zweckbestimmung aus, und die Zweckbestimmung entscheidet,
+    // ob dies ein Medizinprodukt nach MepV und MDR ist. Deshalb wörtlich aus
+    // `wording.ts` und nie aus dem Wörterbuch der App — eine Kopie dort stünde
+    // ausserhalb der drei Sperrlisten.
+    // -----------------------------------------------------------------------
+    const { container } = zeichnen(laufAus(mitVerlauf()));
+    expect(container.textContent).toContain(DISCLAIMER.de);
+  });
+
+  it("und zwar auch dann, wenn der Motor GAR nichts hat", () => {
+    // Die Gegenprobe zur Zeile darüber, und sie ist die wichtigere: Ein
+    // Disclaimer, der nur bei einem Befund erscheint, fehlt genau dort, wo die
+    // App am wenigsten weiss.
+    //
+    // Hier stand zuerst `duenn()` — sieben Tage. Das reicht dem Motor nicht für
+    // ein Urteil, ABER er erzeugt dabei trotzdem ein grünes Flag, und die
+    // Mutation »Disclaimer nur bei Befunden« überlebte damit unbemerkt.
+    //
+    // Ein leeres Tagebuch ist der einzige Lauf ohne jedes Flag. Die
+    // ausdrückliche Zusicherung darunter hält das fest, damit die Prüfung nicht
+    // beim nächsten Motorwechsel wieder leerläuft.
+    const leer = evaluateEpisode({ entries: [] });
+    expect(leer.flags).toHaveLength(0);
+
+    const { container } = zeichnen(laufAus(leer));
+    expect(container.textContent).toContain(DISCLAIMER.de);
+  });
+
+  it("zeigt die Warnzeichen des Profils", () => {
+    // Gleichzeitig Sicherheit und Glaubwürdigkeit: Ein Werkzeug, das seine
+    // eigenen Grenzen benennt, wird für den Rest ernster genommen.
+    const { container } = zeichnen(laufAus(mitVerlauf()));
+    expect(WARNZEICHEN.length).toBeGreaterThan(0);
+    for (const flag of WARNZEICHEN) {
+      expect(container.textContent, `Warnzeichen ${flag.key} fehlt`).toContain(flag.text.de);
+    }
+  });
+
+  it("und schweigt, wo ein Profil keine hat", () => {
+    // Gegenprobe: Eine Überschrift ohne Liste darunter wäre schlechter als
+    // keine — sie verspricht etwas, das nicht kommt.
+    zeichnen(laufAus(mitVerlauf()), []);
+    expect(screen.queryByText(s.redFlagsHeading)).toBeNull();
+  });
+});
+
+describe("ReportView — Eingabefehler werden nicht verschluckt", () => {
+  /** Ein Lauf, dessen Eingabe Fundstellen hatte. */
+  function mitEingabefehlern() {
+    const run = laufAus(mitVerlauf());
+    return {
+      ...run,
+      problems: [
+        { code: "morning-out-of-range" as const, date: "2026-08-03", field: "morningScore", message: "x" },
+        { code: "duplicate-date" as const, date: "2026-08-09", field: "date", message: "y" },
+      ],
+    };
+  }
+
+  it("sagt, wie viele Tage betroffen sind, und welche", () => {
+    const { container } = zeichnen(mitEingabefehlern());
+    expect(screen.getByText(s.problemsHeading)).toBeDefined();
+    expect(container.textContent).toContain("2026-08-03");
+    expect(container.textContent).toContain("2026-08-09");
+  });
+
+  it("und sagt, dass die Urteile darauf stehen", () => {
+    // Der Satz, auf den es ankommt. Die Zahl allein wäre eine Auskunft ohne
+    // Folge; erst dieser Satz sagt, was sie für alles darüber bedeutet.
+    zeichnen(mitEingabefehlern());
+    expect(screen.getByText(s.problemsHint)).toBeDefined();
+  });
+
+  it("ein Lauf ohne Fundstellen sagt dazu nichts", () => {
+    // Gegenprobe: Ein Abschnitt, der immer da ist, behauptete bei jedem Lauf,
+    // es hätte Eingabefehler gegeben.
+    const run = laufAus(mitVerlauf());
+    expect(run.problems).toHaveLength(0);
+    zeichnen(run);
+    expect(screen.queryByText(s.problemsHeading)).toBeNull();
   });
 });

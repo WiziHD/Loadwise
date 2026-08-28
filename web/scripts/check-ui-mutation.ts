@@ -172,6 +172,27 @@ const MUTATIONEN: Mutation[] = [
     nach: "            true\n              ? {",
   },
   {
+    // Der Disclaimer wird nur bei einem Befund gezeigt. Genau die Ansicht, in
+    // der die App am wenigsten weiss, stünde dann ohne die Zweckbestimmung da.
+    // `check:boundary` sieht das nicht — der Import bliebe stehen.
+    name: "ReportView: der Disclaimer haengt an einem Befund",
+    datei: "src/components/ReportView.tsx",
+    von: "        {DISCLAIMER[locale]}",
+    nach: "        {run.flags.length > 0 ? DISCLAIMER[locale] : \"\"}",
+  },
+  {
+    name: "ReportView: die Warnzeichen werden nicht gezeigt",
+    datei: "src/components/ReportView.tsx",
+    von: "      {redFlags.length > 0 && (",
+    nach: "      {false && redFlags.length > 0 && (",
+  },
+  {
+    name: "ReportView: Eingabefehler werden verschluckt",
+    datei: "src/components/ReportView.tsx",
+    von: "      {run.problems.length > 0 && (",
+    nach: "      {false && run.problems.length > 0 && (",
+  },
+  {
     name: "ArchiveButton: ein Fehlschlag wird nicht gemerkt",
     datei: "src/components/ArchiveButton.tsx",
     von: "              if (!result.ok) setFailed(true);",
