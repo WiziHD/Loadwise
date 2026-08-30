@@ -57,7 +57,18 @@ async function evaluate(episodeId: string, context: EpisodeContext): Promise<Eva
 
   const [entries, { data: testRows, error }] = await Promise.all([
     listEntries(episodeId),
-    supabase.from("self_tests").select("*").eq("episode_id", episodeId),
+    // Sortiert, und das ist keine Kosmetik: `rules/asymmetry.ts` sortiert
+    // stabil nach Datum und nimmt die letzte Messung. Bei gleichem Datum
+    // entscheidet damit die Reihenfolge, in der die Abfrage geliefert hat —
+    // ohne `order` also nichts. 0009 macht Doubletten unmöglich; das hier
+    // deckt den Weg ab, auf dem sie trotzdem entstehen (Import, ein anderer
+    // Client, eine Datenbank ohne 0009).
+    supabase
+      .from("self_tests")
+      .select("*")
+      .eq("episode_id", episodeId)
+      .order("test_date", { ascending: true })
+      .order("created_at", { ascending: true }),
   ]);
   if (error !== null) throw new Error(`self_tests: ${error.message}`);
 

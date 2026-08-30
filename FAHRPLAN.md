@@ -111,7 +111,7 @@ Phase 0  ██████████████████████░�
 
 Zwei teilen sich `knee`; dafür musste die Registry von Körperregion auf Profilschlüssel umgebaut werden. Zwei verschieben eigene Schwellen — die Schienbeinkante gleich drei, weil die 24-Stunden-Regel bei Knochenstress nicht unverändert gilt.
 
-**Motor:** 7 Regeln · **387 Motortests** · 51 Szenarien · 27 Urteilscodes · 9 Blockade-Gründe · 22 Problemcodes · **9 recherchierte Profile**, zwei davon mit eigenen Schwellen · Meilenstein-Kanal Stufe 1 und 2 nutzbar, Stufe 3 gebaut und aus · drei Ban-Listen
+**Motor:** 7 Regeln · **402 Motortests** · 51 Szenarien · 27 Urteilscodes · 9 Blockade-Gründe · 22 Problemcodes · **9 recherchierte Profile**, zwei davon mit eigenen Schwellen · Meilenstein-Kanal Stufe 1 und 2 nutzbar, Stufe 3 gebaut und aus · drei Ban-Listen
 
 **Was ohne dich weitergehen kann:** Stufe 2 — Ellenbogen, Adduktoren, Knochenstress an Tibia und Mittelfuss, Sprunggelenksdistorsion, Achillessehnenriss nach Versorgung. Dazu die **Kaskade**: zwei gleichzeitige Episoden verschiedener Regionen mit Bezug zueinander — dein eigener Fall, Wade dann Knie.
 
@@ -184,6 +184,6 @@ Rund **vier Arbeitstage** von mir für A1 bis A3, plus etwa zwei Stunden je Inha
 ### Was dabei nicht verhandelbar ist
 
 - **Zweisprachig ab der ersten Zeile**, auch auf der Website. Nachträglich ist es teuer, und die Entscheidung steht seit Tag 1.
-- **Kein Wort des Motors auf einer Seite.** `check:boundary` prüft 250 Motorsätze gegen alle App-Dateien, und die Website ist eine davon.
+- **Kein Wort des Motors auf einer Seite.** `check:boundary` prüft 362 Motorsätze gegen alle App-Dateien, und die Website ist eine davon.
 - **Kein Analysewerkzeug eines Dritten.** Ein Produkt mit Gesundheitsdaten lädt kein Skript, das jeden Aufruf meldet — `connect-src` hat heute genau zwei Einträge, und das bleibt so.
 - **`/episodes/*` gehört in keinen Index.** Hinter der Anmeldung, ja — aber die Adresse selbst ist eine Auskunft.

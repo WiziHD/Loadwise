@@ -55,7 +55,7 @@ Der Motor ist das, worauf alles andere sich stützt. Er hat keine Abhängigkeit 
 
 ### Wann man das wieder aufmacht
 
-Wenn der Motor als **gebautes Artefakt** ausgeliefert wird statt als Quelle. Dann entscheidet der Build über die Endungen, und die Frage stellt sich nicht mehr. Heute ist genau das ausgeschlossen — aus einem anderen Grund, der ebenso wichtig ist: Zwei Kopien der Regeln, die eine mit 387 Motortests geprüft und die andere ausgeliefert, wären der Tag, an dem sich ein Urteil ändert, ohne dass es jemand entschieden hat.
+Wenn der Motor als **gebautes Artefakt** ausgeliefert wird statt als Quelle. Dann entscheidet der Build über die Endungen, und die Frage stellt sich nicht mehr. Heute ist genau das ausgeschlossen — aus einem anderen Grund, der ebenso wichtig ist: Zwei Kopien der Regeln, die eine mit 402 Motortests geprüft und die andere ausgeliefert, wären der Tag, an dem sich ein Urteil ändert, ohne dass es jemand entschieden hat.
 
 ---
 
@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-69 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. **Neun von neun Mutationen gefangen**, beide Richtungen der Gerätetag-Korrektur.
+93 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -469,3 +469,71 @@ Tabellenziffern standen kurz auf `body`, mit der Begründung, Messwerte würden 
 - **Wenn ein Bau offline laufen muss.** Dann `next/font/local` mit mitgelieferten Dateien; kostet ein paar hundert Kilobyte im Repository.
 - **Wenn eine echte Zahlenspalte entsteht** (Tabelle im Physio-Bericht): Tabellenziffern gehören dann dorthin, nicht auf `body`.
 - **Nicht aufgemacht wird die Grenze oben.** Dass »motivierend« die Urteilssätze nicht erreicht, hängt an der Zweckbestimmung und nicht am Geschmack.
+
+---
+
+## E14 — Der Fersenheber-Takt: 60/min, und warum die Anleitung nicht unter den Ban-Listen steht
+
+**Entschieden 30.08.2026** · `engine/src/procedure.ts`, `engine/test/procedure.test.ts`, `supabase/migrations/0009_selftest_one_per_day.sql`, Karte 3.1
+
+Der Seitenvergleich ist die eine Regel, die dieses Produkt von einem Schmerztagebuch unterscheidet. Bis Woche 3 war er **nie auf einer echten Messung gelaufen** — der Motor konnte ihn, `verdicts.ts` las die Tabelle seit Wochen aus, und die Abfrage kam jedes Mal leer zurück, weil kein Formular hineinführte.
+
+### Der Takt: 60 Schläge pro Minute
+
+`PROFIL-ACHILLES.md` §8.3 führt ihn als **strittig**: 60/min (Achilles Tendinopathy Toolkit, UBC, Okt. 2021) gegen 30/min (PMC7249277). Beides publiziert, keines widerlegt, beide auf Rang 3.
+
+Gewählt wird **60/min**, und der Grund ist nicht die höhere Quelle, sondern die eigene Konsistenz: Dieses Projekt trägt bereits Toolkit-Zahlen — die Normwert-Mediane nach Jahrzehnt und Geschlecht (37/33/28/24/19/14) und die Spannweite 6 bis 70 bei Gesunden zwischen 20 und 59. **Diese Zahlen sind unter dem Toolkit-Takt entstanden.** 30/min zu wählen hiesse, eine Normtabelle weiterzuführen, die zum eigenen Verfahren nicht mehr passt: Alles liefe weiter, nur bedeuteten die Vergleichszahlen etwas anderes als die gemessenen.
+
+Die Richtung des Fehlers zählt zusätzlich. Ein langsamerer Takt ergibt **mehr** Wiederholungen. Wer bei 30/min misst und sich an 28 als Median orientiert, hielte sich für schlechter, als er ist — also genau die Richtung, in die dieses Projekt am wenigsten irren will.
+
+Für den Seitenvergleich selbst ist der Takt gleichgültig; beide Seiten messen im selben Takt, und ein Verhältnis kürzt ihn weg. Er zählt für den **Verlauf**: dieselbe Person, sechs Wochen später. Genau der Fall, für den die Karte existiert.
+
+### Die Messanleitung steht ausserhalb der Ban-Listen — mit eigener Disziplin
+
+`wording.ts` ist eine regulatorische Grenze: drei Sperrlisten über jedem Satz, jede mit einem Beweistest. Ein Satz wie »die Ferse bis zur grösstmöglichen Höhe anheben« verletzt die erste — und zu Recht, **als Urteil** wäre er eine Belastungsvorgabe.
+
+Als Messanleitung ist er das Gegenteil. Er sagt nicht, was jemand tun soll, sondern **wie eine Zahl zustande kommt, die sonst keine ist**. `PROTOKOLLE.md` §1 zieht die Linie bei »Du bist in Phase 2, mach jetzt X« und bei Freigabekriterien — beides Aussagen über den Verlauf dieser Person. Eine Messanleitung ist die Aussage »so hältst du das Thermometer«.
+
+Der Preis ist eine **eigene Regel, nicht deren Fehlen**. `TEST_PROCEDURE` ist bewusst kein `Phrase`, damit `allPhrases()` es nicht einsammelt, und `test/procedure.test.ts` hält fest, was hier trotzdem verboten ist:
+
+| Verboten | Weil |
+|---|---|
+| Das Ergebnis deuten (»normal sind 28«) | Ordnet einen Menschen ein, an der Stelle, an der niemand ein Urteil erwartet |
+| Ein Ziel setzen oder loben | Dieselbe Grenze wie E13, nur an einem Ort, den `wording.test.ts` nicht sieht |
+| Sagen, **wann** gemessen wird | »Alle vier Wochen wiederholen« ist ein Belastungsplan in einem Satz |
+| Vorhersagen | Wie überall |
+
+Jede Liste trägt einen gepflanzten Satz, der greifen muss. Ein Wächter, der nie ausgelöst hat, ist Dekoration.
+
+`check:boundary` deckt die Anleitung mit ab (322 → 362 Sätze). Das ist hier wichtiger als anderswo: Sie ist der einzige Motortext, den die App **vollständig ausgibt** und der aussieht, als dürfte man ihn anfassen. »Wir schreiben das kurz um« wäre der Tag, an dem in der App 30 steht und im Motor 60.
+
+### Eine Messung je Testart und Tag
+
+Nebenbefund, gefunden bevor die erste Messung existierte: `rules/asymmetry.ts` sortiert stabil nach Datum und nimmt die letzte Messung. Bei zwei Zeilen mit demselben Datum entscheidet damit die Reihenfolge der Datenbankabfrage — und die sortierte nicht. Das Ergebnis wäre nicht falsch, sondern **unbestimmt**.
+
+Zwei Antworten, beide eingebaut: `0009` macht (Episode, Testart, Tag) eindeutig, und `verdicts.ts` sortiert die Abfrage. Die Migration allein reichte nicht — Import und fremde Clients gehen an ihr vorbei.
+
+Bewusst nicht gewählt: beide behalten und die spätere gewinnen lassen. Das verlangt an jeder lesenden Stelle dieselbe Entscheidung noch einmal (Motor, Bericht, Kurve, Export), und eine davon würde sie irgendwann anders treffen. Ebenso verworfen: eine zweite Messung als »Versuch 2« behalten — das ist die Einladung, den besseren von zwei Versuchen zu speichern, eine Auswahl, die den Verlauf nach oben verzerrt, ohne dass jemand gelogen hätte.
+
+### Was der Mutationslauf gefunden hat, und warum das der wichtigste Teil ist
+
+Erster Lauf: **51 von 53 gefangen.** Die zwei Überlebenden lagen beide in der Server-Aktion, und sie sind das Muster, das dieses Projekt an sechs Stellen schon hatte — eine Änderung, die nichts sichtbar kaputtmacht:
+
+| Mutation | Was sie angerichtet hätte |
+|---|---|
+| Die Prüfung läuft gegen alle Testarten statt gegen das Profil | Eine Messung liegt in der Datenbank und geht in kein Urteil ein. Erfasst und stumm, und niemand könnte das erkennen |
+| Nach der Messung wird nicht neu gerechnet | Der Bildschirm sagt weiter »noch nicht genug beurteilt« — mit dem Wort, das die Messung gerade widerlegt hat |
+
+Der Grund war schlicht: Für die Aktion gab es keinen Test. Die Bauteil- und Prüfregeltests waren grün und hätten beides widerstandslos durchgelassen. Genau dafür ist der Wächter da.
+
+`test/self-tests-action.test.ts` schliesst es mit zwölf Prüfungen. Die schärfste ist **dreiteilig**, weil eine einzelne Zeile nicht zeigen könnte, dass die Einschränkung überhaupt etwas unterscheidet: Fersenheber an einer Schulter (`rotator_cuff` führt nur `rom`) abgelehnt, Beweglichkeit an derselben Schulter angenommen, derselbe Fersenheber an einer Achillessehne angenommen. Damit ist bewiesen, dass die **Episode** entscheidet und nicht die Testart für sich.
+
+Dazu die Reihenfolge als eigener Test — geschrieben **vor** gerechnet. Andersherum liefe die Auswertung über einen Stand ohne die Messung und schriebe ein Urteil, das sie nicht kennt, mit frischem `computed_at` — also ohne dass `RunBehindNotice` etwas zu melden hätte.
+
+Zweiter Lauf: **53 von 53.**
+
+### Was offen bleibt
+
+- **Kein MDC für den Fersenheber.** `PROFIL-ACHILLES.md` §8.2 hält es fest: 2 gegen 6 Wiederholungen aus verschiedenen Populationen. Ohne belastbaren Wert darf keine Ansicht sagen, eine Verbesserung sei **echt** — 12 → 15 ist von Messrauschen nicht zu trennen. Die Zahlen werden deshalb aufgezeichnet und nebeneinandergestellt, nie als erreichte Verbesserung ausgewiesen.
+- **Der Winkel braucht ein Gerät.** Die Beweglichkeitsmessung setzt einen Neigungsmesser voraus (jedes Telefon hat einen). Die verbreitete Laienform misst stattdessen den Wandabstand in Zentimetern — eine andere Grösse, die `TEST_UNIT.rom = "deg"` nicht abbildet. Aufgemacht wird das erst, wenn eine echte Messung daran scheitert.
+- **JOSPT 2024** bleibt hinter der Bezahlschranke und ist die aktuellste Quelle. Vor Abnahme des Achillesprofils (Schritt 6) muss der Volltext her; er könnte den Takt anders festlegen.

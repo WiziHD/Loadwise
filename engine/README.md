@@ -8,7 +8,7 @@ Das ist mit Absicht das erste Stück des Projekts: Wenn diese Regeln auf echten 
 
 ```bash
 npm install
-npm test          # 387 Motortests
+npm test          # 402 Motortests
 npm run demo      # alle Regeln über 51 Verläufe, lesbar ausgegeben
 npm run calibrate # welche Schwellenwerte etwas entscheiden — je Profil
 npm run mutate    # merkt die Suite, wenn eine Schwelle kaputt ist?
@@ -83,6 +83,8 @@ src/
   dates.ts            Kalenderrechnung auf YYYY-MM-DD, ohne Zeitzonenfallen
   tissue.ts           Gewebefaktor je Aktivität und Körperregion
   load.ts             load = Anstrengung × Minuten × Gewebefaktor
+  measure.ts          Einheit je Testart, eigene Masse ohne Bezugsseite
+  procedure.ts        Wie gemessen wird — eigene Disziplin statt Ban-Listen
   episode.ts          Index mit genau einer Zeile je Kalendertag
   baseline.ts         Gleitender Median als Vergleichswert
   config.ts           Prüft die Schwellenwerte gegen unerreichbare Zweige

@@ -128,6 +128,52 @@ export interface Strings {
     daysRecordedOne: string;
     daysRecordedMany: string;
   };
+  /**
+   * Der Seitenvergleich. Die eine Regel, die dieses Produkt von einem
+   * Schmerztagebuch unterscheidet — und die bis Karte 3.1 nie auf einer echten
+   * Messung lief, weil kein Formular in die Tabelle führte.
+   *
+   * Die Durchführungstexte stehen NICHT hier, sondern in
+   * `engine/src/procedure.ts`. Sie sind Motorwissen (der Fersenheber-Takt ist
+   * eine dokumentierte Entscheidung zwischen zwei publizierten Werten), und
+   * `check:boundary` verbietet ihre Kopie in dieses Wörterbuch.
+   */
+  selfTest: {
+    link: string;
+    heading: string;
+    intro: string;
+    /** Der Fall, in dem das Profil keinen Selbsttest führt. Siehe Schulter. */
+    noneForProfile: string;
+    type: string;
+    /** Die Namen der Testarten. Namen, keine Anleitungen. */
+    calfRaise: string;
+    singleHop: string;
+    rom: string;
+    date: string;
+    involved: string;
+    involvedHint: string;
+    uninvolved: string;
+    uninvolvedHint: string;
+    unitReps: string;
+    unitCm: string;
+    unitDeg: string;
+    howHeading: string;
+    fixedHeading: string;
+    note: string;
+    noteHint: string;
+    saved: string;
+    replacing: string;
+    historyHeading: string;
+    historyEmpty: string;
+    /** Ablehnungen. Je Grund ein eigener Satz — »ungültig« für alles ist keiner. */
+    halfPairing: string;
+    referenceSideZero: string;
+    outOfRange: string;
+    notInProfile: string;
+    futureDate: string;
+    invalid: string;
+    noEpisode: string;
+  };
   diary: {
     day: string;
     anchorDeclared: string;
@@ -410,6 +456,45 @@ export const DICTIONARY: Record<Locale, Strings> = {
       daysRecordedOne: "day recorded",
       daysRecordedMany: "days recorded",
     },
+    selfTest: {
+      link: "Side-by-side",
+      heading: "Side-by-side measurement",
+      intro:
+        "Both sides, measured the same way on the same day. The injured side on its own is a number without a scale; against your own other side it becomes one.",
+      noneForProfile:
+        "This profile carries no self-test. The measurements that exist for it are not ones you can take on your own.",
+      type: "Test",
+      calfRaise: "Single-leg heel raise",
+      singleHop: "Single hop for distance",
+      rom: "Ankle dorsiflexion",
+      date: "Measured on",
+      involved: "Injured side",
+      involvedHint:
+        "Zero belongs here if that is what it was. It is a measurement, not a blank.",
+      uninvolved: "Other side",
+      uninvolvedHint:
+        "The reference. Without it the injured side has nothing to be compared against, so the pairing is not stored.",
+      unitReps: "repetitions",
+      unitCm: "centimetres",
+      unitDeg: "degrees",
+      howHeading: "How the measurement is taken",
+      fixedHeading: "Keep this the same every time",
+      note: "Note",
+      noteHint: "For you. No rule reads this.",
+      saved: "Stored.",
+      replacing:
+        "This test is already recorded for this day. What you see here is what is stored, and saving replaces it.",
+      historyHeading: "Measured so far",
+      historyEmpty: "No measurement yet.",
+      halfPairing: "Both sides are needed. A single side is not stored.",
+      referenceSideZero:
+        "The other side cannot be zero — it is what the injured side is measured against.",
+      outOfRange: "That number is outside what this test can produce. Worth a second look.",
+      notInProfile: "This test does not belong to this episode's profile.",
+      futureDate: "That date is ahead of today.",
+      invalid: "Something in the form did not come through. Please check the fields.",
+      noEpisode: "This episode could not be found.",
+    },
     diary: {
       day: "Day",
       anchorDeclared: "counted from the day you gave",
@@ -616,6 +701,45 @@ export const DICTIONARY: Record<Locale, Strings> = {
       replacing: "Dieser Tag ist schon erfasst. Was hier steht, ist das Gespeicherte — Speichern ersetzt es.",
       daysRecordedOne: "Tag erfasst",
       daysRecordedMany: "Tage erfasst",
+    },
+    selfTest: {
+      link: "Seitenvergleich",
+      heading: "Seitenvergleich",
+      intro:
+        "Beide Seiten, am selben Tag auf dieselbe Weise gemessen. Die verletzte Seite allein ist eine Zahl ohne Massstab; gegen deine eigene andere Seite wird sie zu einer.",
+      noneForProfile:
+        "Dieses Profil führt keinen Selbsttest. Was es dafür an Messungen gibt, lässt sich nicht allein durchführen.",
+      type: "Testart",
+      calfRaise: "Einbeiniger Fersenheber",
+      singleHop: "Einbeinsprung auf Weite",
+      rom: "Sprunggelenk-Beweglichkeit",
+      date: "Gemessen am",
+      involved: "Verletzte Seite",
+      involvedHint:
+        "Null gehört hierher, wenn es null war. Das ist eine Messung, keine Lücke.",
+      uninvolved: "Andere Seite",
+      uninvolvedHint:
+        "Der Bezugswert. Ohne ihn hat die verletzte Seite nichts, woran sie gemessen wird — die Paarung wird dann nicht gespeichert.",
+      unitReps: "Wiederholungen",
+      unitCm: "Zentimeter",
+      unitDeg: "Grad",
+      howHeading: "So wird gemessen",
+      fixedHeading: "Das muss jedes Mal gleich bleiben",
+      note: "Notiz",
+      noteHint: "Für dich. Keine Regel liest das.",
+      saved: "Gespeichert.",
+      replacing:
+        "Für diesen Tag ist dieser Test schon erfasst. Was hier steht, ist das Gespeicherte — Speichern ersetzt es.",
+      historyHeading: "Bisher gemessen",
+      historyEmpty: "Noch keine Messung.",
+      halfPairing: "Es braucht beide Seiten. Eine einzelne Seite wird nicht gespeichert.",
+      referenceSideZero:
+        "Die andere Seite kann nicht null sein — an ihr wird die verletzte Seite gemessen.",
+      outOfRange: "Diese Zahl liegt ausserhalb dessen, was dieser Test hergibt. Lohnt einen zweiten Blick.",
+      notInProfile: "Dieser Test gehört nicht zum Profil dieser Episode.",
+      futureDate: "Dieses Datum liegt nach heute.",
+      invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
+      noEpisode: "Diese Episode wurde nicht gefunden.",
     },
     diary: {
       day: "Tag",

@@ -2,6 +2,7 @@ export * from "./types.js";
 export * from "./dates.js";
 export * from "./tissue.js";
 export * from "./measure.js";
+export * from "./procedure.js";
 export * from "./load.js";
 export * from "./episode.js";
 export * from "./baseline.js";

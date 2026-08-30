@@ -350,6 +350,137 @@ const MUTATIONEN: Mutation[] = [
     von: "              if (!result.ok) setFailed(true);",
     nach: "              if (false) setFailed(true);",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 3.1 — der Seitenvergleich.
+  //
+  // Diese Mutationen sind die schärfsten der ganzen Liste, weil ihr Schaden
+  // unsichtbar ist. Eine falsch erfasste Messung erzeugt ein Verhältnis, das
+  // Verhältnis ein Urteil, und das Urteil steht dann in derselben Schrift auf
+  // demselben Bildschirm wie ein zutreffendes.
+  // -------------------------------------------------------------------------
+  {
+    // Der teuerste denkbare Fehler dieses Formulars: Ein leeres Feld wird zu
+    // einer 0. `Number("")` ist 0, und 0 ist auf der verletzten Seite eine
+    // gültige, sehr deutliche Messung — die nicht gemachte Messung würde also
+    // als die schlechtestmögliche gespeichert.
+    name: "SelfTestForm: ein leeres Feld wird zur Null statt zu null",
+    datei: "src/components/SelfTestForm.tsx",
+    von: '  if (sauber === "") return null;',
+    nach: '  if (sauber === "") return 0;',
+  },
+  {
+    // Die Gegenrichtung: Eine getippte 0 kommt als »fehlt« an. Tag eins einer
+    // Reha liesse sich dann nicht erfassen.
+    name: "SelfTestForm: eine getippte Null gilt als leeres Feld",
+    datei: "src/components/SelfTestForm.tsx",
+    von: "  return Number.isFinite(n) ? n : Number.NaN;",
+    nach: "  return Number.isFinite(n) && n !== 0 ? n : null;",
+  },
+  {
+    name: "SelfTestForm: das Komma wird nicht zum Punkt",
+    datei: "src/components/SelfTestForm.tsx",
+    von: '  const sauber = text.trim().replace(",", ".");',
+    nach: "  const sauber = text.trim();",
+  },
+  {
+    // Das Formular bietet jede Testart an, egal was das Profil führt. Bei einer
+    // Schulter stünde dann ein Wadenheber zur Wahl.
+    name: "SelfTestForm: die Auswahl ignoriert das Profil",
+    datei: "src/components/SelfTestForm.tsx",
+    von: "            {tests.map((t) => (",
+    nach: '            {(["calf_raise", "single_hop", "rom"] as TestType[]).map((t) => (',
+  },
+  {
+    // Das Vorladen bleibt stehen, wenn Art oder Tag woandershin zeigen: Die
+    // Wiederholungszahl des Fersenhebers würde als Sprungweite gespeichert.
+    name: "SelfTestForm: der Entwurf wird beim Wechsel nicht geraeumt",
+    datei: "src/components/SelfTestForm.tsx",
+    von: "      vorhanden === undefined\n        ? LEER",
+    nach: "      vorhanden === undefined\n        ? draft",
+  },
+  {
+    // Ohne diesen Satz ersetzt das Speichern eine vorhandene Messung
+    // stillschweigend — derselbe Fehler, der beim Tageseintrag eine erfasste
+    // Einheit gekostet hat, gemeldet als »Gespeichert.«
+    name: "SelfTestForm: der Hinweis aufs Ersetzen faellt weg",
+    datei: "src/components/SelfTestForm.tsx",
+    von: "        {vorhanden !== undefined && (",
+    nach: "        {false && (",
+  },
+  {
+    // Die Einheit verschwindet. »14 / 21« neben »96 / 122« liest sich dann als
+    // dieselbe Messung mit anderen Zahlen.
+    name: "SelfTestForm: die Einheit steht nicht am Feld",
+    datei: "src/components/SelfTestForm.tsx",
+    von: '        <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>{einheit}</span>',
+    nach: "        <span />",
+  },
+  {
+    // Die halbe Paarung wird ergänzt statt verworfen. Es gibt keinen Wert, mit
+    // dem sich eine fehlende Seite füllen liesse, der nicht erfunden wäre.
+    name: "validateSelfTest: eine halbe Paarung geht durch",
+    datei: "src/lib/selftest-validation.ts",
+    von: '  if (input.involved === null || input.uninvolved === null) return "half-pairing";',
+    nach: '  if (input.involved === null && input.uninvolved === null) return "half-pairing";',
+  },
+  {
+    // Null auf der GESUNDEN Seite wird angenommen — sie ist der Divisor.
+    name: "validateSelfTest: die Bezugsseite darf null sein",
+    datei: "src/lib/selftest-validation.ts",
+    von: '  if (input.uninvolved === 0) return "reference-side-zero";',
+    nach: '  if (false) return "reference-side-zero";',
+  },
+  {
+    // Und die Gegenrichtung: Null auf der VERLETZTEN Seite wird abgewiesen.
+    // Genau dieser Fehler stand einmal im Schema und wies die
+    // aussagekräftigste Messung überhaupt ab.
+    name: "validateSelfTest: null auf der verletzten Seite gilt als Fehler",
+    datei: "src/lib/selftest-validation.ts",
+    von: "  if (!Number.isFinite(n) || n < 0) return false;",
+    nach: "  if (!Number.isFinite(n) || n <= 0) return false;",
+  },
+  {
+    // Eine Testart, die das Profil nicht führt, wird angenommen. Die Messung
+    // läge dann in der Datenbank und ginge in kein Urteil ein — erfasst und
+    // stumm, ohne dass jemand das erkennen könnte.
+    name: "validateSelfTest: das Profil begrenzt die Testarten nicht",
+    datei: "src/lib/selftest-validation.ts",
+    von: '  if (!erlaubteTests.includes(type)) return "test-not-in-profile";',
+    nach: '  if (false) return "test-not-in-profile";',
+  },
+  {
+    name: "validateSelfTest: eine halbe Wiederholung geht durch",
+    datei: "src/lib/selftest-validation.ts",
+    von: "  reps: 0,\n  cm: 1,",
+    nach: "  reps: 1,\n  cm: 1,",
+  },
+  {
+    // Die Aktion nimmt die erlaubten Tests aus dem Aufruf statt aus der
+    // Episode. Ein Aufruf von aussen könnte sich dann selbst erlauben, was er
+    // will — und eine Server-Aktion ist ein öffentlicher Endpunkt.
+    name: "saveSelfTestAction: die Pruefung laeuft gegen alles statt gegens Profil",
+    datei: "src/app/actions/self-tests.ts",
+    von: "  const problem = validateSelfTest(input, profile.tests, utcToday());",
+    nach: '  const problem = validateSelfTest(input, ["calf_raise", "single_hop", "rom"], utcToday());',
+  },
+  {
+    // Nach einer Messung wird nicht neu gerechnet. Die erste Messung des Lebens
+    // stünde in der Datenbank, und der Bildschirm sagte weiter »noch nicht
+    // genug beurteilt« — mit dem Wort, das sie gerade widerlegt hat.
+    name: "saveSelfTestAction: nach der Messung wird nicht neu gerechnet",
+    datei: "src/app/actions/self-tests.ts",
+    von: "    await evaluateAndStore(episodeId);",
+    nach: "    await Promise.resolve();",
+  },
+  {
+    // Die Selbsttests kommen unsortiert. Bei zwei Messungen am selben Tag
+    // entscheidet dann die Reihenfolge der Abfrage, also nichts.
+    name: "verdicts: die Selbsttests kommen unsortiert",
+    datei: "src/lib/db/verdicts.ts",
+    von: '      .order("test_date", { ascending: true })',
+    nach: "",
+  },
 ];
 
 type Bericht = {

@@ -30,7 +30,7 @@ const getEpisode = vi.fn();
 const listEntries = vi.fn();
 const saveEvaluationRun = vi.fn();
 /** Womit die self_tests-Abfrage eingeschränkt wurde — Tabelle und Spaltenwert. */
-const abfragen: { tabelle: string; eq: [string, unknown][] }[] = [];
+const abfragen: { tabelle: string; eq: [string, unknown][]; order: string[] }[] = [];
 
 vi.mock("@/lib/db/episodes", () => ({ getEpisode: (id: string) => getEpisode(id) }));
 vi.mock("@/lib/db/entries", () => ({ listEntries: (id: string) => listEntries(id) }));
@@ -42,14 +42,43 @@ vi.mock("@/lib/db/verdict-write", () => ({
 vi.mock("@/lib/supabase/server", () => ({
   supabaseServer: async () => ({
     from(tabelle: string) {
-      const eintrag = { tabelle, eq: [] as [string, unknown][] };
+      const eintrag = {
+        tabelle,
+        eq: [] as [string, unknown][],
+        order: [] as string[],
+      };
       abfragen.push(eintrag);
+
+      /**
+       * `eq` liefert die Kette weiter, statt sofort aufzulösen — und das war
+       * eine Änderung mit einem Grund.
+       *
+       * Vorher endete die Kette bei `eq`, weil keine Abfrage danach noch etwas
+       * anhängte. `verdicts.ts` sortiert die Selbsttests inzwischen, und zwar
+       * nicht aus Ordnungsliebe: `rules/asymmetry.ts` sortiert stabil nach
+       * Datum und nimmt die letzte Messung — bei zwei Messungen am selben Tag
+       * entscheidet also die Reihenfolge der Abfrage, ohne `order` mithin
+       * nichts.
+       *
+       * Die Kette ist deshalb »thenable«: Sie kann weiterverkettet und ebenso
+       * gut direkt erwartet werden. Die Attrappe schreibt dabei mit, wonach
+       * sortiert wurde, damit die Prüfung unten die Sortierung nicht nur
+       * überlebt, sondern festhält.
+       */
       const kette = {
         select: () => kette,
         eq: (spalte: string, wert: unknown) => {
           eintrag.eq.push([spalte, wert]);
-          return Promise.resolve({ data: [], error: null });
+          return kette;
         },
+        order: (spalte: string) => {
+          eintrag.order.push(spalte);
+          return kette;
+        },
+        then: (
+          erfuellt: (wert: { data: unknown[]; error: null }) => unknown,
+          abgelehnt?: (grund: unknown) => unknown,
+        ) => Promise.resolve({ data: [], error: null }).then(erfuellt, abgelehnt),
       };
       return kette;
     },
@@ -168,6 +197,27 @@ describe("evaluateAndStore — wenn sie sichtbar ist", () => {
     const tests = abfragen.find((a) => a.tabelle === "self_tests");
     expect(tests).toBeDefined();
     expect(tests?.eq).toEqual([["episode_id", "ep1"]]);
+  });
+
+  it("holt sie sortiert — sonst entscheidet bei gleichem Tag der Zufall", async () => {
+    /**
+     * Karte 3.1 hat das aufgedeckt, bevor die erste Messung existierte.
+     *
+     * `rules/asymmetry.ts` sortiert stabil nach Datum und nimmt die letzte
+     * Messung. Zwei Zeilen mit demselben Datum entscheiden sich damit nach der
+     * Reihenfolge, in der die Abfrage geliefert hat — ohne `order` also nach
+     * nichts. Das Ergebnis wäre nicht falsch, sondern unbestimmt: dasselbe
+     * Tagebuch, zweimal gerechnet, nicht zwingend dasselbe Urteil.
+     *
+     * `0009` macht solche Doubletten unmöglich. Diese Sortierung deckt den Weg
+     * ab, auf dem sie trotzdem entstehen — Import, ein anderer Client, eine
+     * Datenbank ohne 0009 —, und sie kostet nichts.
+     */
+    getEpisode.mockResolvedValue(EPISODE);
+    await evaluateAndStore("ep1");
+
+    const tests = abfragen.find((a) => a.tabelle === "self_tests");
+    expect(tests?.order).toEqual(["test_date", "created_at"]);
   });
 
   it("und liest die Tage derselben Episode", async () => {

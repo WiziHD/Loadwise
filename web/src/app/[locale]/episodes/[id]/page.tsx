@@ -144,6 +144,12 @@ export default async function EpisodePage({
           <Link href={`/${locale}/episodes/${id}/report`} style={navLink}>
             {s.report.link}
           </Link>
+          {/* Der Seitenvergleich. Eigene Ebene, weil er in einem anderen Takt
+              stattfindet als ein Tagebuchtag — alle paar Wochen, nicht täglich
+              — und weil die Anleitung dazugehört. Karte 3.1. */}
+          <Link href={`/${locale}/episodes/${id}/tests`} style={navLink}>
+            {s.selfTest.link}
+          </Link>
           <Link href={`/${locale}/episodes/${id}/edit`} style={{ ...navLink, color: "var(--muted)" }}>
             {s.edit.link}
           </Link>

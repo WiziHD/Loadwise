@@ -34,6 +34,7 @@ import {
   MILESTONE_WORDING,
   PROBLEM_WORDING,
   PROGRESS_BLOCK_WORDING,
+  TEST_PROCEDURE,
   VERDICT_WORDING,
 } from "loadwise-engine";
 
@@ -54,6 +55,29 @@ function engineSentences(): { where: string; text: string }[] {
   for (const [key, phrase] of Object.entries(PROBLEM_WORDING)) add(`problem:${key}`, phrase);
   for (const [key, phrase] of Object.entries(PROGRESS_BLOCK_WORDING)) add(`block:${key}`, phrase);
   add("disclaimer", DISCLAIMER);
+
+  // ---------------------------------------------------------------------
+  // Messanleitungen. Sie stehen ausserhalb der Ban-Listen, aber NICHT
+  // ausserhalb dieser Grenze — im Gegenteil, hier ist sie wichtiger.
+  //
+  // Eine Anleitung ist der einzige Motortext, den die App vollständig
+  // ausgibt und der aussieht, als dürfte man ihn anfassen. »Wir schreiben
+  // das kurz um, das liest sich flüssiger« wäre der Moment, in dem der
+  // Fersenheber-Takt in der App bei 30 steht und im Motor bei 60 — zwei
+  // Zahlen, die beide plausibel aussehen, und ein Verlauf, der still
+  // aufhört, ein Verlauf zu sein.
+  // ---------------------------------------------------------------------
+  for (const [art, procedure] of Object.entries(TEST_PROCEDURE)) {
+    // Je Sprache eigen durchlaufen statt paarweise: Dass beide gleich viele
+    // Schritte haben, hält `engine/test/procedure.test.ts` fest — hier darauf
+    // zu bauen hiesse, eine Zusicherung aus einer anderen Datei zu indexieren.
+    for (const sprache of ["de", "en"] as const) {
+      procedure.steps[sprache].forEach((schritt, i) => {
+        out.push({ where: `procedure:${art}.${sprache}[${i}]`, text: schritt });
+      });
+    }
+    add(`procedure:${art}/fixed`, procedure.fixed);
+  }
 
   for (const profile of ALL_PROFILES) {
     for (const flag of profile.redFlags) add(`redflag:${profile.key}/${flag.key}`, flag.text);
