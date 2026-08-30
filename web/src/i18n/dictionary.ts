@@ -140,6 +140,34 @@ export interface Strings {
     back: string;
   };
   /**
+   * Der Hauptbildschirm — ein Satz mit seinem Beweis.
+   *
+   * -------------------------------------------------------------------------
+   * HIER STEHT KEIN URTEIL UND KEINE DEUTUNG.
+   *
+   * Der Satz oben kommt aus dem Motor. Was hier liegt, sind Beschriftungen der
+   * Kurve und die Sätze um den Spiegel herum — und der Spiegel darf per E10
+   * NICHTS deuten: kein »steigend«, kein Pfeil, keine Richtung. Wer hier ein
+   * Wort über einen Trend hinschreibt, hat die achte Regel gebaut, nur ohne
+   * Test.
+   * -------------------------------------------------------------------------
+   */
+  main: {
+    /** Platzhalter: {days} {from} {to} */
+    curveAria: string;
+    curveMorningLabel: string;
+    curveLoadLabel: string;
+    /** Platzhalter: {date} */
+    curveMarker: string;
+    /** Die eigenen Morgenwerte, zurückgegeben. Ohne jede Richtungsangabe. */
+    mirrorMornings: string;
+    mirrorHint: string;
+    /** Platzhalter: {judged} {expected} */
+    mirrorDays: string;
+    /** Platzhalter: {reporting} {total} */
+    mirrorRules: string;
+  };
+  /**
    * Der vollständige Bericht — die Ebene unter dem Hauptbildschirm.
    *
    * -------------------------------------------------------------------------
@@ -380,6 +408,18 @@ export const DICTIONARY: Record<Locale, Strings> = {
       editHint: "Recording a day again replaces it. Filling in yesterday is fine.",
       back: "All episodes",
     },
+    main: {
+      curveAria:
+        "Course over {days} days, {from} to {to}. Top row: morning score. Bottom row: daily load.",
+      curveMorningLabel: "Morning score",
+      curveLoadLabel: "Daily load, tissue-weighted",
+      curveMarker: "marked: {date}",
+      mirrorMornings: "Morning scores:",
+      mirrorHint:
+        "Your own entries, given back. Nothing is read into them yet — the rules stay quiet until they have enough.",
+      mirrorDays: "{judged} of {expected} days judged",
+      mirrorRules: "{reporting} of {total} rules have spoken",
+    },
     report: {
       link: "Full report",
       heading: "Report",
@@ -569,6 +609,18 @@ export const DICTIONARY: Record<Locale, Strings> = {
       restDay: "keine Aktivität",
       editHint: "Ein Tag noch einmal erfasst ersetzt ihn. Gestern nachtragen ist in Ordnung.",
       back: "Alle Episoden",
+    },
+    main: {
+      curveAria:
+        "Verlauf über {days} Tage, {from} bis {to}. Obere Reihe: Morgenwert. Untere Reihe: Tagesbelastung.",
+      curveMorningLabel: "Morgenwert",
+      curveLoadLabel: "Tagesbelastung, gewebegewichtet",
+      curveMarker: "markiert: {date}",
+      mirrorMornings: "Morgenwerte:",
+      mirrorHint:
+        "Deine eigenen Einträge, zurückgegeben. Hineingelesen wird noch nichts — die Regeln bleiben still, bis sie genug haben.",
+      mirrorDays: "{judged} von {expected} Tagen beurteilt",
+      mirrorRules: "{reporting} von {total} Regeln haben gesprochen",
     },
     report: {
       link: "Vollständiger Bericht",

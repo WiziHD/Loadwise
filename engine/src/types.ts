@@ -749,3 +749,47 @@ export const DEFAULT_CONFIG: Config = {
     minCoverage: 0.7,
   },
 };
+
+/**
+ * Welche Urteile eine Genesung beschreiben.
+ *
+ * ---------------------------------------------------------------------------
+ * WARUM DIESE LISTE IM MOTOR LIEGT UND NICHT IN DER OBERFLÄCHE.
+ *
+ * Ob »Der Ausgangswert liegt niedriger als zu Beginn« eine Genesungsaussage ist
+ * oder bloss eine Beobachtung, ist eine Frage über die BEDEUTUNG eines
+ * Urteilscodes — dieselbe Sorte Wissen wie der Satz selbst. Eine Liste in der
+ * App wäre eine zweite Stelle, an der über Urteile entschieden wird, und sie
+ * liefe beim nächsten neuen Code auseinander, ohne dass etwas rot wird.
+ *
+ * ---------------------------------------------------------------------------
+ * SIE IST BEWUSST KURZ.
+ *
+ * Aufgenommen ist nur, was eine VERÄNDERUNG zum Besseren oder einen erreichten
+ * Zustand beschreibt. Nicht aufgenommen sind die vielen unauffälligen Urteile —
+ * `steady`, `baseline-stable`, `settled-within-24h`, `load-spread-even`. Die
+ * sagen »nichts Besonderes«, und daraus eine Genesungsmeldung zu machen wäre
+ * genau die Sorte Ermutigung, die E8 und die Sperrliste ACHIEVEMENT verbieten:
+ * eine Behauptung über einen Verlauf, die aus einem einzelnen ruhigen Tag folgt.
+ *
+ * `symmetric` steht drin und ist heute unerreichbar: Es braucht Selbsttests,
+ * und dafür gibt es keine Oberfläche. Das ist kein toter Code, sondern ein
+ * bekanntes Loch mit einer Karte daran — und der Tag, an dem die Oberfläche
+ * kommt, soll nicht der Tag sein, an dem jemand diese Liste erst sucht.
+ * ---------------------------------------------------------------------------
+ */
+export const RECOVERY_REASONS = [
+  /** Der Ausgangswert liegt niedriger als zu Beginn — die Geschichte in Zahlen. */
+  "progress-since-start",
+  /** Die Beschwerden treten später im Verhältnis zur Belastung auf. */
+  "pattern-easing",
+  /** Angekommen: die Beschwerden liegen auf sehr niedrigem Niveau. */
+  "settled-near-zero",
+  /** Braucht Selbsttests. Siehe oben. */
+  "symmetric",
+] as const satisfies readonly ReasonCode[];
+
+/** Beschreibt dieses Urteil eine Genesung? */
+export function isRecovery(reason: ReasonCode): boolean {
+  return (RECOVERY_REASONS as readonly ReasonCode[]).includes(reason);
+}

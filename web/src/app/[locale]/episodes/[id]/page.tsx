@@ -21,6 +21,9 @@ import { getEpisode, profileOf } from "@/lib/db/episodes";
 import { listEntries } from "@/lib/db/entries";
 import { DayCount } from "@/components/DayCount";
 import { EntryForm } from "@/components/EntryForm";
+import { MainVerdict } from "@/components/MainVerdict";
+import { latestRun } from "@/lib/db/verdicts";
+import { coursePoints } from "@/lib/course-points";
 
 /**
  * The host's date — a starting guess, and nothing more.
@@ -79,6 +82,11 @@ export default async function EpisodePage({
 
   const today = hostToday();
   const anchor = episodeAnchor(index);
+
+  // Gelesen, nicht gerechnet — siehe E12. Der Hauptbildschirm zeigt den letzten
+  // GESPEICHERTEN Lauf; hier neu auszuwerten würde ein verbessertes Profil
+  // rückwirkend über alte Urteile schreiben lassen.
+  const run = await latestRun(id);
   const serverDay = episodeDay(index, today)?.day ?? null;
 
   return (
@@ -125,11 +133,9 @@ export default async function EpisodePage({
           )}
         </p>
         <p style={{ margin: "0.6rem 0 0", fontSize: "var(--text-sm)", display: "flex", gap: "1.25rem" }}>
-          {/* Der Bericht steht bewusst NICHT über dem Formular. Wonach jemand
-              diese Seite öffnet, ist einen Tag zu erfassen — das darf nie unter
-              die Falz rutschen, auch nicht für ein Urteil. Siehe E7: Der
-              Hauptbildschirm trägt den einen Satz, der Bericht die Ebene
-              darunter. */}
+          {/* Der vollständige BERICHT bleibt eine Ebene tiefer. Fünf Abschnitte
+              sind der richtige Bericht und der falsche Empfang — niemand
+              fotografiert einen Befundbericht ab. Siehe E7. */}
           <Link href={`/${locale}/episodes/${id}/report`} style={navLink}>
             {s.report.link}
           </Link>
@@ -138,6 +144,34 @@ export default async function EpisodePage({
           </Link>
         </p>
       </header>
+
+      {/* ------------------------------------------------------------------
+          DER SATZ STEHT ÜBER DEM FORMULAR, UND DIESE REIHENFOLGE HAT SICH
+          GEÄNDERT.
+
+          Hier stand vorher, das Formular müsse zuerst kommen: »Wonach jemand
+          diese Seite öffnet, ist einen Tag zu erfassen — das darf nie unter die
+          Falz rutschen.« Das Argument bleibt richtig, und es ist der Grund,
+          warum dieser Block KURZ ist: ein Satz, eine Zeile Beleg, eine flache
+          Kurve. Das Datumsfeld steht danach immer noch im ersten Bildschirm
+          eines Telefons.
+
+          Was dagegen sprach, das Urteil nach unten zu schieben, ist E7s
+          eigentlicher Befund: Das Beste dieses Produkts war als Fussnote
+          gestaltet. Unter einem Formular mit zwölf Feldern wäre es das wieder —
+          nur an einer neuen Stelle.
+
+          Und die Schleife stimmt so herum: Wer morgens die App öffnet, sieht
+          zuerst, was gestern daraus geworden ist, und trägt dann heute ein.
+          ------------------------------------------------------------------ */}
+      {run.kind === "run" && (
+        <MainVerdict
+          run={run.run}
+          points={coursePoints(index, run.run.lastDate)}
+          strings={s.main}
+          locale={locale}
+        />
+      )}
 
       <section
         style={{

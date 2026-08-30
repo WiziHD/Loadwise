@@ -219,6 +219,56 @@ const MUTATIONEN: Mutation[] = [
     nach: '        {evidenceText(flag, config, "en")}',
   },
   {
+    // Die Asymmetrie umgedreht: Ermutigung vor Warnung. Damit stünde »seit
+    // sechs Wochen besser« an der Stelle, an der »gestern deutlich stärker als
+    // sonst« stehen müsste.
+    name: "MainVerdict: Genesung verdraengt den Befund",
+    datei: "src/components/MainVerdict.tsx",
+    von: "  const befunde = aktuell.filter((f) => f.severity !== \"green\");",
+    nach: "  const befunde = aktuell.filter((f) => f.severity !== \"green\" && false);",
+  },
+  {
+    // Jedes unauffällige Urteil zählt als Genesung. Dann käme die
+    // Genesungszeile fast täglich, und aus einem ruhigen Tag würde eine
+    // Behauptung über den Verlauf — genau das, was E8 verbietet.
+    name: "MainVerdict: jedes gruene Urteil gilt als Genesung",
+    datei: "src/components/MainVerdict.tsx",
+    von: "  const genesung = aktuell.filter((f) => isRecovery(f.reason));",
+    nach: '  const genesung = aktuell.filter((f) => f.severity === "green");',
+  },
+  {
+    name: "MainVerdict: der Spiegel bekommt eine Urteilsfarbe",
+    datei: "src/components/MainVerdict.tsx",
+    von: '<p style={{ ...verdictLine, color: "var(--unjudged)" }}>',
+    nach: '<p style={{ ...verdictLine, color: "var(--green)" }}>',
+  },
+  {
+    name: "MainVerdict: der Spiegel deutet die Richtung",
+    datei: "src/components/MainVerdict.tsx",
+    von: "          {werte.join(\" · \")}",
+    nach: "          {werte.join(\" · \")} ↑",
+  },
+  {
+    // Die Linie wird über die Lücke gezogen. Das behauptet, der Wert sei
+    // dazwischen gleichmässig gewandert.
+    name: "CourseCurve: die Linie ueberbrueckt Luecken",
+    datei: "src/components/CourseCurve.tsx",
+    von: "    if (p.morning === null) {",
+    nach: "    if (false) {",
+  },
+  {
+    name: "CourseCurve: die Markierung sitzt woanders",
+    datei: "src/components/CourseCurve.tsx",
+    von: "  const markIndex = markDate === null ? -1 : points.findIndex((p) => p.date === markDate);",
+    nach: "  const markIndex = markDate === null ? -1 : 0;",
+  },
+  {
+    name: "CourseCurve: die Kurve sagt nicht, was sie zeigt",
+    datei: "src/components/CourseCurve.tsx",
+    von: "        aria-label={beschreibung}",
+    nach: 'aria-label=""',
+  },
+  {
     name: "ArchiveButton: ein Fehlschlag wird nicht gemerkt",
     datei: "src/components/ArchiveButton.tsx",
     von: "              if (!result.ok) setFailed(true);",

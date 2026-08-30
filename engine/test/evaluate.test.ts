@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { SCENARIOS } from "../src/fixtures.js";
 import { evaluateEpisode, unnamedBlocking } from "../src/evaluate.js";
-import type { Overall, Pending, Severity } from "../src/types.js";
+import {
+  ALL_REASON_CODES,
+  RECOVERY_REASONS,
+  isRecovery,
+  type Overall,
+  type Pending,
+  type Severity,
+} from "../src/types.js";
 import {
   ACHILLES_CTX,
   overloadWeek,
@@ -216,5 +224,75 @@ describe("unnamedBlocking", () => {
 
   it("und bei einem Lauf ohne Daten auch nicht", () => {
     expect(unnamedBlocking({ status: "no-data" }, pending)).toEqual([]);
+  });
+});
+
+/**
+ * Welche Urteile eine Genesung beschreiben.
+ *
+ * ---------------------------------------------------------------------------
+ * DIE GEFAHR HIER IST NICHT EINE FEHLENDE, SONDERN EINE ZU LANGE LISTE.
+ *
+ * Der Hauptbildschirm zeigt eine Genesungszeile, wenn es keinen Befund gibt.
+ * Wer diese Liste um `steady` oder `baseline-stable` erweitert, macht daraus
+ * eine Meldung, die fast immer kommt — und aus einem ruhigen Tag wird eine
+ * Aussage über den Verlauf. Genau das verbietet E8 und die Sperrliste
+ * ACHIEVEMENT.
+ *
+ * Deshalb prüft dieser Block beide Richtungen: dass die Genesungscodes drin
+ * sind UND dass die unauffälligen draussen bleiben.
+ * ---------------------------------------------------------------------------
+ */
+describe("RECOVERY_REASONS", () => {
+  it("enthält nur echte Urteilscodes", () => {
+    for (const r of RECOVERY_REASONS) {
+      expect(ALL_REASON_CODES).toContain(r);
+    }
+  });
+
+  it("beschreibt eine Veränderung zum Besseren oder einen erreichten Zustand", () => {
+    expect(isRecovery("progress-since-start")).toBe(true);
+    expect(isRecovery("pattern-easing")).toBe(true);
+    expect(isRecovery("settled-near-zero")).toBe(true);
+  });
+
+  it("und NICHT das blosse Ausbleiben eines Befunds", () => {
+    // Die eigentliche Zusicherung. Diese vier heissen »nichts Besonderes«.
+    // Wären sie drin, käme die Genesungszeile fast täglich, und aus einem
+    // ruhigen Tag würde eine Behauptung über den Verlauf.
+    for (const ruhig of [
+      "steady",
+      "baseline-stable",
+      "settled-within-24h",
+      "load-spread-even",
+    ] as const) {
+      expect(isRecovery(ruhig), `${ruhig} ist kein Genesungsurteil`).toBe(false);
+    }
+  });
+
+  it("und erst recht nicht das Gegenteil", () => {
+    for (const schlecht of [
+      "no-progress-since-start",
+      "worse-than-start",
+      "pattern-worsening",
+      "widening-gap",
+    ] as const) {
+      expect(isRecovery(schlecht), `${schlecht} ist keine Genesung`).toBe(false);
+    }
+  });
+
+  it("die drei Codes ohne Selbsttests sind aus dem Tagebuch erreichbar", () => {
+    // Ohne diese Prüfung wäre die Genesungszeile eine Bauform ohne Inhalt:
+    // `symmetric` braucht Selbsttests, für die es keine Oberfläche gibt. Wenn
+    // die drei anderen auch unerreichbar wären, zeigte der Hauptbildschirm
+    // diesen Zustand nie — und niemand würde es merken.
+    const gesehen = new Set<string>();
+    for (const s of SCENARIOS) {
+      const r = evaluateEpisode({ entries: s.entries, tests: s.tests, context: s.context });
+      for (const f of r.flags) if (isRecovery(f.reason)) gesehen.add(f.reason);
+    }
+    for (const code of ["progress-since-start", "pattern-easing", "settled-near-zero"] as const) {
+      expect(gesehen.has(code), `${code} erzeugt kein Szenario`).toBe(true);
+    }
   });
 });
