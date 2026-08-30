@@ -58,6 +58,11 @@ export function DayCount({
     <>
       {" · "}
       {dayLabel} {day}{" "}
+      {/* em, nicht rem — und das ist die eine dokumentierte Ausnahme von der
+          Skala. Diese Zeile steht INNERHALB eines Satzes und soll relativ zu
+          dessen Grösse schrumpfen, wo immer sie steht. Ein fester Wert aus der
+          Skala würde je nach Umgebung mal grösser und mal kleiner aussehen als
+          der Text, in dem sie steckt. check:tokens kennt diese Ausnahme. */}
       <span style={{ fontSize: "0.85em" }}>
         ({anchor.kind === "declared" ? anchorDeclared : anchorFirstEntry})
       </span>

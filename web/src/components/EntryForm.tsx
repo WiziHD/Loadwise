@@ -287,7 +287,7 @@ export function EntryForm({
       style={{ display: "grid", gap: "1rem" }}
     >
       <div style={{ display: "grid", gap: "0.35rem", maxWidth: "12rem" }}>
-        <label htmlFor="date" style={{ fontWeight: 600 }}>{strings.date}</label>
+        <label htmlFor="date" style={{ fontWeight: "var(--weight-semibold)" }}>{strings.date}</label>
         <input
           id="date"
           name="date"
@@ -304,11 +304,11 @@ export function EntryForm({
       </div>
 
       {replacing && (
-        <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.88rem" }}>{strings.replacing}</p>
+        <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--text-sm)" }}>{strings.replacing}</p>
       )}
 
       <div style={{ display: "grid", gap: "0.35rem", maxWidth: "12rem" }}>
-        <label htmlFor="morningScore" style={{ fontWeight: 600 }}>{strings.morning}</label>
+        <label htmlFor="morningScore" style={{ fontWeight: "var(--weight-semibold)" }}>{strings.morning}</label>
         <input
           id="morningScore"
           type="number"
@@ -326,13 +326,13 @@ export function EntryForm({
           aria-describedby="morningScore-hint"
           style={field}
         />
-        <span id="morningScore-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+        <span id="morningScore-hint" style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
           {strings.morningHint}
         </span>
       </div>
 
       <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
-        <label htmlFor="stiffness" style={{ fontWeight: 600 }}>{strings.stiffness}</label>
+        <label htmlFor="stiffness" style={{ fontWeight: "var(--weight-semibold)" }}>{strings.stiffness}</label>
         <input
           id="stiffness"
           type="number"
@@ -345,13 +345,13 @@ export function EntryForm({
           aria-describedby="stiffness-hint"
           style={{ ...field, maxWidth: "12rem" }}
         />
-        <span id="stiffness-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+        <span id="stiffness-hint" style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
           {strings.stiffnessHint}
         </span>
       </div>
 
       <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
-        <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontWeight: 600, minHeight: "2.75rem" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontWeight: "var(--weight-semibold)", minHeight: "2.75rem" }}>
           <input
             type="checkbox"
             checked={draft.painMedication}
@@ -364,27 +364,27 @@ export function EntryForm({
           />
           {strings.medication}
         </label>
-        <span id="medication-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+        <span id="medication-hint" style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
           {strings.medicationHint}
         </span>
       </div>
 
-      <fieldset style={{ border: "1px solid var(--line)", borderRadius: "0.5rem", padding: "0.9rem" }}>
-        <legend style={{ padding: "0 0.4rem", fontWeight: 600, fontSize: "0.9rem" }}>
+      <fieldset style={{ border: "1px solid var(--line)", borderRadius: "var(--radius-md)", padding: "0.9rem" }}>
+        <legend style={{ padding: "0 0.4rem", fontWeight: "var(--weight-semibold)", fontSize: "var(--text-sm)" }}>
           {strings.activity}
         </legend>
 
         {draft.sessions.map((s, i) => (
           <div key={i} style={{ display: "grid", gap: "0.5rem", marginBottom: "0.9rem" }}>
             {draft.sessions.length > 1 && (
-              <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+              <span style={{ fontSize: "var(--text-xs)", color: "var(--muted)" }}>
                 {strings.sessionNumber} {i + 1}
               </span>
             )}
 
             <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit, minmax(9rem, 1fr))" }}>
               <label style={{ display: "grid", gap: "0.3rem" }}>
-                <span style={{ fontSize: "0.85rem" }}>{strings.activity}</span>
+                <span style={{ fontSize: "var(--text-sm)" }}>{strings.activity}</span>
                 <select
                   value={s.activityKind}
                   onChange={(e) => setSession(i, "activityKind", e.target.value)}
@@ -398,7 +398,7 @@ export function EntryForm({
               </label>
 
               <label style={{ display: "grid", gap: "0.3rem" }}>
-                <span style={{ fontSize: "0.85rem" }}>{strings.duration}</span>
+                <span style={{ fontSize: "var(--text-sm)" }}>{strings.duration}</span>
                 <input
                   type="number"
                   inputMode="numeric"
@@ -411,7 +411,7 @@ export function EntryForm({
               </label>
 
               <label style={{ display: "grid", gap: "0.3rem" }}>
-                <span style={{ fontSize: "0.85rem" }}>{strings.rpe}</span>
+                <span style={{ fontSize: "var(--text-sm)" }}>{strings.rpe}</span>
                 <input
                   type="number"
                   inputMode="numeric"
@@ -435,13 +435,13 @@ export function EntryForm({
           {strings.addSession}
         </button>
 
-        <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: "0.7rem 0 0" }}>
+        <p style={{ color: "var(--muted)", fontSize: "var(--text-sm)", margin: "0.7rem 0 0" }}>
           {strings.loadHint}
         </p>
       </fieldset>
 
       <div style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
-        <label htmlFor="everydayLoad" style={{ fontWeight: 600 }}>{strings.everyday}</label>
+        <label htmlFor="everydayLoad" style={{ fontWeight: "var(--weight-semibold)" }}>{strings.everyday}</label>
         <select
           id="everydayLoad"
           aria-describedby="everyday-hint"
@@ -455,14 +455,14 @@ export function EntryForm({
           <option value="on-feet">{strings.everydayOnFeet}</option>
           <option value="very-active">{strings.everydayVeryActive}</option>
         </select>
-        <span id="everyday-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+        <span id="everyday-hint" style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
           {strings.everydayHint}
         </span>
       </div>
 
       <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit, minmax(9rem, 1fr))", maxWidth: "26rem" }}>
         <label style={{ display: "grid", gap: "0.3rem" }}>
-          <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{strings.symptom}</span>
+          <span style={{ fontWeight: "var(--weight-semibold)", fontSize: "var(--text-sm)" }}>{strings.symptom}</span>
           <input
             type="number"
             inputMode="numeric"
@@ -476,7 +476,7 @@ export function EntryForm({
         </label>
 
         <label style={{ display: "grid", gap: "0.3rem" }}>
-          <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{strings.timing}</span>
+          <span style={{ fontWeight: "var(--weight-semibold)", fontSize: "var(--text-sm)" }}>{strings.timing}</span>
           <select
             value={draft.symptomTiming}
             onChange={(e) => set("symptomTiming", e.target.value)}
@@ -491,7 +491,7 @@ export function EntryForm({
       </div>
 
       <div style={{ display: "grid", gap: "0.35rem" }}>
-        <label htmlFor="note" style={{ fontWeight: 600 }}>{strings.note}</label>
+        <label htmlFor="note" style={{ fontWeight: "var(--weight-semibold)" }}>{strings.note}</label>
         <textarea
           id="note"
           aria-describedby="note-hint"
@@ -500,7 +500,7 @@ export function EntryForm({
           onChange={(e) => set("note", e.target.value)}
           style={{ ...field, fontFamily: "inherit" }}
         />
-        <span id="note-hint" style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+        <span id="note-hint" style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
           {strings.noteHint}
         </span>
       </div>
@@ -515,8 +515,8 @@ export function EntryForm({
         style={{
           minHeight: "2.75rem",
           padding: "0.6rem 1.25rem",
-          fontSize: "1rem",
-          borderRadius: "0.375rem",
+          fontSize: "var(--text-base)",
+          borderRadius: "var(--radius-sm)",
           border: "1px solid var(--fg)",
           background: "var(--fg)",
           color: "var(--bg)",

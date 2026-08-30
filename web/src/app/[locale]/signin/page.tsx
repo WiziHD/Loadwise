@@ -18,7 +18,7 @@ export default async function SignInPage({
 
   return (
     <main>
-      <h1 style={{ fontSize: "1.5rem", margin: "0 0 0.5rem" }}>{s.auth.heading}</h1>
+      <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 0.5rem" }}>{s.auth.heading}</h1>
       <p style={{ color: "var(--muted)", marginTop: 0 }}>{s.auth.intro}</p>
 
       {grund !== null && (

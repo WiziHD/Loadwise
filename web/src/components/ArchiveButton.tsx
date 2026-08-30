@@ -52,7 +52,7 @@ export function ArchiveButton({
       </button>
 
       {failed && (
-        <span role="alert" style={{ color: "var(--amber)", fontSize: "0.88rem" }}>
+        <span role="alert" style={{ color: "var(--amber)", fontSize: "var(--text-sm)" }}>
           {errorStrings.notSaved}
         </span>
       )}

@@ -18,7 +18,8 @@
     "test:roh": "vitest run",
     "check:ui-mutation": "tsx scripts/check-ui-mutation.ts",
     "check:service-role": "tsx scripts/check-service-role.ts",
-    "check:verdicts": "tsx scripts/check-verdicts.mts"
+    "check:verdicts": "tsx scripts/check-verdicts.mts",
+    "check:tokens": "tsx scripts/check-tokens.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

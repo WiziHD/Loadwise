@@ -30,13 +30,13 @@ export default async function ArchivePage({
 
   return (
     <main>
-      <p style={{ margin: "0 0 1rem", fontSize: "0.9rem" }}>
+      <p style={{ margin: "0 0 1rem", fontSize: "var(--text-sm)" }}>
         <Link href={`/${locale}`} style={{ ...navLink, color: "var(--muted)" }}>
           ← {s.diary.back}
         </Link>
       </p>
 
-      <h1 style={{ fontSize: "1.5rem", margin: "0 0 1.5rem" }}>{s.edit.archiveHeading}</h1>
+      <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 1.5rem" }}>{s.edit.archiveHeading}</h1>
 
       {episodes.length === 0 ? (
         <p style={{ color: "var(--muted)" }}>{s.edit.archiveEmpty}</p>
@@ -51,7 +51,7 @@ export default async function ArchivePage({
                   style={{
                     display: "block",
                     border: "1px solid var(--line)",
-                    borderRadius: "0.5rem",
+                    borderRadius: "var(--radius-md)",
                     padding: "0.9rem 1rem",
                     background: "var(--card)",
                     color: "inherit",
@@ -63,7 +63,7 @@ export default async function ArchivePage({
                     style={{
                       display: "block",
                       color: "var(--muted)",
-                      fontSize: "0.88rem",
+                      fontSize: "var(--text-sm)",
                       marginTop: "0.15rem",
                     }}
                   >

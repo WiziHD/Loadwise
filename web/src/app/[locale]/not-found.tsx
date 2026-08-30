@@ -24,7 +24,7 @@ export default async function NotFound() {
 
   return (
     <main>
-      <h1 style={{ fontSize: "1.5rem", margin: "0 0 0.75rem" }}>{s.errors.notFound}</h1>
+      <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 0.75rem" }}>{s.errors.notFound}</h1>
       <p style={{ margin: 0 }}>
         <Link href={`/${locale}`}>{s.diary.back}</Link>
       </p>

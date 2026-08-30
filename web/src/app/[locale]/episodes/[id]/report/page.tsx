@@ -52,14 +52,14 @@ export default async function ReportPage({
 
   return (
     <main>
-      <p style={{ margin: "0 0 1rem", fontSize: "0.9rem" }}>
+      <p style={{ margin: "0 0 1rem", fontSize: "var(--text-sm)" }}>
         <Link href={`/${locale}/episodes/${id}`} style={{ ...navLink, color: "var(--muted)" }}>
           ← {s.diary.back}
         </Link>
       </p>
 
-      <h1 style={{ fontSize: "1.5rem", margin: "0 0 0.35rem" }}>{s.report.heading}</h1>
-      <p style={{ margin: "0 0 2rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+      <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 0.35rem" }}>{s.report.heading}</h1>
+      <p style={{ margin: "0 0 2rem", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
         {profile.label[locale]}
         {/* Ein eingesetztes Profil wird benannt. Ohne die Marke stünde hier der
             Name einer ANDEREN Verletzung, und die lesende Person hätte allen
@@ -76,7 +76,7 @@ export default async function ReportPage({
         />
       ) : (
         <>
-          <p style={{ margin: "0 0 0.35rem", fontSize: "1.1rem" }}>
+          <p style={{ margin: "0 0 0.35rem", fontSize: "var(--text-lg)" }}>
             {run.kind === "none" ? s.report.none : s.report.unreadableRun}
           </p>
           <p style={{ margin: 0, color: "var(--muted)" }}>

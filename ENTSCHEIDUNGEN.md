@@ -419,3 +419,53 @@ Zwei Dinge folgen daraus, und beide sind beim Bau aufgefallen:
 - **Wenn ein Lauf teurer wird als eine Abfrage.** Heute ist Speichern die Reproduzierbarkeit wert. Sollte die Ablage einmal mehr kosten als sie einbringt, ist neu zu beantworten, ob der Verlauf woanders festgehalten wird — nicht, ob Reproduzierbarkeit noch zählt.
 - **Wenn die Auswertung aus der Anfrage herauswandert** — ein Hintergrundlauf, eine Edge Function, `pg_cron`. Dann kann der Aufrufer eine Rolle sein statt einer Anfrage, und Bedingung 4 lässt sich strenger fassen als »der Server hat es selbst gelesen«.
 - **Wenn supabase-js Transaktionen bekommt.** Dann fällt der Grund für die Reihenfolge weg — die Reihenfolge selbst darf bleiben, sie kostet nichts.
+
+---
+
+## E13 — Die Haltung: sportlich-direkt, begleitend — und wo »motivierend« aufhört
+
+**Entschieden 30.08.2026** · `web/src/app/globals.css`, `web/src/lib/ui.ts`, `web/scripts/check-tokens.ts`, Karte A1
+
+Die Haltung des Produkts ist **sportlich-direkt, begleitend und motivierend**. Der Name ist **Loadwise** (KONZEPT §15).
+
+### Die Grenze, die daraus folgt — und sie ist keine Auslegungsfrage
+
+**»Motivierend« erreicht die Urteilssätze nie.** Die Sperrliste `ACHIEVEMENT` in `test/wording.test.ts` verbietet dem Motor genau das: »gut gemacht«, »fast am Ziel«, »weiter so«, »auf gutem Weg«. Der Kommentar dort sagt, warum: *»Fast am Ziel« behauptet, dass die verbleibende Strecke zurückgelegt wird — eine Vorhersage, die Ermutigung als Verkleidung trägt.* Und E8 hat entschieden: gamifiziert wird die **Genesung**, nie das Eintragen.
+
+Ein Motor, der lobt, zeichnet nicht mehr auf. Das ist keine Stilfrage, sondern dieselbe Linie, an der die Zweckbestimmung hängt.
+
+### Wo die Haltung stattdessen wohnt
+
+| | |
+|---|---|
+| **Typografie** | Überschriften schwerer und enger als der Fliesstext. »Direkt« kommt aus Gewichtskontrast, nicht aus einer lauten Schrift |
+| **Der eine Knopf** | `--weight-semibold` und enge Laufweite: Ein Knopf, der »Speichern« sagt, soll aussehen, als meine er es |
+| **Begleitend** | Kein leerer Bildschirm. Jeder Zustand hat einen Satz — auch »noch keine Auswertung« |
+| **Motivierend** | Der Fortschritt als **Zahl**, die für sich spricht: 64 % → 87 %. Das ist E10s Spiegel, und er fügt der Person nichts hinzu, was sie nicht selbst eingetippt hat |
+
+### Die Schrift wird nicht von Google geladen
+
+`next/font` lädt Inter beim **Bauen** herunter und liefert sie von der eigenen Herkunft. Zur Laufzeit geht keine Anfrage an Google — **gemessen**: null Verweise auf `fonts.gstatic.com` in den Bündeln, alle Dateien unter `/_next/static/media/`.
+
+Das ist dieselbe Überlegung, aus der es keine Google-Anmeldung gibt: Bei Gesundheitsdaten ist schon die Zugehörigkeit die Auskunft. Erzwungen ist es ohnehin — die Inhaltsrichtlinie trägt `font-src 'self'`, eine Schrift von aussen würde blockiert.
+
+**Was das kostet:** Der Bau braucht einmal Netz. Fällt Google beim Bauen aus, bricht der Build — nicht der Betrieb.
+
+### Die Skala ist abgeleitet, nicht erfunden
+
+Vorher: **75 Schriftgrössen verstreut, darunter fünf Werte für »kleiner Text« in 54 Verwendungen** — 0.8, 0.85, 0.88, 0.9 und 0.92 rem. Keiner war eine Entscheidung; sie sind durch Kopieren und Nachjustieren entstanden.
+
+Sechs Stufen ersetzen das, plus Gewichte, Abstände und Radien. `npm run check:tokens --workspace=web` hält es: keine rohe Grösse ausserhalb von `lib/ui.ts`, und **jeder benutzte Token existiert auch** — `var(--text-md)` gibt es nicht, CSS wirft dafür keinen Fehler, und der Text erbt still.
+
+Eine dokumentierte Ausnahme: `0.85em` in `DayCount`. Diese Zeile steht *innerhalb* eines Satzes und soll relativ zu dessen Grösse schrumpfen.
+
+### Was dabei wieder herausgeflogen ist
+
+Tabellenziffern standen kurz auf `body`, mit der Begründung, Messwerte würden untereinander fluchten. **Diese App hat keine Spalte, in der Zahlen untereinander stünden** — jede Zahl steht in einem Satz. Die Begründung war erfunden, also ist die Regel weg. Nachgemessen wurde auch der Verdacht, Inter ziehe mit `tnum` den Bindestrich auf Ziffernbreite: tut es nicht, dieselbe Breite mit und ohne.
+
+### Wann man das wieder aufmacht
+
+- **Wenn die Typografie zu neutral liest.** Dann ist eine zweite Schriftfamilie für Überschriften der nächste Hebel — nicht ein weiteres Gewicht und keine Farbe.
+- **Wenn ein Bau offline laufen muss.** Dann `next/font/local` mit mitgelieferten Dateien; kostet ein paar hundert Kilobyte im Repository.
+- **Wenn eine echte Zahlenspalte entsteht** (Tabelle im Physio-Bericht): Tabellenziffern gehören dann dorthin, nicht auf `body`.
+- **Nicht aufgemacht wird die Grenze oben.** Dass »motivierend« die Urteilssätze nicht erreicht, hängt an der Zweckbestimmung und nicht am Geschmack.

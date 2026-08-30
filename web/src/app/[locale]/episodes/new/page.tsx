@@ -29,13 +29,13 @@ export default async function NewEpisodePage({ params }: { params: Promise<{ loc
 
   return (
     <main>
-      <h1 style={{ fontSize: "1.5rem", margin: "0 0 1.5rem" }}>{s.episode.newHeading}</h1>
+      <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 1.5rem" }}>{s.episode.newHeading}</h1>
 
       <form action={createEpisodeAction.bind(null, locale)} style={{ display: "grid", gap: "1.25rem" }}>
         <ProfilePicker profiles={profiles} strings={s.episode} />
 
         <label style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
-          <span style={{ fontWeight: 600 }}>{s.episode.side}</span>
+          <span style={{ fontWeight: "var(--weight-semibold)" }}>{s.episode.side}</span>
           <select name="side" defaultValue="n/a" style={{ ...field, maxWidth: "26rem" }}>
             <option value="left">{s.episode.sideLeft}</option>
             <option value="right">{s.episode.sideRight}</option>
@@ -45,13 +45,13 @@ export default async function NewEpisodePage({ params }: { params: Promise<{ loc
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
-          <span style={{ fontWeight: 600 }}>{s.episode.startedOn}</span>
+          <span style={{ fontWeight: "var(--weight-semibold)" }}>{s.episode.startedOn}</span>
           <input type="date" name="startedOn" style={{ ...field, maxWidth: "26rem" }} />
-          <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{s.episode.startedOnHint}</span>
+          <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>{s.episode.startedOnHint}</span>
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem", maxWidth: "26rem" }}>
-          <span style={{ fontWeight: 600 }}>{s.episode.label}</span>
+          <span style={{ fontWeight: "var(--weight-semibold)" }}>{s.episode.label}</span>
           <input type="text" name="label" maxLength={80} style={{ ...field, maxWidth: "26rem" }} />
         </label>
 

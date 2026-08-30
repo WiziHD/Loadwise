@@ -27,10 +27,10 @@ export function ProfilePicker({
 
   return (
     <fieldset style={{ border: 0, padding: 0, margin: "0 0 1.5rem" }}>
-      <legend style={{ fontWeight: 600, padding: 0, marginBottom: "0.35rem" }}>
+      <legend style={{ fontWeight: "var(--weight-semibold)", padding: 0, marginBottom: "0.35rem" }}>
         {strings.chooseProfile}
       </legend>
-      <p style={{ color: "var(--muted)", margin: "0 0 0.9rem", fontSize: "0.9rem" }}>
+      <p style={{ color: "var(--muted)", margin: "0 0 0.9rem", fontSize: "var(--text-sm)" }}>
         {strings.profileHint}
       </p>
 
@@ -50,13 +50,13 @@ export function ProfilePicker({
 
       {current !== undefined && (
         <details open style={{ marginTop: "0.9rem" }}>
-          <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: "0.9rem" }}>
+          <summary style={{ cursor: "pointer", fontWeight: "var(--weight-semibold)", fontSize: "var(--text-sm)" }}>
             {strings.whatItCannotTell}
           </summary>
           <p
             style={{
               color: "var(--muted)",
-              fontSize: "0.88rem",
+              fontSize: "var(--text-sm)",
               lineHeight: 1.55,
               margin: "0.5rem 0 0",
               paddingLeft: "0.9rem",

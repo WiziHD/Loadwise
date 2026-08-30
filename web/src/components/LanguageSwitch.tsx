@@ -30,7 +30,7 @@ export function LanguageSwitch({ current }: { current: Locale }) {
       aria-label={current === "de" ? "Sprache" : "Language"}
       // Nur noch die Sprachen. Die Kopfzeile darum herum — und der Ausgang
       // aus der App — sitzen in AppHeader.
-      style={{ display: "flex", gap: "0.75rem", fontSize: "0.85rem" }}
+      style={{ display: "flex", gap: "0.75rem", fontSize: "var(--text-sm)" }}
     >
       {LOCALES.map((locale) => (
         <Link

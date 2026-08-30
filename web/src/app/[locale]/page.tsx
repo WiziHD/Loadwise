@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <main>
       <header style={{ marginBottom: "2.5rem" }}>
-        <h1 style={{ fontSize: "1.75rem", margin: "0 0 0.25rem" }}>{s.appName}</h1>
+        <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 0.25rem" }}>{s.appName}</h1>
         <p style={{ color: "var(--muted)", margin: 0 }}>{s.tagline}</p>
       </header>
 
@@ -70,7 +70,7 @@ async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof
                 style={{
                   display: "block",
                   border: "1px solid var(--line)",
-                  borderRadius: "0.5rem",
+                  borderRadius: "var(--radius-md)",
                   padding: "0.9rem 1rem",
                   background: "var(--card)",
                   color: "inherit",
@@ -78,14 +78,14 @@ async function EpisodeList({ locale, s }: { locale: string; s: ReturnType<typeof
                 }}
               >
                 <strong>{episode.label ?? profile.label[localeFrom(locale)]}</strong>
-                <span style={{ display: "block", color: "var(--muted)", fontSize: "0.88rem", marginTop: "0.15rem" }}>
+                <span style={{ display: "block", color: "var(--muted)", fontSize: "var(--text-sm)", marginTop: "0.15rem" }}>
                   {profile.label[localeFrom(locale)]}
                   {episode.started_on !== null && ` · ${episode.started_on}`}
                 </span>
                 {substituted && (
                   <span
                     role="alert"
-                    style={{ display: "block", color: "var(--amber)", fontSize: "0.85rem", marginTop: "0.4rem" }}
+                    style={{ display: "block", color: "var(--amber)", fontSize: "var(--text-sm)", marginTop: "0.4rem" }}
                   >
                     {s.episode.profileMissing}
                   </span>
@@ -122,7 +122,7 @@ function ArchiveLink({
 }) {
   if (count === 0) return null;
   return (
-    <p style={{ margin: "1.25rem 0 0", fontSize: "0.9rem" }}>
+    <p style={{ margin: "1.25rem 0 0", fontSize: "var(--text-sm)" }}>
       <Link href={`/${locale}/episodes/archive`} style={{ ...navLink, color: "var(--muted)" }}>
         {s.edit.archiveLink} ({count})
       </Link>

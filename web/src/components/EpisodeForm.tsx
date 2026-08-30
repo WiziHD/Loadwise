@@ -89,7 +89,7 @@ export function EpisodeForm({
       style={{ display: "grid", gap: "1.25rem", maxWidth: "30rem" }}
     >
       <label style={{ display: "grid", gap: "0.35rem" }}>
-        <span style={{ fontWeight: 600 }}>{strings.profile}</span>
+        <span style={{ fontWeight: "var(--weight-semibold)" }}>{strings.profile}</span>
         <select
           name="profileKey"
           value={draft.profileKey}
@@ -112,9 +112,9 @@ export function EpisodeForm({
             margin: 0,
             padding: "0.75rem 0.85rem",
             border: "1px solid var(--amber)",
-            borderRadius: "0.5rem",
+            borderRadius: "var(--radius-md)",
             color: "var(--amber)",
-            fontSize: "0.88rem",
+            fontSize: "var(--text-sm)",
             lineHeight: 1.55,
           }}
         >
@@ -123,7 +123,7 @@ export function EpisodeForm({
       )}
 
       <label style={{ display: "grid", gap: "0.35rem" }}>
-        <span style={{ fontWeight: 600 }}>{episodeStrings.side}</span>
+        <span style={{ fontWeight: "var(--weight-semibold)" }}>{episodeStrings.side}</span>
         <select
           name="side"
           value={draft.side}
@@ -138,7 +138,7 @@ export function EpisodeForm({
       </label>
 
       <label style={{ display: "grid", gap: "0.35rem" }}>
-        <span style={{ fontWeight: 600 }}>{episodeStrings.startedOn}</span>
+        <span style={{ fontWeight: "var(--weight-semibold)" }}>{episodeStrings.startedOn}</span>
         <input
           type="date"
           name="startedOn"
@@ -146,13 +146,13 @@ export function EpisodeForm({
           onChange={(e) => set("startedOn", e.target.value)}
           style={field}
         />
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+        <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
           {episodeStrings.startedOnHint}
         </span>
       </label>
 
       <label style={{ display: "grid", gap: "0.35rem" }}>
-        <span style={{ fontWeight: 600 }}>{episodeStrings.label}</span>
+        <span style={{ fontWeight: "var(--weight-semibold)" }}>{episodeStrings.label}</span>
         <input
           type="text"
           name="label"

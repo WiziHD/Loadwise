@@ -42,6 +42,55 @@
   --amber: #a16611;
   --red: #a8322a;
   --unjudged: #5b6b8c;
+
+  /* ------------------------------------------------------------------------
+     DIE SKALEN — ABGELEITET, NICHT ERFUNDEN.
+
+     Vor dieser Karte standen 75 Schriftgrössen verstreut im Code. Gezählt:
+     0.8, 0.85, 0.88, 0.9 und 0.92 rem — FÜNF Werte für »kleiner Text«, in 54
+     Verwendungen. Keiner davon war eine Entscheidung; sie sind durch Kopieren
+     und Nachjustieren entstanden.
+
+     Sechs Stufen ersetzen das. Wer eine siebte braucht, hat entweder eine
+     Entscheidung zu treffen oder eine der sechs zu nehmen — beides besser als
+     0.87rem.
+
+     DIE HALTUNG STECKT IN DEN PARAMETERN, NICHT IN DEN BUCHSTABEN.
+     »Sportlich-direkt« kommt hier aus Gewichtskontrast und enger Laufweite bei
+     Überschriften über ruhigem Fliesstext, nicht aus einer auffälligen
+     Schrift. Wenn das zu neutral liest, ist eine zweite Schriftfamilie für
+     Überschriften der nächste Hebel — nicht ein weiteres Gewicht.
+     ------------------------------------------------------------------------ */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Eng bei Überschriften, normal im Fliesstext. Der Unterschied ist das,
+     was »direkt« von »laut« trennt. */
+  --tracking-tight: -0.02em;
+  --leading-tight: 1.15;
+  --leading-normal: 1.6;
+
+  /* Vielfache von 4 px. Auch hier: vorher 126 verstreute Abstände. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -73,11 +122,45 @@ body {
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* --font-sans setzt `next/font` im Wurzellayout. Die Systemschriften bleiben
+     als Rückfall stehen: Lädt die Schrift nicht, sieht die Seite anders aus und
+     funktioniert weiter. */
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
 }
+
+/* ---------------------------------------------------------------------------
+   ÜBERSCHRIFTEN SIND DER ORT, AN DEM DIESE APP HALTUNG ZEIGT.
+
+   Schwerer und enger als der Fliesstext. Das ist der ganze Unterschied
+   zwischen einem Werkzeug, das jemand für sich gebaut hat, und einem, das
+   jemand für andere gebaut hat — und er kostet zwei Zeilen.
+   --------------------------------------------------------------------------- */
+:where(h1, h2, h3) {
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+/* ---------------------------------------------------------------------------
+   HIER STANDEN TABELLENZIFFERN, UND DIE BEGRÜNDUNG STIMMTE NICHT.
+
+   Der Kommentar lautete: »Jede Ziffer ist gleich breit, also fluchten 1,41 und
+   0,67 in zwei Zeilen.« Das ist richtig — nur gibt es in dieser App keine
+   Spalte, in der Zahlen untereinander stünden. Jede Zahl steht in einem Satz:
+   »Woche 175 gegen Norm 350, Verhältnis 0,50«. Dort sind Tabellenziffern eher
+   schlechter, weil die Eins gepolstert wird und der Rhythmus leidet.
+
+   Nachgemessen wurde ausserdem, was der Verdacht war: dass Inter mit `tnum`
+   auch den Bindestrich auf Ziffernbreite zieht und »E-Mail-Adresse« dadurch
+   auseinanderfällt. Tut es nicht — dieselbe Breite mit und ohne. Der Verdacht
+   war falsch, die Begründung trotzdem.
+
+   Wenn eine echte Spalte entsteht — eine Tabelle im Physio-Bericht —, gehören
+   Tabellenziffern dorthin und nicht auf `body`.
+   --------------------------------------------------------------------------- */
 
 main {
   max-width: 46rem;

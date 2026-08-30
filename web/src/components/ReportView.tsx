@@ -106,10 +106,10 @@ const section: React.CSSProperties = {
 };
 
 const heading: React.CSSProperties = {
-  fontSize: "1rem",
+  fontSize: "var(--text-base)",
   margin: "0 0 0.75rem",
   color: "var(--muted)",
-  fontWeight: 600,
+  fontWeight: "var(--weight-semibold)",
 };
 
 function Finding({
@@ -136,9 +136,9 @@ function Finding({
 
   return (
     <li style={{ margin: "0 0 1.25rem", listStyle: "none" }}>
-      <p style={{ margin: "0 0 0.15rem", fontSize: "0.85rem" }}>
+      <p style={{ margin: "0 0 0.15rem", fontSize: "var(--text-sm)" }}>
         {/* Das Wort steht VOR der Farbe und trägt dieselbe Auskunft. */}
-        <span style={{ color: TONE[flag.severity], fontWeight: 600 }}>{label}</span>
+        <span style={{ color: TONE[flag.severity], fontWeight: "var(--weight-semibold)" }}>{label}</span>
         <span style={{ color: "var(--muted)" }}> · {s.rules[flag.kind]} · </span>
         <time dateTime={flag.forDate} style={{ color: "var(--muted)" }}>
           {flag.forDate}
@@ -148,7 +148,7 @@ function Finding({
       {/* Der Beleg für den Satz, nie sein Ersatz. Deshalb darunter und kleiner —
           wer nur den Satz liest, hat das Urteil; wer die Zahlen will, findet
           sie. Umgekehrt wäre es eine Tabelle mit einem Kommentar. */}
-      <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.85rem" }}>
+      <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--text-sm)" }}>
         {evidenceText(flag, config, locale)}
       </p>
     </li>
@@ -191,7 +191,7 @@ export function ReportView({
 
   return (
     <>
-      <p style={{ margin: "0 0 1.5rem", color: "var(--muted)", fontSize: "0.85rem" }}>
+      <p style={{ margin: "0 0 1.5rem", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
         {s.computedAt}{" "}
         {/* Nur der Datumsteil: Eine Uhrzeit müsste in die Zeitzone der lesenden
             Person umgerechnet werden, und das auf dem Server zu tun ist genau
@@ -214,18 +214,18 @@ export function ReportView({
               ? {
                   // Die Form, nicht nur die Farbe. Siehe `overallLook`.
                   border: "1px dashed var(--unjudged)",
-                  borderRadius: "0.5rem",
+                  borderRadius: "var(--radius-md)",
                   padding: "0.9rem 1rem",
                 }
               : { border: "none", padding: 0 }
           }
         >
           <p
-            style={{ margin: "0 0 0.5rem", fontSize: "1.35rem", fontWeight: 600, color: zustand.tone }}
+            style={{ margin: "0 0 0.5rem", fontSize: "var(--text-xl)", fontWeight: "var(--weight-semibold)", color: zustand.tone }}
           >
             {zustand.text}
           </p>
-          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.9rem" }}>
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--text-sm)" }}>
             {fill(s.coverage, {
               judged: run.coverage.judgedDays,
               expected: run.coverage.judgedDays + run.coverage.blockedDays,
@@ -242,13 +242,13 @@ export function ReportView({
           <ul style={{ margin: 0, padding: 0 }}>
             {run.pending.map((p, i) => (
               <li key={`p${i}`} style={{ margin: "0 0 0.6rem", listStyle: "none" }}>
-                <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+                <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
                   {s.rules[p.kind]}
                 </span>
                 <br />
                 {blockedText(p.reason, locale)}
                 {p.affectedDays !== undefined && (
-                  <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+                  <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
                     {" — "}
                     {fill(s.pendingScope, {
                       days: p.affectedDays,
@@ -288,7 +288,7 @@ export function ReportView({
       {frueher.length > 0 && (
         <section style={section}>
           <h2 style={heading}>{s.earlierHeading}</h2>
-          <p style={{ margin: "0 0 1rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+          <p style={{ margin: "0 0 1rem", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
             {s.earlierHint}
           </p>
           <ul style={{ margin: 0, padding: 0 }}>
@@ -311,10 +311,10 @@ export function ReportView({
               Entwicklerprosa ohne Wortlauttabelle, und die einer lesenden Person
               hinzustellen wäre schlechter als sie wegzulassen. Was zählt, steht
               im Satz darunter. */}
-          <p style={{ margin: "0 0 0.5rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+          <p style={{ margin: "0 0 0.5rem", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
             {[...new Set(run.problems.map((p) => p.date).filter((d) => d !== null))].join(" · ")}
           </p>
-          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.9rem" }}>{s.problemsHint}</p>
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--text-sm)" }}>{s.problemsHint}</p>
         </section>
       )}
 
@@ -334,7 +334,7 @@ export function ReportView({
       {redFlags.length > 0 && (
         <section style={section}>
           <h2 style={heading}>{s.redFlagsHeading}</h2>
-          <p style={{ margin: "0 0 0.75rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+          <p style={{ margin: "0 0 0.75rem", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
             {s.redFlagsHint}
           </p>
           <ul style={{ margin: 0, paddingLeft: "1.1rem" }}>
@@ -350,7 +350,7 @@ export function ReportView({
       {run.unreadableFlags > 0 && (
         // Nicht still weglassen. Der Bericht zeigt sonst weniger Befunde, als
         // der Lauf hatte, und niemand kann das sehen.
-        <p style={{ margin: "1.5rem 0 0", color: "var(--muted)", fontSize: "0.85rem" }}>
+        <p style={{ margin: "1.5rem 0 0", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
           {run.unreadableFlags === 1
             ? s.unreadableOne
             : fill(s.unreadableMany, { n: run.unreadableFlags })}
@@ -367,7 +367,7 @@ export function ReportView({
           paddingTop: "1.25rem",
           borderTop: "1px solid var(--line)",
           color: "var(--muted)",
-          fontSize: "0.85rem",
+          fontSize: "var(--text-sm)",
         }}
       >
         {DISCLAIMER[locale]}

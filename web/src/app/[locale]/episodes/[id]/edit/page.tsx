@@ -51,13 +51,13 @@ export default async function EditEpisodePage({
 
   return (
     <main>
-      <p style={{ margin: "0 0 1rem", fontSize: "0.9rem" }}>
+      <p style={{ margin: "0 0 1rem", fontSize: "var(--text-sm)" }}>
         <Link href={`/${locale}/episodes/${id}`} style={{ ...navLink, color: "var(--muted)" }}>
           ← {s.diary.back}
         </Link>
       </p>
 
-      <h1 style={{ fontSize: "1.5rem", margin: "0 0 1.5rem" }}>{s.edit.heading}</h1>
+      <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 1.5rem" }}>{s.edit.heading}</h1>
 
       {episode.archived_at !== null && (
         <p
@@ -66,9 +66,9 @@ export default async function EditEpisodePage({
             margin: "0 0 1.5rem",
             padding: "0.7rem 0.85rem",
             border: "1px solid var(--line)",
-            borderRadius: "0.5rem",
+            borderRadius: "var(--radius-md)",
             color: "var(--muted)",
-            fontSize: "0.88rem",
+            fontSize: "var(--text-sm)",
           }}
         >
           {s.edit.archivedNote}
@@ -96,10 +96,10 @@ export default async function EditEpisodePage({
 
       {changes.length > 0 && (
         <section style={{ marginTop: "2.5rem" }}>
-          <h2 style={{ fontSize: "1.05rem", margin: "0 0 0.75rem" }}>{s.edit.changeHistory}</h2>
+          <h2 style={{ fontSize: "var(--text-lg)", margin: "0 0 0.75rem" }}>{s.edit.changeHistory}</h2>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.4rem" }}>
             {changes.map((change) => (
-              <li key={change.id} style={{ color: "var(--muted)", fontSize: "0.88rem" }}>
+              <li key={change.id} style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
                 {change.changed_at.slice(0, 10)} ·{" "}
                 {profileByKey(change.from_key ?? "")?.label[locale] ?? change.from_key ?? "—"}{" "}
                 {s.edit.changedTo}{" "}
@@ -134,11 +134,11 @@ export default async function EditEpisodePage({
           als keine. Was der Zustand bedeutet, steht dann oben.
         */}
         {episode.archived_at === null && (
-          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.85rem", lineHeight: 1.55 }}>
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--text-sm)", lineHeight: 1.55 }}>
             {s.edit.archiveHint}
           </p>
         )}
-        <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.85rem", lineHeight: 1.55 }}>
+        <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--text-sm)", lineHeight: 1.55 }}>
           {s.edit.noDelete}
         </p>
       </section>

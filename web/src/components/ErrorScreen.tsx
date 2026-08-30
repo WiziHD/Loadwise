@@ -50,7 +50,7 @@ export function ErrorScreen({
 
   return (
     <main>
-      <h1 style={{ fontSize: "1.5rem", margin: "0 0 0.75rem" }}>{s.errors.brokeHeading}</h1>
+      <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 0.75rem" }}>{s.errors.brokeHeading}</h1>
       <p style={{ margin: "0 0 1.25rem", color: "var(--muted)", maxWidth: "34rem" }}>
         {s.errors.brokeBody}
       </p>
@@ -59,8 +59,8 @@ export function ErrorScreen({
         onClick={reset}
         style={{
           padding: "0.6rem 1rem",
-          fontSize: "1rem",
-          borderRadius: "0.375rem",
+          fontSize: "var(--text-base)",
+          borderRadius: "var(--radius-sm)",
           border: "1px solid var(--fg)",
           background: "var(--fg)",
           color: "var(--bg)",

@@ -12,8 +12,8 @@ export function SignInForm({ locale, strings }: { locale: Locale; strings: Strin
 
   if (state === "sent") {
     return (
-      <div role="status" style={{ border: "1px solid var(--line)", borderRadius: "0.5rem", padding: "1.25rem", background: "var(--card)" }}>
-        <p style={{ margin: "0 0 0.5rem", fontWeight: 600 }}>{strings.sent}</p>
+      <div role="status" style={{ border: "1px solid var(--line)", borderRadius: "var(--radius-md)", padding: "1.25rem", background: "var(--card)" }}>
+        <p style={{ margin: "0 0 0.5rem", fontWeight: "var(--weight-semibold)" }}>{strings.sent}</p>
         <p style={{ margin: 0, color: "var(--muted)" }}>{strings.sentDetail}</p>
       </div>
     );
@@ -29,7 +29,7 @@ export function SignInForm({ locale, strings }: { locale: Locale; strings: Strin
       }}
       style={{ display: "grid", gap: "0.75rem", maxWidth: "24rem" }}
     >
-      <label htmlFor="email" style={{ fontWeight: 600 }}>
+      <label htmlFor="email" style={{ fontWeight: "var(--weight-semibold)" }}>
         {strings.emailLabel}
       </label>
       <input

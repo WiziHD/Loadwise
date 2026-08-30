@@ -83,7 +83,7 @@ export default async function EpisodePage({
 
   return (
     <main>
-      <p style={{ margin: "0 0 1rem", fontSize: "0.9rem" }}>
+      <p style={{ margin: "0 0 1rem", fontSize: "var(--text-sm)" }}>
         <Link href={`/${locale}`} style={{ ...navLink, color: "var(--muted)" }}>
           ← {s.diary.back}
         </Link>
@@ -96,9 +96,9 @@ export default async function EpisodePage({
             margin: "0 0 1.25rem",
             padding: "0.7rem 0.85rem",
             border: "1px solid var(--amber)",
-            borderRadius: "0.5rem",
+            borderRadius: "var(--radius-md)",
             color: "var(--amber)",
-            fontSize: "0.88rem",
+            fontSize: "var(--text-sm)",
             lineHeight: 1.55,
             maxWidth: "40rem",
           }}
@@ -108,10 +108,10 @@ export default async function EpisodePage({
       )}
 
       <header style={{ marginBottom: "2rem" }}>
-        <h1 style={{ fontSize: "1.5rem", margin: "0 0 0.35rem" }}>
+        <h1 style={{ fontSize: "var(--text-2xl)", margin: "0 0 0.35rem" }}>
           {episode.label ?? profile.label[locale]}
         </h1>
-        <p style={{ color: "var(--muted)", margin: 0, fontSize: "0.9rem" }}>
+        <p style={{ color: "var(--muted)", margin: 0, fontSize: "var(--text-sm)" }}>
           {profile.label[locale]}
           {episode.side !== "n/a" && ` · ${sideLabel(episode.side, s)}`}
           {anchor !== null && (
@@ -124,7 +124,7 @@ export default async function EpisodePage({
             />
           )}
         </p>
-        <p style={{ margin: "0.6rem 0 0", fontSize: "0.9rem", display: "flex", gap: "1.25rem" }}>
+        <p style={{ margin: "0.6rem 0 0", fontSize: "var(--text-sm)", display: "flex", gap: "1.25rem" }}>
           {/* Der Bericht steht bewusst NICHT über dem Formular. Wonach jemand
               diese Seite öffnet, ist einen Tag zu erfassen — das darf nie unter
               die Falz rutschen, auch nicht für ein Urteil. Siehe E7: Der
@@ -142,13 +142,13 @@ export default async function EpisodePage({
       <section
         style={{
           border: "1px solid var(--line)",
-          borderRadius: "0.5rem",
+          borderRadius: "var(--radius-md)",
           padding: "1.25rem",
           background: "var(--card)",
           marginBottom: "2rem",
         }}
       >
-        <h2 style={{ fontSize: "1.05rem", margin: "0 0 1.25rem" }}>{s.entry.heading}</h2>
+        <h2 style={{ fontSize: "var(--text-lg)", margin: "0 0 1.25rem" }}>{s.entry.heading}</h2>
         <EntryForm
           locale={locale}
           episodeId={id}
@@ -159,13 +159,13 @@ export default async function EpisodePage({
           activityLabels={s.activities}
           saveLabel={s.actions.save}
         />
-        <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: "1rem 0 0" }}>
+        <p style={{ color: "var(--muted)", fontSize: "var(--text-sm)", margin: "1rem 0 0" }}>
           {s.diary.editHint}
         </p>
       </section>
 
       <section>
-        <h2 style={{ fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--muted)", margin: "0 0 0.75rem" }}>
+        <h2 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--muted)", margin: "0 0 0.75rem" }}>
           {s.diary.history}
           {entries.length > 0 &&
             ` — ${entries.length} ${
@@ -188,7 +188,7 @@ export default async function EpisodePage({
                   gap: "1rem",
                   borderTop: "1px solid var(--line)",
                   paddingTop: "0.4rem",
-                  fontSize: "0.92rem",
+                  fontSize: "var(--text-sm)",
                 }}
               >
                 <span style={{ whiteSpace: "nowrap", color: "var(--muted)", fontVariantNumeric: "tabular-nums" }}>

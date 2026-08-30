@@ -150,6 +150,19 @@ jobs:
       - name: App — jeder Wörterbucheintrag kommt an
         run: npm run check:dictionary --workspace=web
 
+      # Vor Karte A1 standen 75 Schriftgrössen verstreut im Code — darunter FÜNF
+      # verschiedene Werte für »kleiner Text« (0.8, 0.85, 0.88, 0.9, 0.92 rem)
+      # in 54 Verwendungen. Keiner davon war eine Entscheidung. Eine Skala hält
+      # das nur auf, solange niemand daneben schreibt, und daneben schreibt man
+      # nicht aus Nachlässigkeit, sondern weil eine Stelle gerade einen Tick
+      # kleiner aussehen soll.
+      #
+      # Prüft ausserdem den stillen Fall: `var(--text-md)` gibt es nicht, CSS
+      # wirft dafür keinen Fehler, und der Text erbt einfach die Grösse seines
+      # Elternelements.
+      - name: App — die Skala hält
+        run: npm run check:tokens --workspace=web
+
       # Kontrast lässt sich nicht ansehen: Zwei Paare, die auf einem guten
       # Monitor beide »gut lesbar« aussehen, können 6:1 und 3:1 sein. Sechs von
       # dreissig lagen unter AA, darunter die Farbe JEDER Formularwarnung.
