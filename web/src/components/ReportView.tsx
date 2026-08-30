@@ -2,8 +2,10 @@ import {
   currentFlags,
   unnamedBlocking,
   blockedText,
+  evidenceText,
   verdictText,
   DISCLAIMER,
+  type Config,
   type Flag,
   type Locale,
   type RedFlag,
@@ -112,17 +114,28 @@ const heading: React.CSSProperties = {
 
 function Finding({
   flag,
+  config,
   s,
   locale,
 }: {
   flag: Flag;
+  /**
+   * Die Schwellen, unter denen dieses Urteil ENTSTANDEN ist — aus dem
+   * gespeicherten Lauf, nicht die heutigen.
+   *
+   * `evidenceText` erklärt damit gegen dieselben Zahlen, nach denen geurteilt
+   * wurde. Genau dafür trägt jede Auswertung ihre eigene `config` mit sich
+   * (Migration 0007): Ein Beweis, der gegen andere Schwellen rechnet als das
+   * Urteil, ist eine erfundene Begründung.
+   */
+  config: Config;
   s: Strings["report"];
   locale: Locale;
 }) {
   const label = { green: s.stateGreen, amber: s.stateAmber, red: s.stateRed }[flag.severity];
 
   return (
-    <li style={{ margin: "0 0 1rem", listStyle: "none" }}>
+    <li style={{ margin: "0 0 1.25rem", listStyle: "none" }}>
       <p style={{ margin: "0 0 0.15rem", fontSize: "0.85rem" }}>
         {/* Das Wort steht VOR der Farbe und trägt dieselbe Auskunft. */}
         <span style={{ color: TONE[flag.severity], fontWeight: 600 }}>{label}</span>
@@ -131,7 +144,13 @@ function Finding({
           {flag.forDate}
         </time>
       </p>
-      <p style={{ margin: 0 }}>{verdictText(flag.reason, locale)}</p>
+      <p style={{ margin: "0 0 0.2rem" }}>{verdictText(flag.reason, locale)}</p>
+      {/* Der Beleg für den Satz, nie sein Ersatz. Deshalb darunter und kleiner —
+          wer nur den Satz liest, hat das Urteil; wer die Zahlen will, findet
+          sie. Umgekehrt wäre es eine Tabelle mit einem Kommentar. */}
+      <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.85rem" }}>
+        {evidenceText(flag, config, locale)}
+      </p>
     </li>
   );
 }
@@ -260,7 +279,7 @@ export function ReportView({
         ) : (
           <ul style={{ margin: 0, padding: 0 }}>
             {auffaellig.map((f, i) => (
-              <Finding key={`c${i}`} flag={f} s={s} locale={locale} />
+              <Finding key={`c${i}`} flag={f} config={run.config} s={s} locale={locale} />
             ))}
           </ul>
         )}
@@ -274,7 +293,7 @@ export function ReportView({
           </p>
           <ul style={{ margin: 0, padding: 0 }}>
             {frueher.map((f, i) => (
-              <Finding key={`e${i}`} flag={f} s={s} locale={locale} />
+              <Finding key={`e${i}`} flag={f} config={run.config} s={s} locale={locale} />
             ))}
           </ul>
         </section>

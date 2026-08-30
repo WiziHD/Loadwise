@@ -13,10 +13,12 @@
 import { describe, expect, it } from "vitest";
 import { ALL_PROFILES } from "../src/profiles/registry.js";
 import { evaluateEpisode } from "../src/evaluate.js";
-import { steadyRecovery } from "../src/fixtures.js";
+import { SCENARIOS, steadyRecovery } from "../src/fixtures.js";
 import { ALL_MILESTONE_STATES, ALL_PROGRESS_BLOCKS, type Milestone } from "../src/progress.js";
 import {
   BLOCKED_WORDING,
+  EVIDENCE_WORDING,
+  evidenceText,
   DISCLAIMER,
   VERDICT_WORDING,
   blockedText,
@@ -29,7 +31,12 @@ import {
   MILESTONE_WORDING,
   PROGRESS_BLOCK_WORDING,
 } from "../src/wording.js";
-import { ALL_BLOCKING_REASONS, ALL_REASON_CODES } from "../src/types.js";
+import {
+  ALL_BLOCKING_REASONS,
+  ALL_REASON_CODES,
+  type Config,
+  type Flag,
+} from "../src/types.js";
 
 const LOCALES: Locale[] = ["de", "en"];
 
@@ -105,6 +112,13 @@ const allPhrases = (): { key: string; locale: Locale; text: string }[] => {
   };
   collect(VERDICT_WORDING, "verdict");
   collect(BLOCKED_WORDING, "blocked");
+
+  // Die Zahlen hinter einem Urteil. Sie standen bis zu Karte 2.6 in
+  // `report.ts` und damit AUSSERHALB dieser Listen — sichtbar nur in einer
+  // Konsolenausgabe, also von niemandem geprüft. Seit sie im Produkt stehen,
+  // gelten für sie dieselben drei Verbote wie für jeden anderen Satz des
+  // Motors.
+  collect(EVIDENCE_WORDING as Record<string, Phrase>, "evidence");
 
   // Profiles reach the user too, and an audit of this file found they were not
   // being checked at all. A red flag is the single likeliest place for the
@@ -353,5 +367,87 @@ describe("every state a person can be shown has words for it", () => {
     expect(progressBlockText(ALL_PROGRESS_BLOCKS[0]!)).toBe(
       progressBlockText(ALL_PROGRESS_BLOCKS[0]!, "de"),
     );
+  });
+});
+
+/**
+ * Die Zahlen hinter einem Urteil.
+ *
+ * ---------------------------------------------------------------------------
+ * ZWEI FRAGEN, UND DIE ZWEITE IST DIE UNGEWÖHNLICHE.
+ *
+ * Erstens: Ist jede Variante erreichbar? Dieselbe Disziplin wie bei
+ * `ALL_REASON_CODES` und `ALL_BLOCKING_REASONS` — eine Formulierung, die kein
+ * Szenario erzeugt, ist eine Formulierung, die niemand je gelesen hat, und in
+ * diesem Motor war unerreichbarer Code sechsmal der Fund.
+ *
+ * Zweitens: Passt jede Ausgabe auf genau eine Vorlage? Das prüft die
+ * Gegenrichtung — dass nichts an den Vorlagen VORBEI zusammengesetzt wird. Ein
+ * von Hand gebauter Satz stünde ausserhalb der drei Sperrlisten, obwohl er aus
+ * demselben Modul käme. Genau so haben diese Sätze bis Karte 2.6 gelebt.
+ * ---------------------------------------------------------------------------
+ */
+describe("die Zahlen hinter einem Urteil", () => {
+  /** Eine Vorlage als Muster: Sonderzeichen entschärfen, Platzhalter zu ".+?". */
+  const muster = (vorlage: string): RegExp =>
+    new RegExp(
+      "^" +
+        vorlage.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\{(\w+)\\\}/g, "[\\s\\S]+?") +
+        "$",
+    );
+
+  const keys = Object.keys(EVIDENCE_WORDING) as (keyof typeof EVIDENCE_WORDING)[];
+
+  /** Jede Flag aus der Szenarienbibliothek, mit der Konfiguration ihres Laufs. */
+  const alleFlags = (): { flag: Flag; config: Config }[] => {
+    const out: { flag: Flag; config: Config }[] = [];
+    for (const s of SCENARIOS) {
+      const r = evaluateEpisode({ entries: s.entries, tests: s.tests, context: s.context });
+      for (const flag of r.flags) out.push({ flag, config: r.config });
+    }
+    return out;
+  };
+
+  for (const locale of LOCALES) {
+    it(`jede Variante wird von einem Szenario erzeugt (${locale})`, () => {
+      const gesehen = new Set<string>();
+      for (const { flag, config } of alleFlags()) {
+        const text = evidenceText(flag, config, locale);
+        const treffer = keys.filter((k) => muster(EVIDENCE_WORDING[k][locale]).test(text));
+        // Die längste Vorlage gewinnt: `load_spike` passt auch auf den Anfang
+        // von `load_spike_same_total`; der Nachsatz macht die andere spezifischer.
+        const beste = treffer.sort(
+          (a, b) => EVIDENCE_WORDING[b][locale].length - EVIDENCE_WORDING[a][locale].length,
+        )[0];
+        if (beste !== undefined) gesehen.add(beste);
+      }
+      const fehlend = keys.filter((k) => !gesehen.has(k));
+      expect(fehlend, `nie erzeugt: ${fehlend.join(", ")}`).toEqual([]);
+    });
+
+    it(`und jede Ausgabe kommt aus einer Vorlage (${locale})`, () => {
+      const fremd: string[] = [];
+      for (const { flag, config } of alleFlags()) {
+        const text = evidenceText(flag, config, locale);
+        if (!keys.some((k) => muster(EVIDENCE_WORDING[k][locale]).test(text))) fremd.push(text);
+      }
+      expect(fremd, `passt auf keine Vorlage: ${fremd.slice(0, 3).join(" | ")}`).toEqual([]);
+    });
+  }
+
+  it("und die Zahlen werden geschrieben, wie die Sprache es tut", () => {
+    // Der Konsolenbericht war hier mit sich selbst uneinig: »Verhältnis 1.41«
+    // stand neben »effektiv 3,2 Trainingstage«, Punkt und Komma im selben
+    // deutschen Absatz. In einer Konsolenausgabe fiel das nicht auf; im Produkt
+    // ist es das, was jemand sieht.
+    const mitVerhaeltnis = alleFlags().filter(({ flag }) => flag.kind === "load_spike");
+    expect(mitVerhaeltnis.length).toBeGreaterThan(0);
+
+    const de = mitVerhaeltnis.map(({ flag, config }) => evidenceText(flag, config, "de"));
+    const en = mitVerhaeltnis.map(({ flag, config }) => evidenceText(flag, config, "en"));
+
+    expect(de.some((t) => /\d,\d\d/.test(t)), "kein deutsches Komma gefunden").toBe(true);
+    expect(de.some((t) => /\d\.\d\d/.test(t)), "ein deutscher Dezimalpunkt").toBe(false);
+    expect(en.some((t) => /\d\.\d\d/.test(t)), "kein englischer Punkt gefunden").toBe(true);
   });
 });

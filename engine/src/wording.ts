@@ -29,7 +29,7 @@
  * sentence is a compile error, not a blank line on someone's screen.
  */
 
-import type { BlockingReason, ReasonCode } from "./types.js";
+import type { BlockingReason, Config, Flag, ReasonCode } from "./types.js";
 import type { MilestoneState, ProgressBlock } from "./progress.js";
 
 export type Locale = "de" | "en";
@@ -330,4 +330,267 @@ export function verdictText(reason: ReasonCode, locale: Locale = "de"): string {
 
 export function blockedText(reason: BlockingReason, locale: Locale = "de"): string {
   return BLOCKED_WORDING[reason][locale];
+}
+
+// ---------------------------------------------------------------------------
+// Die Zahlen hinter einem Urteil
+//
+// ---------------------------------------------------------------------------
+// DIESE SÄTZE STANDEN IN `report.ts` UND WAREN NUR AUF DEUTSCH DA.
+//
+// Der Konsolenbericht hat sie seit jeher; die App konnte sie nicht zeigen. Sie
+// dorthin zu kopieren verbietet `check:boundary` zu Recht — und der Grund ist
+// nicht Formalismus: In diesen Zeilen steckt Begründung, keine Formatierung.
+//
+// Der Lastspitzen-Zweig entscheidet anhand von URTEILSUNEINIGKEIT zwischen dem
+// gewebegewichteten und dem rohen Verhältnis, ob er den zweiten Halbsatz
+// überhaupt sagt. Ein früherer fester Abstand von 0,3 blieb beim ersten echten
+// Sechzig-Tage-Verlauf stumm — 1,41 gegen 1,24, gelb gegen grün, also genau der
+// Fall, für den die Aufteilung existiert. Eine Kopie in der App stünde
+// ausserhalb der drei Sperrlisten, und die erste gutgemeinte Umformulierung
+// nähme diesen Vorbehalt heraus.
+//
+// ---------------------------------------------------------------------------
+// EIN SATZ JE VARIANTE, NICHT DREI BRUCHSTÜCKE.
+//
+// »Verhältnis nicht berechenbar« ist eine eigene Zeile und nicht ein
+// eingesetztes Wort. Zusammengestückelte Sätze sind die Bauform, an der
+// Übersetzungen zerbrechen: Im Englischen steht die Zahl anderswo, und wer die
+// Reihenfolge ändern muss, kann es nicht.
+//
+// Die einzige Ausnahme ist `{base}` bei der Lastspitze — dort wird ein ganzer
+// Satz in einen anderen eingesetzt. Beide Sprachen stellen den Nachsatz
+// hintenan, also trägt die Einschränkung nichts weg.
+// ---------------------------------------------------------------------------
+
+export type EvidenceKey =
+  | "response_24h"
+  | "response_24h_follow"
+  | "load_spike"
+  | "load_spike_incalculable"
+  | "load_spike_same_total"
+  | "load_spike_moved_total"
+  | "asymmetry"
+  | "asymmetry_declining"
+  | "baseline_drift"
+  | "pain_pattern"
+  | "stagnation"
+  | "load_spread"
+  | "load_spread_none"
+  | "load_spread_single";
+
+export const EVIDENCE_WORDING: Record<EvidenceKey, Phrase> = {
+  response_24h: {
+    de: "Last {load}, Ausgangswert {baseline}, am Morgen danach {nextMorning}",
+    en: "Load {load}, baseline {baseline}, next morning {nextMorning}",
+  },
+  response_24h_follow: {
+    de: "Last {load}, Ausgangswert {baseline}, am Morgen danach {nextMorning}, 48 h: {followUp}",
+    en: "Load {load}, baseline {baseline}, next morning {nextMorning}, 48 h: {followUp}",
+  },
+
+  load_spike: {
+    de: "Woche {acute} gegen Norm {chronic}, Verhältnis {ratio}",
+    en: "This week {acute} against baseline {chronic}, ratio {ratio}",
+  },
+  load_spike_incalculable: {
+    de: "Woche {acute} gegen Norm {chronic}, Verhältnis nicht berechenbar",
+    en: "This week {acute} against baseline {chronic}, ratio not computable",
+  },
+  /**
+   * Der Vorbehalt, den es nur gibt, wenn die beiden Verhältnisse sich über das
+   * Urteil uneinig sind. Wer Rad fährt statt zu laufen, hat genauso viel
+   * trainiert — was sich geändert hat, ist das Gewebe, das es getragen hat.
+   * Nur die gewichtete Zahl zu nennen läse sich für die Person, die die Woche
+   * erlebt hat, falsch.
+   */
+  load_spike_same_total: {
+    de: "{base} — dein Gesamttraining ist dabei praktisch gleich geblieben; der Unterschied liegt in der Wahl der Aktivität",
+    en: "{base} — your overall training stayed practically the same; the difference lies in the choice of activity",
+  },
+  load_spike_moved_total: {
+    de: "{base} — dein Gesamttraining hat sich dabei um Faktor {rawRatio} verändert; der Unterschied liegt in der Wahl der Aktivität",
+    en: "{base} — your overall training changed by a factor of {rawRatio}; the difference lies in the choice of activity",
+  },
+
+  asymmetry: {
+    de: "{test}: {history}",
+    en: "{test}: {history}",
+  },
+  asymmetry_declining: {
+    de: "{test}: {history}, Vergleichsseite {reference}",
+    en: "{test}: {history}, uninvolved side {reference}",
+  },
+
+  baseline_drift: {
+    de: "vorletzte {window} Tage {previous}, letzte {window} Tage {recent} ({change})",
+    en: "previous {window} days {previous}, last {window} days {recent} ({change})",
+  },
+
+  pain_pattern: {
+    de: "Lage {previous} → {recent} ({change}) auf der Skala Abend 1 / danach 2 / während 3",
+    en: "position {previous} → {recent} ({change}) on the scale evening 1 / after 2 / during 3",
+  },
+
+  /**
+   * Beide Zahlen sind Mediane über ein Fenster, und die Zeile muss das sagen.
+   *
+   * Sie las sich einmal »zu Beginn 3, jetzt 1«. Beim ersten fremden Verlauf, den
+   * dieser Motor gelesen hat, startete die Person bei 6 von 10 und bekam gesagt,
+   * ihr Anfang sei eine 3 gewesen — weil die ersten vierzehn Tage schon die
+   * schnelle frühe Besserung enthielten und der Median sie schluckte.
+   */
+  stagnation: {
+    de: "erste {window} Tage {start}, letzte {window} Tage {current}, nach {weeks} Wochen",
+    en: "first {window} days {start}, last {window} days {current}, after {weeks} weeks",
+  },
+
+  load_spread: {
+    de: "effektiv {effectiveDays} Trainingstage bei {sessions} Einheiten, schwerster Tag {share} % der Wochenlast",
+    en: "effectively {effectiveDays} training days across {sessions} sessions, heaviest day {share} % of the week's load",
+  },
+  load_spread_none: {
+    de: "keine Belastung erfasst",
+    en: "no load recorded",
+  },
+  load_spread_single: {
+    de: "die gesamte Wochenlast lag auf einem einzigen Tag",
+    en: "the whole week's load fell on a single day",
+  },
+};
+
+/**
+ * Eine Zahl, wie die jeweilige Sprache sie schreibt.
+ *
+ * ---------------------------------------------------------------------------
+ * DER KONSOLENBERICHT WAR HIER MIT SICH SELBST UNEINIG.
+ *
+ * »Verhältnis 1.41« stand direkt neben »effektiv 3,2 Trainingstage« — Punkt und
+ * Komma im selben deutschen Absatz. In einer Konsolenausgabe fiel das nicht
+ * auf. Sobald diese Zeilen im Produkt stehen, ist es das, was jemand sieht.
+ * ---------------------------------------------------------------------------
+ */
+function zahl(value: number, digits: number, locale: Locale): string {
+  const text = value.toFixed(digits);
+  return locale === "de" ? text.replace(".", ",") : text;
+}
+
+/** `{name}` durch Werte ersetzen. Ein unbekannter Platzhalter bleibt stehen. */
+function fill(text: string, values: Record<string, string | number>): string {
+  return text.replace(/\{(\w+)\}/g, (whole, name: string) =>
+    name in values ? String(values[name]) : whole,
+  );
+}
+
+/** In welches Urteilsband ein Lastverhältnis fällt — worüber die zwei Zahlen sich uneinig sein können. */
+function band(ratio: number, config: Config): string {
+  if (ratio > config.spike.redAbove) return "sharp";
+  if (ratio > config.spike.amberAbove) return "rising";
+  if (ratio < config.spike.amberBelow) return "falling";
+  return "steady";
+}
+
+/**
+ * Die Zahlen hinter einem Urteil. Beleg für den Satz, nie sein Ersatz.
+ *
+ * Braucht die Konfiguration, unter der das Urteil ENTSTANDEN ist — nicht die
+ * heutige. Deshalb trägt jede gespeicherte Auswertung ihre eigene mit sich
+ * (Migration 0007): Ein Bericht, der gegen andere Schwellen erklärt als die, nach
+ * denen geurteilt wurde, erfindet eine Begründung.
+ */
+export function evidenceText(flag: Flag, config: Config, locale: Locale = "de"): string {
+  const say = (key: EvidenceKey, values: Record<string, string | number> = {}): string =>
+    fill(EVIDENCE_WORDING[key][locale], values);
+
+  switch (flag.kind) {
+    case "response_24h": {
+      const d = flag.detail;
+      const werte = {
+        load: Math.round(d.load),
+        baseline: d.baseline,
+        nextMorning: d.nextMorning,
+        followUp: d.followUpMorning ?? 0,
+      };
+      return d.followUpMorning === null
+        ? say("response_24h", werte)
+        : say("response_24h_follow", werte);
+    }
+
+    case "load_spike": {
+      const d = flag.detail;
+      const grund = { acute: Math.round(d.acute), chronic: Math.round(d.chronic) };
+      const base =
+        d.ratio === null
+          ? say("load_spike_incalculable", grund)
+          : say("load_spike", { ...grund, ratio: zahl(d.ratio, 2, locale) });
+
+      // Der Nachsatz kommt nur, wenn die gewichtete und die rohe Zahl sich über
+      // das URTEIL uneinig sind — nicht bei einem beliebigen Abstand.
+      if (d.ratio !== null && d.rawRatio !== null && band(d.ratio, config) !== band(d.rawRatio, config)) {
+        return d.rawRatio >= 0.85 && d.rawRatio <= 1.15
+          ? say("load_spike_same_total", { base })
+          : say("load_spike_moved_total", { base, rawRatio: zahl(d.rawRatio, 2, locale) });
+      }
+      return base;
+    }
+
+    case "asymmetry": {
+      const d = flag.detail;
+      const history = d.history.map((v) => `${v.toFixed(0)}%`).join(" → ");
+      if (!d.referenceDeclining) return say("asymmetry", { test: d.type, history });
+      return say("asymmetry_declining", {
+        test: d.type,
+        history,
+        reference: d.uninvolvedHistory.map((v) => v.toFixed(0)).join(" → "),
+      });
+    }
+
+    case "baseline_drift": {
+      const d = flag.detail;
+      return say("baseline_drift", {
+        // Aus der Konfiguration, nicht als feste 14. Die Zahl stand hier
+        // fest verdrahtet, während die Regel `config.drift.windowDays` benutzt.
+        // Heute sind beide 14, also war nichts falsch — das erste Profil, das
+        // das Fenster verschiebt, hätte einen Satz bekommen, der über die
+        // eigene Rechnung lügt. Dieselbe schlafende Sorte Fehler, wegen der
+        // jede Auswertung ihre `config` mitspeichert.
+        window: config.drift.windowDays,
+        previous: d.previous,
+        recent: d.recent,
+        change: `${d.change > 0 ? "+" : ""}${d.change}`,
+      });
+    }
+
+    case "pain_pattern": {
+      const d = flag.detail;
+      return say("pain_pattern", {
+        previous: zahl(d.previous, 2, locale),
+        recent: zahl(d.recent, 2, locale),
+        change: `${d.change > 0 ? "+" : ""}${zahl(d.change, 2, locale)}`,
+      });
+    }
+
+    case "stagnation": {
+      const d = flag.detail;
+      return say("stagnation", {
+        window: config.stagnation.windowDays,
+        start: d.startBaseline,
+        current: d.currentBaseline,
+        weeks: d.weeks,
+      });
+    }
+
+    case "load_spread": {
+      const d = flag.detail;
+      if (d.trainingDays === 0) return say("load_spread_none");
+      if (d.trainingDays === 1) return say("load_spread_single");
+      // Der Streuungsindex wird nie als Zahl gezeigt. »Effektive Trainingstage«
+      // ist eine Grösse, die man sich vorstellen kann; 1,31 auf einer Skala nicht.
+      return say("load_spread", {
+        effectiveDays: zahl(d.effectiveDays, 1, locale),
+        sessions: d.trainingDays,
+        share: Math.round(d.heaviestShare * 100),
+      });
+    }
+  }
 }

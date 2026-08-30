@@ -193,6 +193,32 @@ const MUTATIONEN: Mutation[] = [
     nach: "      {false && run.problems.length > 0 && (",
   },
   {
+    name: "ReportView: der Beweis unter dem Satz faellt weg",
+    datei: "src/components/ReportView.tsx",
+    von: "        {evidenceText(flag, config, locale)}",
+    nach: '        {""}',
+  },
+  {
+    // Der Beleg rechnet gegen ANDERE Schwellen als die, unter denen geurteilt
+    // wurde. Genau dafür trägt jede Auswertung ihre eigene `config` mit sich;
+    // ohne sie erklärt der Bericht ein Urteil mit Zahlen, nach denen es nie
+    // gefällt wurde.
+    //
+    // Mutiert wird die Übergabestelle, nicht das Bauteil: Ein `DEFAULT_CONFIG`
+    // im Bauteil bräuchte einen Import, den dort niemand benutzt — und ein
+    // ungenutzter Export ist in diesem Projekt eine eigene Fehlerfamilie.
+    name: "ReportView: der Beweis rechnet gegen fremde Schwellen",
+    datei: "src/components/ReportView.tsx",
+    von: "config={run.config}",
+    nach: "config={{ ...run.config, stagnation: { ...run.config.stagnation, windowDays: 999 } }}",
+  },
+  {
+    name: "ReportView: die Zahlen stehen in englischer Schreibweise",
+    datei: "src/components/ReportView.tsx",
+    von: "        {evidenceText(flag, config, locale)}",
+    nach: '        {evidenceText(flag, config, "en")}',
+  },
+  {
     name: "ArchiveButton: ein Fehlschlag wird nicht gemerkt",
     datei: "src/components/ArchiveButton.tsx",
     von: "              if (!result.ok) setFailed(true);",
@@ -225,6 +251,34 @@ function lauf(): Bericht | null {
   } catch {
     return null;
   }
+}
+
+// ---------------------------------------------------------------------------
+// ZUERST: IST DIE SUITE ÜBERHAUPT GRÜN?
+//
+// Ohne diese Zeilen zählt ein Test, der schon VOR der Mutation rot ist, als
+// »gefangen« — und zwar bei jeder einzelnen Mutation. Der Lauf meldet dann
+// »23 von 23« und hat in Wahrheit nichts geprüft.
+//
+// Beobachtet, nicht ausgedacht: Beim Bau der Belegzeilen war eine Zusicherung
+// falsch, die Suite rot, und dieses Skript meldete trotzdem volle Deckung.
+// ---------------------------------------------------------------------------
+const grundlage = lauf();
+if (grundlage === null) {
+  console.error("\nKein Bericht vom unmutierten Lauf. Die Suite kommt nicht durch.\n");
+  process.exit(1);
+}
+const schonRot = (grundlage.testResults ?? []).flatMap((d) =>
+  (d.assertionResults ?? []).filter((t) => t.status === "failed").map((t) => t.title ?? "(ohne Titel)"),
+);
+if (schonRot.length > 0) {
+  console.error(
+    `\n${schonRot.length} Test(s) sind schon ohne Mutation rot:\n\n` +
+      schonRot.map((t) => `  ${t}`).join("\n") +
+      `\n\nEin roter Test zählt bei JEDER Mutation als »gefangen«. Erst grün machen,\n` +
+      `sonst misst dieser Lauf nichts.\n`,
+  );
+  process.exit(1);
 }
 
 type Zeile = { name: string; ergebnis: string; welche: string; offen: boolean };

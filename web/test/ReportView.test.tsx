@@ -22,6 +22,7 @@ import {
   profileByKey,
   verdictText,
   blockedText,
+  evidenceText,
   DISCLAIMER,
   type Entry,
   type Evaluation,
@@ -495,5 +496,84 @@ describe("ReportView — Eingabefehler werden nicht verschluckt", () => {
     expect(run.problems).toHaveLength(0);
     zeichnen(run);
     expect(screen.queryByText(s.problemsHeading)).toBeNull();
+  });
+});
+
+describe("ReportView — der Beweis unter dem Satz", () => {
+  it("zeigt zu jedem Befund die Zahlen dahinter", () => {
+    // ---------------------------------------------------------------------
+    // E7 NENNT DEN HAUPTBILDSCHIRM »EIN SATZ MIT SEINEM BEWEIS«.
+    //
+    // Bis Karte 2.6 hatte der Bericht nur den Satz. Die Zahlen standen in
+    // `report.ts` — auf Deutsch, in einer Konsolenausgabe, für die App
+    // unerreichbar, weil `check:boundary` das Kopieren zu Recht verbietet.
+    // ---------------------------------------------------------------------
+    const auswertung = mitVerlauf();
+    const { container } = zeichnen(laufAus(auswertung));
+
+    const nichtGruen = auswertung.flags.filter((f) => f.severity !== "green");
+    expect(nichtGruen.length).toBeGreaterThan(0);
+    for (const f of nichtGruen) {
+      expect(
+        container.textContent,
+        `Beleg für ${f.kind} fehlt`,
+      ).toContain(evidenceText(f, auswertung.config, "de"));
+    }
+  });
+
+  it("und rechnet dabei gegen die Schwellen des gespeicherten Laufs", () => {
+    // Der Beleg muss gegen dieselben Zahlen erklären, nach denen geurteilt
+    // wurde. Dafür trägt jede Auswertung ihre eigene `config` mit sich
+    // (Migration 0007). Diese Prüfung hält fest, dass die Ansicht sie auch
+    // benutzt statt die heutige Voreinstellung zu nehmen: Ein Lauf mit
+    // verschobenem Drift-Fenster muss die verschobene Zahl zeigen.
+    // Der Langzeitverlauf, nicht der Ausgangswert — und die Wahl ist der halbe
+    // Test.
+    //
+    // Zuerst stand hier `baseline_drift`. Den Befund GIBT es in dieser Fixtur,
+    // aber er ist GRÜN, und grüne Befunde rendert die Ansicht nicht: In
+    // »Auffälligkeiten« steht nur, was nicht grün ist. Die Zusicherung konnte
+    // also nie zutreffen.
+    //
+    // `stagnation` liest `config.stagnation.windowDays` genauso und ist hier
+    // bernsteinfarben, steht also auf dem Bildschirm.
+    const auswertung = langerVerlauf();
+    const run = laufAus(auswertung);
+    const verschoben: StoredRun = {
+      ...run,
+      config: { ...run.config, stagnation: { ...run.config.stagnation, windowDays: 21 } },
+    };
+
+    // Kein Frühausstieg: Ein Test, der sich selbst überspringen darf, prüft
+    // eines Tages nichts mehr, ohne dass jemand es sieht.
+    const langzeit = run.flags.find((f) => f.kind === "stagnation" && f.severity !== "green");
+    expect(
+      langzeit,
+      "Fixtur ohne sichtbaren Langzeitbefund — dann prüft diese Zeile nichts",
+    ).toBeDefined();
+
+    const { container } = zeichnen(verschoben);
+
+    // Der GANZE Belegsatz, nicht die Ziffernfolge »21«.
+    //
+    // Zuerst stand hier `toContain("21")` — und die Mutation, die dem Bauteil
+    // eine fremde Konfiguration unterschiebt, überlebte: »21« steht auch in
+    // einem Datum wie 2026-06-21. Eine Zusicherung, die zufällig anderswo
+    // erfüllt wird, prüft nichts.
+    const erwartet = evidenceText(langzeit!, verschoben.config, "de");
+    expect(erwartet).toContain("21 Tage");
+    expect(container.textContent).toContain(erwartet);
+  });
+
+  it("die Zahlen stehen in deutscher Schreibweise", () => {
+    // Der Konsolenbericht war hier mit sich selbst uneinig: »Verhältnis 1.41«
+    // neben »effektiv 3,2 Trainingstage«. In einer Konsole fiel das nicht auf;
+    // hier ist es das, was jemand sieht.
+    const auswertung = mitVerlauf();
+    const { container } = zeichnen(laufAus(auswertung));
+    const text = container.textContent ?? "";
+    // Ein Dezimalpunkt zwischen Ziffern hat hier nichts verloren. Datumsangaben
+    // benutzen Bindestriche, sind also nicht betroffen.
+    expect(text).not.toMatch(/\d\.\d\d(?!\d)/);
   });
 });

@@ -41,7 +41,7 @@ Noch nicht beurteilbar:
   · Seitenvergleich: Es liegen noch keine Selbsttests vor.
 ----------------------------------------------------------------------------
 Auffälligkeiten:
-  [STOP] 2026-04-05  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen stark gestiegen. (Woche 4200 gegen Norm 600, Verhältnis 7.00)
+  [STOP] 2026-04-05  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen stark gestiegen. (Woche 4200 gegen Norm 600, Verhältnis 7,00)
 
 ============================================================================
 Maßvolle Steigerung um gut vierzig Prozent
@@ -57,7 +57,7 @@ Noch nicht beurteilbar:
   · Seitenvergleich: Es liegen noch keine Selbsttests vor.
 ----------------------------------------------------------------------------
 Auffälligkeiten:
-  [ACHT] 2026-04-05  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen spürbar gestiegen. (Woche 840 gegen Norm 600, Verhältnis 1.40)
+  [ACHT] 2026-04-05  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen spürbar gestiegen. (Woche 840 gegen Norm 600, Verhältnis 1,40)
 
 ============================================================================
 Eine Einheit, die das Gewebe nicht verträgt
@@ -125,7 +125,7 @@ Noch nicht beurteilbar:
   · Seitenvergleich: Es liegen noch keine Selbsttests vor.
 ----------------------------------------------------------------------------
 Auffälligkeiten:
-  [ACHT] 2026-03-29  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 0 gegen Norm 1890, Verhältnis 0.00)
+  [ACHT] 2026-03-29  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 0 gegen Norm 1890, Verhältnis 0,00)
 
 ============================================================================
 Umfang um ein Drittel zurückgefahren
@@ -141,7 +141,7 @@ Noch nicht beurteilbar:
   · Seitenvergleich: Es liegen noch keine Selbsttests vor.
 ----------------------------------------------------------------------------
 Auffälligkeiten:
-  [ACHT] 2026-03-29  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 400 gegen Norm 600, Verhältnis 0.67)
+  [ACHT] 2026-03-29  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 400 gegen Norm 600, Verhältnis 0,67)
 
 ============================================================================
 Tagebuch geführt, nie trainiert
@@ -346,7 +346,7 @@ Noch nicht beurteilbar:
   · Seitenvergleich: Es liegen noch keine Selbsttests vor.
 ----------------------------------------------------------------------------
 Auffälligkeiten:
-  [ACHT] 2026-04-26  Schmerzmuster — Die Beschwerden treten näher an der Belastung auf als zuvor. (Lage 1.67 → 3.00 (+1.33) auf der Skala Abend 1 / danach 2 / während 3)
+  [ACHT] 2026-04-26  Schmerzmuster — Die Beschwerden treten näher an der Belastung auf als zuvor. (Lage 1,67 → 3,00 (+1,33) auf der Skala Abend 1 / danach 2 / während 3)
   [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 8 Wochen)
 
 ============================================================================
@@ -375,7 +375,7 @@ Noch nicht beurteilbar:
   · Seitenvergleich: Es liegen noch keine Selbsttests vor.
 ----------------------------------------------------------------------------
 Auffälligkeiten:
-  [ACHT] 2026-04-12  Schmerzmuster — Die Beschwerden treten näher an der Belastung auf als zuvor. (Lage 1.00 → 1.50 (+0.50) auf der Skala Abend 1 / danach 2 / während 3)
+  [ACHT] 2026-04-12  Schmerzmuster — Die Beschwerden treten näher an der Belastung auf als zuvor. (Lage 1,00 → 1,50 (+0,50) auf der Skala Abend 1 / danach 2 / während 3)
   [ACHT] 2026-04-12  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 6 Wochen)
 
 ============================================================================
@@ -392,7 +392,7 @@ Noch nicht beurteilbar:
 ----------------------------------------------------------------------------
 Auffälligkeiten:
   [STOP] 2026-04-15  24-Stunden-Reaktion — Auch 48 Stunden später noch über dem gewohnten Stand. (Last 480, Ausgangswert 3, am Morgen danach 6, 48 h: 6)
-  [ACHT] 2026-04-26  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 0 gegen Norm 960, Verhältnis 0.00)
+  [ACHT] 2026-04-26  Belastungsverlauf — Der Wochenumfang liegt deutlich unter den Vorwochen. (Woche 0 gegen Norm 960, Verhältnis 0,00)
   [ACHT] 2026-04-26  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 3, letzte 14 Tage 3, nach 8 Wochen)
 ----------------------------------------------------------------------------
 Früher im Verlauf, inzwischen zurückliegend:
@@ -412,7 +412,7 @@ Noch nicht beurteilbar:
 ----------------------------------------------------------------------------
 Auffälligkeiten:
   [ACHT] 2026-08-11  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 378, Ausgangswert 1, am Morgen danach 3, 48 h: 2)
-  [ACHT] 2026-08-20  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen spürbar gestiegen. (Woche 1231 gegen Norm 846, Verhältnis 1.45 — dein Gesamttraining hat sich dabei um Faktor 1.24 verändert; der Unterschied liegt in der Wahl der Aktivität)
+  [ACHT] 2026-08-20  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen spürbar gestiegen. (Woche 1231 gegen Norm 846, Verhältnis 1,45 — dein Gesamttraining hat sich dabei um Faktor 1,24 verändert; der Unterschied liegt in der Wahl der Aktivität)
 ----------------------------------------------------------------------------
 Früher im Verlauf, inzwischen zurückliegend:
   [ACHT] 2026-07-14  24-Stunden-Reaktion — Am Morgen danach erhöht, nach zwei Tagen wieder auf dem gewohnten Stand. (Last 150, Ausgangswert 2, am Morgen danach 4, 48 h: 3)
@@ -430,7 +430,7 @@ Noch nicht beurteilbar:
   · Seitenvergleich: Es liegen noch keine Selbsttests vor.
 ----------------------------------------------------------------------------
 Auffälligkeiten:
-  [STOP] 2026-05-03  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen stark gestiegen. (Woche 800 gegen Norm 160, Verhältnis 5.00 — dein Gesamttraining ist dabei praktisch gleich geblieben; der Unterschied liegt in der Wahl der Aktivität)
+  [STOP] 2026-05-03  Belastungsverlauf — Der Wochenumfang ist gegenüber den Vorwochen stark gestiegen. (Woche 800 gegen Norm 160, Verhältnis 5,00 — dein Gesamttraining ist dabei praktisch gleich geblieben; der Unterschied liegt in der Wahl der Aktivität)
   [ACHT] 2026-05-03  Langzeitverlauf — Der Ausgangswert liegt so hoch wie zu Beginn des Verlaufs. (erste 14 Tage 2, letzte 14 Tage 2, nach 9 Wochen)
 
 ============================================================================

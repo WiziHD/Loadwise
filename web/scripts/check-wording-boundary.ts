@@ -30,6 +30,7 @@ import {
   BLOCKED_WORDING,
   CLAIM_WORDING,
   DISCLAIMER,
+  EVIDENCE_WORDING,
   MILESTONE_WORDING,
   PROGRESS_BLOCK_WORDING,
   VERDICT_WORDING,
@@ -48,6 +49,7 @@ function engineSentences(): { where: string; text: string }[] {
   for (const reason of ALL_BLOCKING_REASONS) add(`blocked:${reason}`, BLOCKED_WORDING[reason]);
   for (const [key, phrase] of Object.entries(MILESTONE_WORDING)) add(`milestone:${key}`, phrase);
   for (const [key, phrase] of Object.entries(CLAIM_WORDING)) add(`claim:${key}`, phrase);
+  for (const [key, phrase] of Object.entries(EVIDENCE_WORDING)) add(`evidence:${key}`, phrase);
   for (const [key, phrase] of Object.entries(PROGRESS_BLOCK_WORDING)) add(`block:${key}`, phrase);
   add("disclaimer", DISCLAIMER);
 
