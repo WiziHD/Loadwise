@@ -1,4 +1,4 @@
-# Belastbar
+# Loadwise
 
 > Ein Begleiter für die 167 Stunden pro Woche, in denen kein Physiotherapeut danebensteht.
 
@@ -8,13 +8,13 @@
 | **Phase** | Konzept — abgeschlossen bis auf Abschnitt 15 |
 | **Plattform** | Web-App, englisch- und deutschsprachig |
 | **Zeitbudget** | 10–20 h/Woche |
-| **Arbeitstitel** | Belastbar — Namensfindung läuft |
+| **Name** | Loadwise — entschieden 28.08.2026, siehe Abschnitt 15 |
 
 ---
 
 ## 1. Kurzfassung
 
-**Belastbar** ist eine Web-App für Menschen, die nach einer Verletzung zurück in ihren Sport wollen. Sie ersetzt keine Physiotherapie — sie füllt die Zeit dazwischen.
+**Loadwise** ist eine Web-App für Menschen, die nach einer Verletzung zurück in ihren Sport wollen. Sie ersetzt keine Physiotherapie — sie füllt die Zeit dazwischen.
 
 Der Kern ist bewusst *keine* Sammlung von Übungen, sondern die Steuerung der Belastung: wie viel, wie oft, wann mehr, wann zurück. Dazu kommt die frühzeitige Erkennung von Ausweichmustern, aus denen die nächste Verletzung an anderer Stelle entsteht.
 
@@ -226,7 +226,7 @@ Und zwei Befunde kommen dazu, die beim Nachsehen aufgefallen sind:
 
 **Wer heute abgemeldet auf die Startseite kommt, sieht Name, Untertitel und einen Knopf »Anmelden«.** Das ist keine Landingpage. Jeder Besucher aus einer Suchmaschine stünde vor einer Anmeldung für ein Produkt, über das er nichts weiss — der Verkehr wäre verschwendet, bevor er entsteht. **Die Landingpage ist deshalb keine Ergänzung zur Inhaltsarbeit, sondern deren Voraussetzung.**
 
-**Das Produkt heisst an zwei Orten verschieden.** Abschnitt 15 nennt »Belastbar« als Arbeitstitel, Code und README sagen »Loadwise«. Eine Landingpage für ein Produkt mit zwei Namen gibt es nicht; die Entscheidung aus Abschnitt 15 ist damit von »offen« zu »blockierend« geworden.
+**Das Produkt hiess an zwei Orten verschieden.** Abschnitt 15 nannte »Belastbar« als Arbeitstitel, Code und README sagten »Loadwise«. Eine Landingpage für ein Produkt mit zwei Namen gibt es nicht; die Entscheidung war damit von »offen« zu »blockierend« geworden. **Am 28.08.2026 entschieden: Loadwise.** Siehe Abschnitt 15.
 
 Beides hat jetzt eine eigene Bahn im Fahrplan, statt als Zeile mitzulaufen.
 
@@ -288,7 +288,9 @@ Die letzte Zeile ist die wichtigste und die einzige, die sich nicht automatisch 
 
 ## 15. Offene Entscheidungen
 
-- **Name.** »Belastbar« ist Arbeitstitel; Auswahl läuft. Domain und Marke ungeprüft.
+- ~~**Name.**~~ **Entschieden am 28.08.2026: Loadwise.** »Belastbar« war der Arbeitstitel dieses Dokuments; Code, README und Datenbank sagten von Anfang an »Loadwise«. Der Arbeitstitel fällt weg statt umgekehrt — er stand an einer Stelle, der Name an allen anderen.
+
+  Was diese Entscheidung nicht ist: eine Prüfung. **Domain und Marke sind weiterhin ungeprüft**, und das gehört vor die erste Landingpage. Bis dahin ist »Loadwise« der Name, unter dem gebaut wird, nicht der, für den jemand geradesteht.
 - **Rechtliche Prüfung.** Wer schaut sich die Positionierung an, bevor echte Nutzer damit arbeiten.
 - **Technische Basis.** Noch nicht festgelegt — bewusst, weil sie sich aus den Funktionen ergibt und nicht umgekehrt. Randbedingungen: mehrsprachig ab Tag 1, Betriebskosten nahe null, Datenhaltung Schweiz oder EU.
 
