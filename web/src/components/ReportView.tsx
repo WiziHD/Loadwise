@@ -15,6 +15,7 @@ import {
 import type { StoredRun } from "@/lib/db/types";
 import type { Strings } from "@/i18n/dictionary";
 import { fill } from "@/i18n/fill";
+import { RunBehindNotice } from "@/components/RunBehindNotice";
 
 /**
  * Der vollständige Bericht — fünf Abschnitte, und der fünfte ist nicht optional.
@@ -159,10 +160,21 @@ function Finding({
 export function ReportView({
   run,
   redFlags,
+  behind,
   strings,
+  mainStrings,
   locale,
 }: {
   run: StoredRun;
+  /**
+   * Der Lauf kennt den neuesten Eintrag nicht.
+   *
+   * Dieselbe Frage wie auf dem Hauptbildschirm, deshalb dieselbe Antwort:
+   * entschieden von `runIsBehind`, nicht hier. Der Satz selbst liegt unter
+   * `main` im Wörterbuch — er gehört zum Zustand des Laufs, nicht zu einer
+   * Ansicht, und zweimal formuliert liefe er auseinander.
+   */
+  behind: boolean;
   /**
    * Die Warnzeichen des Profils, unter dem die Episode HEUTE geführt wird —
    * nicht das des gespeicherten Laufs.
@@ -174,6 +186,8 @@ export function ReportView({
    */
   redFlags: RedFlag[];
   strings: Strings["report"];
+  /** Die zwei Sätze zum Stand des Laufs. Sie gehören zum Lauf, nicht zur Ansicht. */
+  mainStrings: Strings["main"];
   locale: Locale;
 }) {
   const s = strings;
@@ -192,6 +206,8 @@ export function ReportView({
 
   return (
     <>
+      <RunBehindNotice active={behind} strings={mainStrings} />
+
       <p style={{ margin: "0 0 1.5rem", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
         {s.computedAt}{" "}
         {/* Nur der Datumsteil: Eine Uhrzeit müsste in die Zeitzone der lesenden

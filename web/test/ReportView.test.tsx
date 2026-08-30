@@ -135,8 +135,17 @@ const langerVerlauf = () =>
  */
 const WARNZEICHEN = profileByKey("achilles_midportion")!.redFlags;
 
-const zeichnen = (run: StoredRun, warnzeichen: RedFlag[] = WARNZEICHEN) =>
-  render(<ReportView run={run} redFlags={warnzeichen} strings={s} locale="de" />);
+const zeichnen = (run: StoredRun, warnzeichen: RedFlag[] = WARNZEICHEN, behind = false) =>
+  render(
+    <ReportView
+      run={run}
+      redFlags={warnzeichen}
+      behind={behind}
+      strings={s}
+      mainStrings={t("de").main}
+      locale="de"
+    />,
+  );
 
 describe("ReportView — das Gesamtbild", () => {
   it("sagt bei sieben Einträgen NICHT, dass alles in Ordnung ist", () => {

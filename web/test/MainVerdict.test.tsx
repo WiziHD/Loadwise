@@ -113,11 +113,12 @@ function punkteVon(auswertung: Evaluation, entries: Entry[]) {
   return coursePoints(buildIndex(entries, kontext), auswertung.lastDate);
 }
 
-const zeichnen = (auswertung: Evaluation, entries: Entry[]) =>
+const zeichnen = (auswertung: Evaluation, entries: Entry[], behind = false) =>
   render(
     <MainVerdict
       run={laufAus(auswertung)}
       points={punkteVon(auswertung, entries)}
+      behind={behind}
       strings={s}
       locale="de"
     />,
@@ -272,7 +273,7 @@ describe("CourseCurve — Lücken bleiben Lücken", () => {
     expect(punkte.some((p) => p.morning === null)).toBe(true);
 
     const { container } = render(
-      <MainVerdict run={laufAus(auswertung)} points={punkte} strings={s} locale="de" />,
+      <MainVerdict run={laufAus(auswertung)} points={punkte} behind={false} strings={s} locale="de" />,
     );
 
     // … und die Kurve zerfällt dadurch in mehr als eine Strecke.
@@ -291,7 +292,7 @@ describe("CourseCurve — Lücken bleiben Lücken", () => {
     expect(punkte.every((p) => p.morning !== null)).toBe(true);
 
     const { container } = render(
-      <MainVerdict run={laufAus(auswertung)} points={punkte} strings={s} locale="de" />,
+      <MainVerdict run={laufAus(auswertung)} points={punkte} behind={false} strings={s} locale="de" />,
     );
     expect(container.querySelectorAll("path")).toHaveLength(1);
   });
@@ -381,5 +382,53 @@ describe("CourseCurve — die Markierung sitzt auf dem Tag, um den es geht", () 
     );
     expect(mainState(laufAus(auswertung)).kind).toBe("mirror");
     expect(container.querySelector("line")).toBeNull();
+  });
+});
+
+describe("MainVerdict — wenn das Urteil den letzten Tag nicht kennt", () => {
+  it("sagt es, bevor der Befund kommt", () => {
+    // ---------------------------------------------------------------------
+    // BIS ZUR ABNAHME VON WOCHE 2 STAND HIER NICHTS.
+    //
+    // `saveEntryAction` schluckt einen fehlgeschlagenen Auswertungslauf — mit
+    // gutem Grund, denn der Tag IST gespeichert. Der Kommentar dort
+    // rechtfertigte das Schweigen aber mit einem Satz »für die Seite, die das
+    // Urteil zeigt«, und diesen Satz gab es nicht.
+    //
+    // Das Ergebnis wäre ein Bildschirm gewesen, der ein Urteil über einen
+    // Verlauf zeigt, den er nicht vollständig kennt — ohne dass irgendetwas
+    // darauf hinweist.
+    // ---------------------------------------------------------------------
+    const auswertung = mitBefund();
+    const zustand = mainState(laufAus(auswertung));
+    if (zustand.kind !== "finding") throw new Error("Fixtur ohne Befund");
+
+    const { container } = zeichnen(auswertung, tageVon(30, () => ({})), true);
+
+    const hinweis = container.querySelector("[data-behind]");
+    expect(hinweis, "kein Hinweis auf den Stand des Laufs").not.toBeNull();
+    expect(hinweis!.textContent).toContain(s.behind);
+
+    // Über dem Urteil, nicht darunter: Wer liest, soll wissen, worauf er
+    // blickt, BEVOR er es liest. Ein Nachsatz käme zu spät.
+    const urteil = screen.getByText(verdictText(zustand.flag.reason, "de"));
+    expect(
+      hinweis!.compareDocumentPosition(urteil) & Node.DOCUMENT_POSITION_FOLLOWING,
+      "der Hinweis steht unter dem Urteil",
+    ).toBeTruthy();
+  });
+
+  it("und schweigt, wenn er ihn kennt", () => {
+    // Gegenprobe: Ein Hinweis, der immer steht, sagt nichts mehr.
+    const { container } = zeichnen(mitBefund(), tageVon(30, () => ({})), false);
+    expect(container.querySelector("[data-behind]")).toBeNull();
+  });
+
+  it("die Farbe ist nicht die einer Warnung", () => {
+    // Das hier ist keine Aussage über den Körper, sondern über den Stand der
+    // Rechnung. Bernstein würde beides vermischen.
+    const { container } = zeichnen(mitBefund(), tageVon(30, () => ({})), true);
+    const hinweis = container.querySelector("[data-behind]") as HTMLElement;
+    expect(hinweis.style.color).toBe("var(--unjudged)");
   });
 });

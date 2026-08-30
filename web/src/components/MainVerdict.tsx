@@ -13,6 +13,7 @@ import type { Strings } from "@/i18n/dictionary";
 import { fill } from "@/i18n/fill";
 import { verdictLine, hint, meta } from "@/lib/ui";
 import { CourseCurve, type CoursePoint } from "@/components/CourseCurve";
+import { RunBehindNotice } from "@/components/RunBehindNotice";
 
 /**
  * Der Hauptbildschirm: ein Satz, und darunter das Bild, das ihn belegt.
@@ -204,11 +205,20 @@ function Mirror({
 export function MainVerdict({
   run,
   points,
+  behind,
   strings,
   locale,
 }: {
   run: StoredRun;
   points: CoursePoint[];
+  /**
+   * Der Lauf kennt den neuesten Eintrag nicht.
+   *
+   * Entschieden wird das von `runIsBehind` — an EINER Stelle, weil der Bericht
+   * dieselbe Frage stellt. Zwei Vergleiche wären zwei Antworten, sobald jemand
+   * einen davon anfasst.
+   */
+  behind: boolean;
   strings: Strings["main"];
   locale: Locale;
 }) {
@@ -234,6 +244,8 @@ export function MainVerdict({
 
   return (
     <section style={{ margin: "0 0 var(--space-6)" }}>
+      <RunBehindNotice active={behind} strings={s} />
+
       {satz}
       {zustand.kind === "mirror" && <Mirror run={run} points={points} s={s} />}
 

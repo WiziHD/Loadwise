@@ -14,7 +14,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { buildIndex, episodeAnchor, episodeDay, type Entry, type EpisodeContext } from "loadwise-engine";
 import { localeFrom } from "@/i18n/config";
-import { navLink } from "@/lib/ui";
+import { hint, navLink, verdictLine } from "@/lib/ui";
 import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
 import { getEpisode, profileOf } from "@/lib/db/episodes";
@@ -24,6 +24,7 @@ import { EntryForm } from "@/components/EntryForm";
 import { MainVerdict } from "@/components/MainVerdict";
 import { latestRun } from "@/lib/db/verdicts";
 import { coursePoints } from "@/lib/course-points";
+import { runIsBehind } from "@/lib/run-freshness";
 
 /**
  * The host's date — a starting guess, and nothing more.
@@ -87,6 +88,10 @@ export default async function EpisodePage({
   // GESPEICHERTEN Lauf; hier neu auszuwerten würde ein verbessertes Profil
   // rückwirkend über alte Urteile schreiben lassen.
   const run = await latestRun(id);
+
+  // Der jüngste Tag, den das Tagebuch kennt. Gegen ihn entscheidet sich, ob ein
+  // gespeicherter Lauf noch aktuell ist — siehe `runIsBehind`.
+  const neuesterEintrag = index.entries[index.entries.length - 1]?.date ?? null;
   const serverDay = episodeDay(index, today)?.day ?? null;
 
   return (
@@ -164,13 +169,38 @@ export default async function EpisodePage({
           Und die Schleife stimmt so herum: Wer morgens die App öffnet, sieht
           zuerst, was gestern daraus geworden ist, und trägt dann heute ein.
           ------------------------------------------------------------------ */}
-      {run.kind === "run" && (
+      {run.kind === "run" ? (
         <MainVerdict
           run={run.run}
           points={coursePoints(index, run.run.lastDate)}
+          behind={runIsBehind(run.run, neuesterEintrag)}
           strings={s.main}
           locale={locale}
         />
+      ) : (
+        neuesterEintrag !== null && (
+          /* ----------------------------------------------------------------
+             HIER STAND NICHTS, UND DAS WAR DER FEHLER.
+
+             `{run.kind === "run" && …}` liess die Stelle leer, sobald der
+             gespeicherte Lauf fehlte oder aus einer Fassung stammte, die diese
+             App nicht mehr lesen kann. Der Bericht sagt in genau demselben Fall
+             einen Satz; der Hauptbildschirm schwieg.
+
+             Wer seit Wochen jeden Tag einträgt und plötzlich keinen Befund mehr
+             sieht, hat keinen Anhaltspunkt, ob die App nichts zu sagen hat oder
+             etwas kaputt ist.
+
+             Die Bedingung `neuesterEintrag !== null`: Ohne einen einzigen
+             Eintrag gibt es zu Recht keine Auswertung, und der Abschnitt
+             darunter sagt das bereits. Zwei Sätze über dieselbe Leere wären
+             einer zu viel.
+             ---------------------------------------------------------------- */
+          <section style={{ margin: "0 0 var(--space-6)" }}>
+            <p style={{ ...verdictLine, color: "var(--unjudged)" }}>{s.main.noRun}</p>
+            <p style={hint}>{s.main.noRunHint}</p>
+          </section>
+        )
       )}
 
       <section

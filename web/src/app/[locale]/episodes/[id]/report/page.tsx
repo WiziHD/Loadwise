@@ -30,6 +30,8 @@ import { navLink } from "@/lib/ui";
 import { currentUser } from "@/lib/supabase/server";
 import { getEpisode } from "@/lib/db/episodes";
 import { latestRun } from "@/lib/db/verdicts";
+import { listEntries } from "@/lib/db/entries";
+import { runIsBehind } from "@/lib/run-freshness";
 import { profileOf } from "@/lib/profile-view";
 import { ReportView } from "@/components/ReportView";
 
@@ -49,6 +51,12 @@ export default async function ReportPage({
 
   const { profile, substituted } = profileOf(episode);
   const run = await latestRun(id);
+
+  // Der jüngste erfasste Tag. Gegen ihn entscheidet sich, ob der gespeicherte
+  // Lauf noch aktuell ist — dieselbe Frage wie auf dem Hauptbildschirm, und
+  // beantwortet von derselben Funktion.
+  const entries = await listEntries(id);
+  const neuesterEintrag = entries[entries.length - 1]?.date ?? null;
 
   return (
     <main>
@@ -71,7 +79,9 @@ export default async function ReportPage({
         <ReportView
           run={run.run}
           redFlags={profile.redFlags}
+          behind={runIsBehind(run.run, neuesterEintrag)}
           strings={s.report}
+          mainStrings={s.main}
           locale={locale}
         />
       ) : (

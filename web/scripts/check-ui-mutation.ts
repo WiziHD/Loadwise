@@ -1,5 +1,5 @@
 /**
- * Feuern die Bauteiltests überhaupt?
+ * Feuern die Tests überhaupt?
  *
  * ---------------------------------------------------------------------------
  * EIN TEST, DER NICHT FEHLSCHLAGEN KANN, IST KEIN TEST.
@@ -13,8 +13,20 @@
  * hineingeraten, als es 22 waren.)
  *
  * Dieses Skript nimmt jede Zeile, die einen dokumentierten Datenverlust
- * verhindert, macht sie wirkungslos, lässt die Bauteiltests laufen und stellt
+ * verhindert, macht sie wirkungslos, lässt die GANZE Suite laufen und stellt
  * die Zeile zurück. Überlebt eine Mutation, ist der zugehörige Test Dekoration.
+ *
+ * ---------------------------------------------------------------------------
+ * ES LIEF EINMAL NUR ÜBER DIE BAUTEILTESTS, UND DAS WAR EINE HALBE PRÜFUNG.
+ *
+ * `--project=bauteile` deckte 66 Tests ab und liess 118 aus — darunter die
+ * Schreibreihenfolge, gegen die eine stille Entwarnung steht, die Rückabbildung
+ * der Datenbankzeilen und die Auflösung des Profilschlüssels. Ein Wächter, der
+ * die Hälfte der Suite nicht anschaut, sagt über sie nichts, und die Zahl am
+ * Ende las sich trotzdem wie volle Deckung.
+ *
+ * Aufgefallen bei der Abnahme der zweiten Woche.
+ * ---------------------------------------------------------------------------
  *
  * **Es hat sich beim ersten Lauf selbst bewährt.** Eine Prüfung der
  * Gerätetag-Korrektur stand mit `serverToday === Gerätetag` da und konnte
@@ -286,6 +298,53 @@ const MUTATIONEN: Mutation[] = [
     nach: "            {run.problems.map((p) => p.code).map((code) => {",
   },
   {
+    // Die Schreibreihenfolge umgedreht: erst die Auswertung, dann die Flags.
+    // Bricht es dazwischen ab, steht eine Auswertung ohne ihre Flags da — und
+    // die liest sich als »keine Auffälligkeiten«. Siehe E12.
+    name: "verdict-write: erst die Auswertung, dann die Flags",
+    datei: "src/lib/db/verdict-write.ts",
+    von: "  // --- 1. Die Flags. Eine Anweisung, also eine Transaktion: ganz oder gar nicht.",
+    nach: "  await db.from(\"evaluations\").insert(toEvaluationRow(evaluation, laufId, episodeId));",
+  },
+  {
+    // Eine Flag aus einer Fassung, die es nicht mehr gibt, wird übernommen
+    // statt gezählt. Sie erscheint dann als Zeile ohne Regelnamen und ohne
+    // Urteilssatz — sichtbar, aber unlesbar.
+    name: "toStoredRun: unbekannte Flagarten werden uebernommen",
+    datei: "src/lib/db/types.ts",
+    von: "  if (!FLAG_KINDS.has(row.kind)) return null;",
+    nach: "  if (false) return null;",
+  },
+  {
+    // Der Profilschlüssel geht auf dem Weg in den Motor verloren. Dann urteilt
+    // er unter dem Standardprofil der Region, und das Ergebnis sieht plausibel
+    // aus.
+    name: "toEpisodeContext: der Profilschluessel geht verloren",
+    datei: "src/lib/db/types.ts",
+    von: "    profileKey: row.profile_key ?? undefined,",
+    nach: "    profileKey: undefined,",
+  },
+  {
+    // Der Vergleich kippt: Ein aktueller Lauf gilt als zurückliegend und
+    // umgekehrt.
+    name: "runIsBehind: der Vergleich zeigt in die falsche Richtung",
+    datei: "src/lib/run-freshness.ts",
+    von: "  return compareDates(newestEntry, run.lastDate) > 0;",
+    nach: "  return compareDates(newestEntry, run.lastDate) < 0;",
+  },
+  {
+    name: "runIsBehind: ein Lauf ueber ein leeres Tagebuch gilt als aktuell",
+    datei: "src/lib/run-freshness.ts",
+    von: "  if (run.lastDate === null) return true;",
+    nach: "  if (run.lastDate === null) return false;",
+  },
+  {
+    name: "MainVerdict: der Hinweis auf den Stand des Laufs faellt weg",
+    datei: "src/components/RunBehindNotice.tsx",
+    von: "  if (!active) return null;",
+    nach: "  return null;",
+  },
+  {
     name: "ArchiveButton: ein Fehlschlag wird nicht gemerkt",
     datei: "src/components/ArchiveButton.tsx",
     von: "              if (!result.ok) setFailed(true);",
@@ -303,7 +362,13 @@ type Bericht = {
 function lauf(): Bericht | null {
   let out: string;
   try {
-    out = execFileSync(process.execPath, [VITEST, "run", "--project=bauteile", "--reporter=json"], {
+    // BEIDE Projekte, seit der Abnahme von Woche 2.
+    //
+    // Hier stand `--project=bauteile`. Damit waren die 66 Bauteiltests geprüft und
+    // die 118 reinen nicht — darunter die Schreibreihenfolge, gegen die eine
+    // stille Entwarnung steht, und die Rückabbildung der Zeilen. Ein Wächter,
+    // der die Hälfte der Suite nicht anschaut, sagt über sie nichts.
+    out = execFileSync(process.execPath, [VITEST, "run", "--reporter=json"], {
       cwd: WEB,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],

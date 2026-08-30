@@ -166,6 +166,19 @@ export interface Strings {
     mirrorDays: string;
     /** Platzhalter: {reporting} {total} */
     mirrorRules: string;
+    /**
+     * Der gespeicherte Lauf kennt den neuesten Tag nicht.
+     *
+     * Entsteht, wenn die Neuberechnung nach dem Speichern fehlgeschlagen ist —
+     * der Tag steht, das Urteil hinkt. `saveEntryAction` schluckt den Fehlschlag
+     * mit Absicht, weil »nicht gespeichert« falsch wäre. Ohne diesen Satz bliebe
+     * er vollständig still.
+     */
+    behind: string;
+    behindHint: string;
+    /** Es gibt Einträge, aber keinen lesbaren Lauf dazu. */
+    noRun: string;
+    noRunHint: string;
   };
   /**
    * Der vollständige Bericht — die Ebene unter dem Hauptbildschirm.
@@ -419,6 +432,11 @@ export const DICTIONARY: Record<Locale, Strings> = {
         "Your own entries, given back. Nothing is read into them yet — the rules stay quiet until they have enough.",
       mirrorDays: "{judged} of {expected} days judged",
       mirrorRules: "{reporting} of {total} rules have spoken",
+      behind: "This reading does not yet include your newest entry.",
+      behindHint: "It is recomputed the next time you record a day.",
+      noRun: "No reading for these entries yet.",
+      noRunHint:
+        "Your diary is untouched. The next entry produces one — and if this sentence keeps standing here, it is on our side.",
     },
     report: {
       link: "Full report",
@@ -621,6 +639,11 @@ export const DICTIONARY: Record<Locale, Strings> = {
         "Deine eigenen Einträge, zurückgegeben. Hineingelesen wird noch nichts — die Regeln bleiben still, bis sie genug haben.",
       mirrorDays: "{judged} von {expected} Tagen beurteilt",
       mirrorRules: "{reporting} von {total} Regeln haben gesprochen",
+      behind: "Diese Auswertung kennt deinen neuesten Eintrag noch nicht.",
+      behindHint: "Sie wird neu gerechnet, sobald du wieder einen Tag erfasst.",
+      noRun: "Zu diesen Einträgen gibt es noch keine Auswertung.",
+      noRunHint:
+        "An deinem Tagebuch ist nichts angerührt. Der nächste Eintrag erzeugt eine — und wenn hier weiter dieser Satz steht, liegt es an uns.",
     },
     report: {
       link: "Vollständiger Bericht",
