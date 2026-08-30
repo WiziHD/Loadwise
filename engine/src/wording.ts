@@ -31,6 +31,7 @@
 
 import type { BlockingReason, Config, Flag, ReasonCode } from "./types.js";
 import type { MilestoneState, ProgressBlock } from "./progress.js";
+import type { ProblemCode } from "./validate.js";
 
 export type Locale = "de" | "en";
 
@@ -593,4 +594,132 @@ export function evidenceText(flag: Flag, config: Config, locale: Locale = "de"):
       });
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Was sich an einer Eingabe nicht lesen liess
+//
+// ---------------------------------------------------------------------------
+// `Problem.message` WAR IN SICH UNEINHEITLICH.
+//
+// Die Meldungen aus dem Import sind deutsch und an eine lesende Person
+// gerichtet: »Zeile 4: »Radfahrn« ist unbekannt.« Die aus der Eingabeprüfung
+// sind englische Entwicklerprosa: »morningScore must be between 0 and 10, got
+// 14«. Beide stehen im selben Feld, und der Bericht hätte entscheiden müssen,
+// welche er zeigt.
+//
+// Deshalb hier dasselbe wie bei den Urteilen: ein Satz je Code, in beiden
+// Sprachen, unter denselben drei Sperrlisten. `message` bleibt, was es war —
+// die technische Spur mit Zeilennummer und Rohwert, für Protokolle und
+// Fehlersuche. Auf den Bildschirm kommt der Satz von hier.
+//
+// ---------------------------------------------------------------------------
+// SIE BESCHREIBEN, WAS FEHLT — SIE FORDERN NICHTS.
+//
+// »Der Morgenwert liegt ausserhalb der Skala« und nicht »Trag einen Wert
+// zwischen 0 und 10 ein«. Der Unterschied ist derselbe wie bei den Urteilen,
+// und die drei Sperrlisten laufen auch über diese Sätze.
+//
+// Kein Satz nennt einen Feldnamen aus dem Code. `morningScore` ist für die
+// lesende Person kein Wort.
+// ---------------------------------------------------------------------------
+
+export const PROBLEM_WORDING: Record<ProblemCode, Phrase> = {
+  "invalid-date": {
+    de: "Ein Datum liess sich nicht lesen.",
+    en: "A date could not be read.",
+  },
+  "duplicate-date": {
+    de: "Für denselben Tag liegen zwei Einträge vor. Ein Kalendertag ist eine Zeile.",
+    en: "Two entries fall on the same day. One calendar day is one row.",
+  },
+  "morning-out-of-range": {
+    de: "Der Morgenwert liegt ausserhalb der Skala von 0 bis 10.",
+    en: "The morning score lies outside the scale of 0 to 10.",
+  },
+  "stiffness-out-of-range": {
+    de: "Die Morgensteifigkeit liegt ausserhalb des erfassbaren Bereichs von 0 bis 1440 Minuten.",
+    en: "The morning stiffness lies outside the recordable range of 0 to 1440 minutes.",
+  },
+  "rpe-out-of-range": {
+    de: "Die Anstrengung einer Einheit liegt ausserhalb der Skala von 1 bis 10.",
+    en: "The effort of a session lies outside the scale of 1 to 10.",
+  },
+  "duration-not-positive": {
+    de: "Eine Einheit trägt keine Dauer über null. Ohne Dauer entsteht keine Last.",
+    en: "A session carries no duration above zero. Without duration there is no load.",
+  },
+  "load-incomplete": {
+    de: "Zu einer Einheit fehlt die Dauer oder die Anstrengung. Eine Last entsteht nur aus beidem.",
+    en: "A session is missing its duration or its effort. Load comes from both together.",
+  },
+  "symptom-out-of-range": {
+    de: "Der Beschwerdewert liegt ausserhalb der Skala von 0 bis 10.",
+    en: "The symptom score lies outside the scale of 0 to 10.",
+  },
+  "symptom-timing-without-score": {
+    de: "Zu einem Zeitpunkt fehlt der Beschwerdewert. Ein Zeitpunkt allein lässt sich nicht gewichten.",
+    en: "A symptom timing has no symptom score with it. A timing alone carries no weight.",
+  },
+  "test-value-not-positive": {
+    de: "Ein Selbsttest trägt einen Wert, aus dem sich kein Seitenverhältnis bilden lässt.",
+    en: "A self-test carries a value from which no side ratio can be formed.",
+  },
+
+  "empty-file": {
+    de: "Die Datei enthält keine Zeilen.",
+    en: "The file contains no rows.",
+  },
+  "missing-column": {
+    de: "In der Datei fehlt eine Spalte, ohne die sich die Zeilen nicht zuordnen lassen.",
+    en: "The file is missing a column without which the rows cannot be assigned.",
+  },
+  "not-a-number": {
+    de: "An dieser Stelle stand keine Zahl.",
+    en: "There was no number in this place.",
+  },
+  "unknown-activity": {
+    de: "Diese Aktivität ist keine der erfassbaren.",
+    en: "This activity is not one of the recordable ones.",
+  },
+  "unknown-timing": {
+    de: "Dieser Zeitpunkt ist keiner der erfassbaren: während, danach oder abends.",
+    en: "This timing is not one of the recordable ones: during, after or evening.",
+  },
+
+  "measure-unit-conflict": {
+    de: "Dasselbe Mass kam vorher in einer anderen Einheit. Zwei Einheiten für eine Grösse sind nicht vergleichbar.",
+    en: "The same measure arrived earlier in a different unit. Two units for one quantity are not comparable.",
+  },
+  "measure-value-not-finite": {
+    de: "Zu diesem Mass stand keine Zahl.",
+    en: "There was no number for this measure.",
+  },
+
+  "unknown-test-type": {
+    de: "Dieser Selbsttest ist keiner der bekannten.",
+    en: "This self-test is not one of the known ones.",
+  },
+  "unknown-unit": {
+    de: "Diese Einheit ist keine der bekannten. Ohne sie ist die Zahl nicht vergleichbar.",
+    en: "This unit is not one of the known ones. Without it the number is not comparable.",
+  },
+  "test-side-missing": {
+    de: "Zu diesem Selbsttest fehlt eine Seite. Eine allein lässt sich nicht vergleichen.",
+    en: "This self-test is missing a side. One alone cannot be compared.",
+  },
+  "unit-mismatch": {
+    de: "Dieser Selbsttest wird in einer anderen Einheit gemessen als der, die hier steht.",
+    en: "This self-test is measured in a different unit from the one given here.",
+  },
+
+  "start-after-first-entry": {
+    de: "Der angegebene Beginn der Episode liegt nach ihrem ersten Eintrag.",
+    en: "The declared start of the episode falls after its own first entry.",
+  },
+};
+
+/** Der Satz zu einem Eingabefund. Nie `Problem.message` — die ist die technische Spur. */
+export function problemText(code: ProblemCode, locale: Locale = "de"): string {
+  return PROBLEM_WORDING[code][locale];
 }

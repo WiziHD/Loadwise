@@ -269,6 +269,23 @@ const MUTATIONEN: Mutation[] = [
     nach: 'aria-label=""',
   },
   {
+    // Zurück zur alten Fassung: nur die Tage, ohne den Satz. Damit erfährt
+    // jemand, WELCHER Tag nicht gelesen werden konnte, aber nicht WAS daran
+    // fehlte — und kann es nicht in Ordnung bringen.
+    name: "ReportView: der Eingabefehler sagt nicht, was fehlte",
+    datei: "src/components/ReportView.tsx",
+    von: "                  {problemText(code, locale)}",
+    nach: '                  {""}',
+  },
+  {
+    // Nicht mehr nach Code zusammengefasst: fünf Tage mit demselben Problem
+    // ergeben fünfmal denselben Satz.
+    name: "ReportView: derselbe Fund steht mehrfach da",
+    datei: "src/components/ReportView.tsx",
+    von: "            {[...new Set(run.problems.map((p) => p.code))].map((code) => {",
+    nach: "            {run.problems.map((p) => p.code).map((code) => {",
+  },
+  {
     name: "ArchiveButton: ein Fehlschlag wird nicht gemerkt",
     datei: "src/components/ArchiveButton.tsx",
     von: "              if (!result.ok) setFailed(true);",

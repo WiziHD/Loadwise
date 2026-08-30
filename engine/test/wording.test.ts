@@ -18,7 +18,9 @@ import { ALL_MILESTONE_STATES, ALL_PROGRESS_BLOCKS, type Milestone } from "../sr
 import {
   BLOCKED_WORDING,
   EVIDENCE_WORDING,
+  PROBLEM_WORDING,
   evidenceText,
+  problemText,
   DISCLAIMER,
   VERDICT_WORDING,
   blockedText,
@@ -31,6 +33,7 @@ import {
   MILESTONE_WORDING,
   PROGRESS_BLOCK_WORDING,
 } from "../src/wording.js";
+import { ALL_PROBLEM_CODES } from "../src/validate.js";
 import {
   ALL_BLOCKING_REASONS,
   ALL_REASON_CODES,
@@ -120,6 +123,13 @@ const allPhrases = (): { key: string; locale: Locale; text: string }[] => {
   // Motors.
   collect(EVIDENCE_WORDING as Record<string, Phrase>, "evidence");
 
+  // Was sich an einer Eingabe nicht lesen liess. Diese Sätze erreichen die
+  // lesende Person über den Bericht, also gelten für sie dieselben drei
+  // Verbote. Besonders die Versuchung ist hier gross: Der natürliche Satz für
+  // einen zu hohen Morgenwert ist »trag einen Wert zwischen 0 und 10 ein«, und
+  // das ist eine Anweisung.
+  collect(PROBLEM_WORDING as Record<string, Phrase>, "problem");
+
   // Profiles reach the user too, and an audit of this file found they were not
   // being checked at all. A red flag is the single likeliest place for the
   // boundary to slip: the natural sentence for "your calf is swollen and warm"
@@ -165,6 +175,35 @@ describe("every code has a sentence", () => {
     for (const reason of ALL_BLOCKING_REASONS) {
       for (const locale of LOCALES) {
         expect(BLOCKED_WORDING[reason][locale].trim().length, `${reason}/${locale}`).toBeGreaterThan(10);
+      }
+    }
+  });
+
+  it("covers all problem codes in both languages", () => {
+    // Dass jeder Code ERREICHBAR ist, prüft test/problems.test.ts mit einer
+    // eigenen Provokation je Code. Hier steht die andere Hälfte: dass jeder
+    // erreichbare Code auch einen Satz hat.
+    //
+    // Ohne diese Zeile könnte ein Eintrag existieren und leer sein — und der
+    // Bericht zeigte an der Stelle, an der »was fehlt« stehen müsste, nichts.
+    for (const code of ALL_PROBLEM_CODES) {
+      for (const locale of LOCALES) {
+        expect(PROBLEM_WORDING[code][locale].trim().length, `${code}/${locale}`).toBeGreaterThan(10);
+        expect(problemText(code, locale)).toBe(PROBLEM_WORDING[code][locale]);
+      }
+    }
+  });
+
+  it("und kein Satz nennt einen Feldnamen aus dem Code", () => {
+    // `morningScore` ist für die lesende Person kein Wort. Die technischen
+    // Meldungen in `Problem.message` dürfen sie tragen — sie sind die Spur für
+    // die Fehlersuche. Diese Sätze hier gehen auf den Bildschirm.
+    const bezeichner = ["morningScore", "durationMin", "symptomScore", "rpe", "involved", "uninvolved"];
+    for (const code of ALL_PROBLEM_CODES) {
+      for (const locale of LOCALES) {
+        for (const name of bezeichner) {
+          expect(PROBLEM_WORDING[code][locale], `${code}/${locale}`).not.toContain(name);
+        }
       }
     }
   });

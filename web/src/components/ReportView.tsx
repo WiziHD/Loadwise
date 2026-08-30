@@ -3,6 +3,7 @@ import {
   unnamedBlocking,
   blockedText,
   evidenceText,
+  problemText,
   verdictText,
   DISCLAIMER,
   type Config,
@@ -307,13 +308,45 @@ export function ReportView({
               ? s.problemsOne
               : fill(s.problemsMany, { n: run.problems.length })}
           </p>
-          {/* Die Tage, nicht die Codes. `Problem.message` ist englische
-              Entwicklerprosa ohne Wortlauttabelle, und die einer lesenden Person
-              hinzustellen wäre schlechter als sie wegzulassen. Was zählt, steht
-              im Satz darunter. */}
-          <p style={{ margin: "0 0 0.5rem", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
-            {[...new Set(run.problems.map((p) => p.date).filter((d) => d !== null))].join(" · ")}
-          </p>
+          {/* ------------------------------------------------------------
+              JE FUND EIN SATZ — SEIT KARTE 2.7.
+
+              Hier standen nur die betroffenen Tage, und der Grund war gut:
+              `Problem.message` ist die technische Spur mit Zeilennummer und
+              Rohwert, teils englische Entwicklerprosa. Die einer lesenden
+              Person hinzustellen wäre schlechter gewesen als sie wegzulassen.
+
+              `problemText` gibt es jetzt — ein Satz je Code, in beiden
+              Sprachen, unter denselben drei Sperrlisten wie jedes Urteil. Damit
+              erfährt jemand nicht nur, WELCHER Tag nicht gelesen werden konnte,
+              sondern WAS daran fehlte.
+
+              Nach Code zusammengefasst: Fünf Tage mit demselben Problem sind
+              ein Satz mit fünf Daten, nicht fünfmal derselbe Satz.
+              ------------------------------------------------------------ */}
+          <ul style={{ margin: "0 0 var(--space-3)", padding: 0 }}>
+            {[...new Set(run.problems.map((p) => p.code))].map((code) => {
+              const tage = [
+                ...new Set(
+                  run.problems
+                    .filter((p) => p.code === code)
+                    .map((p) => p.date)
+                    .filter((d) => d !== null),
+                ),
+              ];
+              return (
+                <li key={code} style={{ margin: "0 0 var(--space-2)", listStyle: "none" }}>
+                  {problemText(code, locale)}
+                  {tage.length > 0 && (
+                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>
+                      {" — "}
+                      {tage.join(" · ")}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
           <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--text-sm)" }}>{s.problemsHint}</p>
         </section>
       )}

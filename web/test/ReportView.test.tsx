@@ -23,6 +23,7 @@ import {
   verdictText,
   blockedText,
   evidenceText,
+  problemText,
   DISCLAIMER,
   type Entry,
   type Evaluation,
@@ -480,6 +481,49 @@ describe("ReportView — Eingabefehler werden nicht verschluckt", () => {
     expect(screen.getByText(s.problemsHeading)).toBeDefined();
     expect(container.textContent).toContain("2026-08-03");
     expect(container.textContent).toContain("2026-08-09");
+  });
+
+  it("und sagt zu jedem Fund, WAS nicht gelesen werden konnte", () => {
+    // -------------------------------------------------------------------
+    // BIS KARTE 2.7 STANDEN HIER NUR DIE TAGE.
+    //
+    // Der Grund war gut: `Problem.message` ist die technische Spur mit
+    // Zeilennummer und Rohwert, teils englische Entwicklerprosa. Wer sie einer
+    // lesenden Person hinstellt, hat ihr nicht geholfen.
+    //
+    // `problemText` gibt es jetzt — aus dem Motor, unter denselben drei
+    // Sperrlisten wie jedes Urteil. Nie eine Zeichenkette aus dem Wörterbuch
+    // der App: Der natürliche Satz für einen zu hohen Morgenwert wäre »trag
+    // einen Wert zwischen 0 und 10 ein«, und das ist eine Anweisung.
+    // -------------------------------------------------------------------
+    const { container } = zeichnen(mitEingabefehlern());
+    expect(container.textContent).toContain(problemText("morning-out-of-range", "de"));
+    expect(container.textContent).toContain(problemText("duplicate-date", "de"));
+  });
+
+  it("und zeigt denselben Fund nicht fünfmal", () => {
+    // Fünf Tage mit demselben Problem sind ein Satz mit fünf Daten. Fünfmal
+    // derselbe Satz wäre eine Wand, in der die zweite Sorte Fund untergeht.
+    const run = laufAus(mitVerlauf());
+    const mitWiederholung: StoredRun = {
+      ...run,
+      problems: ["2026-08-03", "2026-08-04", "2026-08-05"].map((date) => ({
+        code: "morning-out-of-range" as const,
+        date,
+        field: "morningScore",
+        message: "x",
+      })),
+    };
+
+    const { container } = zeichnen(mitWiederholung);
+    const satz = problemText("morning-out-of-range", "de");
+    const vorkommen = (container.textContent ?? "").split(satz).length - 1;
+    expect(vorkommen).toBe(1);
+
+    // Die drei Tage stehen trotzdem alle da.
+    for (const tag of ["2026-08-03", "2026-08-04", "2026-08-05"]) {
+      expect(container.textContent).toContain(tag);
+    }
   });
 
   it("und sagt, dass die Urteile darauf stehen", () => {
