@@ -21,7 +21,7 @@ supabase/   Schema und zeilenbasierter Zugriffsschutz.
 ```bash
 npm install
 npm run check      # Motor: Typen, 402 Motortests, Abdeckungsschwellen
-                   # App:   257 Webtests (rein + Bauteile), Typen, Wortlaut-Grenze
+                   # App:   267 Webtests (rein + Bauteile), Typen, Wortlaut-Grenze
 npm run check:full # dasselbe plus Build und Prerender-Wächter
 npm run dev        # Entwicklungsserver
 ```

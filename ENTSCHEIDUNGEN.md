@@ -532,6 +532,23 @@ Dazu die Reihenfolge als eigener Test — geschrieben **vor** gerechnet. Andersh
 
 Zweiter Lauf: **53 von 53.**
 
+### Die Abnahme — und was dabei sichtbar wurde
+
+Die Karte fordert: *»Drei Messungen über sechs Wochen erzeugen ein Asymmetrie-Urteil in der App.«* `test/selftest-abnahme.test.ts` geht dafür die Kette so weit, wie sie ohne Datenbank geht — drei Nutzlasten in der Form, die `SelfTestForm` absendet, durch dieselben Prüfregeln, die die Server-Aktion anwendet, in denselben Motoraufruf, den `evaluateAndStore` macht.
+
+**Der Befund ist besser als die Bedingung.** Dasselbe Tagebuch, zweimal gerechnet:
+
+| | Urteil |
+|---|---|
+| Sechs Wochen Tagebuch, **ohne** Messungen | **grün** — alle sieben Regeln melden nichts |
+| Dieselben sechs Wochen, **mit** drei Messungen | **bernstein** — `asymmetry/mild-deficit` |
+
+Der Morgenwert fällt von 5 auf 1, die Last ist gleichmässig, jede Einheit klingt binnen 24 Stunden ab. Ein Schmerztagebuch wäre hier fertig und zufrieden. Die verletzte Seite schafft in diesem Moment **81 % der gesunden** — nur der Seitenvergleich sieht das, und ohne ein Formular dafür hätte es niemand je gesehen. Das ist die Aussage des Konzepts, zum ersten Mal als Zahl statt als Absicht.
+
+Dazu die Zuschreibung als eigener Test: Der Unterschied ist **genau ein Flag**, und alle übrigen sind grün. Ohne diese Zeile wäre »die Messungen haben das gemacht« geraten.
+
+Ein erster Entwurf des Tagebuchs stand 43 Tage konstant bei 3 — und erzeugte damit selbst ein `stagnation/amber`. Der Test wäre grün gewesen und hätte nichts bewiesen: Das Urteil kam gar nicht von den Messungen. Aufgefallen ist das nur, weil die Gegenprobe »ohne Messungen« mitlief und `judged` statt `insufficient` lieferte.
+
 ### Was offen bleibt
 
 - **Kein MDC für den Fersenheber.** `PROFIL-ACHILLES.md` §8.2 hält es fest: 2 gegen 6 Wiederholungen aus verschiedenen Populationen. Ohne belastbaren Wert darf keine Ansicht sagen, eine Verbesserung sei **echt** — 12 → 15 ist von Messrauschen nicht zu trennen. Die Zahlen werden deshalb aufgezeichnet und nebeneinandergestellt, nie als erreichte Verbesserung ausgewiesen.
