@@ -425,6 +425,105 @@ async function main(): Promise<void> {
         typeof messungenZurueck[0]?.uninvolved === "number",
       `${typeof messungenZurueck[0]?.involved} / ${typeof messungenZurueck[0]?.uninvolved}`,
     );
+
+    // ---------------------------------------------------------------------
+    // 5. EIGENE MASSE — DIE VIER REGELN, DIE NUR DIE DATENBANK DURCHSETZT.
+    //
+    // `test/measurement-validation.test.ts` prüft dieselben vier als reine
+    // Funktion, und `test/db-measurements.test.ts` die Schreibschicht gegen
+    // eine Attrappe. Was beide NICHT können: sagen, ob die Bedingungen im
+    // Schema wirklich greifen.
+    //
+    // Und hier hängt daran mehr als sonst. Zwei der vier sind erst mit 0010
+    // entstanden, und beide verhindern denselben stillen Fehler in
+    // verschiedener Verkleidung: dieselbe Zahlenreihe, die unter zwei Namen
+    // oder in zwei Einheiten auseinanderfällt.
+    // ---------------------------------------------------------------------
+    const mass = (key: string, unit: string) => ({ episode_id: episodeId, key, unit });
+
+    const { data: massZeile, error: massFehler } = await db
+      .from("measure_keys")
+      .insert(mass("Kniebeugen", "reps"))
+      .select("id")
+      .single();
+    record("ein eigenes Mass geht durch", massFehler === null, massFehler?.message ?? "");
+    const massId = (massZeile as { id: string } | null)?.id ?? "";
+
+    // `one_unit_per_key` aus 0001. Dreissig Minuten gegen dreissig Sekunden
+    // verglichen ist still, plausibel und vollständig falsch.
+    const { error: einheitFehler } = await db
+      .from("measure_keys")
+      .insert(mass("Kniebeugen", "sec"));
+    record(
+      "dasselbe Mass in einer zweiten Einheit lehnt die Datenbank ab",
+      einheitFehler !== null,
+      einheitFehler?.code ?? "durchgelassen",
+    );
+
+    // Der Index aus 0010. Ohne ihn wären »Kniebeugen« und »kniebeugen« zwei
+    // Masse — zwei Reihen, jede für sich plausibel, wo eine gemeint war.
+    const { error: schreibweiseFehler } = await db
+      .from("measure_keys")
+      .insert(mass("  kniebeugen  ", "reps"));
+    record(
+      "und dasselbe Mass in anderer Schreibweise ebenso — das ist 0010",
+      schreibweiseFehler !== null,
+      schreibweiseFehler?.code ?? "durchgelassen",
+    );
+
+    // `measure_key_not_blank`, ebenfalls 0010. Ohne die Bedingung wäre »   «
+    // ein gültiges Mass, und das zweite träfe auf den Index darüber — mit
+    // einer Meldung über Eindeutigkeit statt über ein leeres Feld.
+    const { error: leerFehler } = await db.from("measure_keys").insert(mass("   ", "reps"));
+    record(
+      "ein Mass ohne Namen ebenso",
+      leerFehler !== null,
+      leerFehler?.code ?? "durchgelassen",
+    );
+
+    // Die Gegenprobe zu den dreien: Ein wirklich anderes Mass muss durch.
+    // Ohne sie bewiesen sie nur, dass die Tabelle nichts mehr annimmt.
+    const { error: anderesFehler } = await db.from("measure_keys").insert(mass("Stehen", "min"));
+    record("ein anderes Mass geht weiterhin durch", anderesFehler === null, anderesFehler?.message ?? "");
+
+    // Der Upsert auf (Mass, Tag) — der Index aus 0010, zweiter Teil.
+    const wert = (tag: string, value: number) => ({
+      measure_key_id: massId,
+      measured_on: tag,
+      value,
+      note: null,
+    });
+    await db.from("measurements").upsert(wert("2026-08-01", 8), {
+      onConflict: "measure_key_id,measured_on",
+    });
+    const { error: zweiterWertFehler } = await db
+      .from("measurements")
+      .upsert(wert("2026-08-01", 15), { onConflict: "measure_key_id,measured_on" });
+    record(
+      "eine zweite Messung am selben Tag ersetzt",
+      zweiterWertFehler === null,
+      zweiterWertFehler?.message ?? "",
+    );
+
+    const { data: werteZurueck } = await db
+      .from("measurements")
+      .select("*")
+      .eq("measure_key_id", massId);
+    record(
+      "es steht eine Zeile da, nicht zwei",
+      (werteZurueck ?? []).length === 1,
+      `${(werteZurueck ?? []).length} Zeile(n)`,
+    );
+    record(
+      "und sie trägt den neuen Wert",
+      (werteZurueck as { value: number }[] | null)?.[0]?.value === 15,
+      String((werteZurueck as { value: number }[] | null)?.[0]?.value),
+    );
+    record(
+      "als Zahl, nicht als Zeichenkette",
+      typeof (werteZurueck as { value: unknown }[] | null)?.[0]?.value === "number",
+      typeof (werteZurueck as { value: unknown }[] | null)?.[0]?.value,
+    );
   } finally {
     // Immer, auch nach einem Abbruch. `on delete cascade` auf episode_id nimmt
     // Flags und Auswertungen mit — sonst blieben Zeilen liegen, und die nächste
