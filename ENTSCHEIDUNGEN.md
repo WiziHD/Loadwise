@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-93 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+116 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -566,3 +566,71 @@ Dabei ist die Prüfung selbst über sich gestolpert: Der letzte Vergleich zeigte
 - **Kein MDC für den Fersenheber.** `PROFIL-ACHILLES.md` §8.2 hält es fest: 2 gegen 6 Wiederholungen aus verschiedenen Populationen. Ohne belastbaren Wert darf keine Ansicht sagen, eine Verbesserung sei **echt** — 12 → 15 ist von Messrauschen nicht zu trennen. Die Zahlen werden deshalb aufgezeichnet und nebeneinandergestellt, nie als erreichte Verbesserung ausgewiesen.
 - **Der Winkel braucht ein Gerät.** Die Beweglichkeitsmessung setzt einen Neigungsmesser voraus (jedes Telefon hat einen). Die verbreitete Laienform misst stattdessen den Wandabstand in Zentimetern — eine andere Grösse, die `TEST_UNIT.rom = "deg"` nicht abbildet. Aufgemacht wird das erst, wenn eine echte Messung daran scheitert.
 - **JOSPT 2024** bleibt hinter der Bezahlschranke und ist die aktuellste Quelle. Vor Abnahme des Achillesprofils (Schritt 6) muss der Volltext her; er könnte den Takt anders festlegen.
+
+---
+
+## E15 — Eigene Masse: Die App schlägt nichts vor, und die Einheit friert ein
+
+**Entschieden 31.08.2026** · `web/src/lib/measurement-validation.ts`, `web/src/lib/db/measurements.ts`, `supabase/migrations/0010_measurement_one_per_day.sql`, Karte 3.2
+
+»Fünfzehn Kniebeugen« ist kein Seitenvergleich. Eine Kniebeuge hat keine gesunde Seite, gegen die sie sich messen liesse — sie in `SelfTest` zu zwängen hiesse, ein `uninvolved` zu erfinden, das der Symmetrieindex dann zu einem Urteil verrechnete. Deshalb ist `Measurement` ein eigener Typ mit eigener Oberfläche.
+
+### Die Abwesenheit ist das Merkmal
+
+Es gibt **keine Vorschlagsliste**, was zu messen sich lohnt. Der Kommentar an `MeasureKey` im Motor nennt den Grund: *»Closing this union would also mean the app shipping a list of what is worth measuring, and a list of what is worth measuring is a clinical criterion.«*
+
+Das ist der bequemste denkbare Weg über die Grenze, um die sich dieses Projekt sonst überall bemüht — und er sähe aus wie Benutzerfreundlichkeit. Eine Auswahl mit »Kniebeugen · Einbeinstand · Treppen« wäre eine Aussage darüber, was bei dieser Verletzung zählt, und niemand würde sie als Urteil lesen.
+
+Angeboten werden ausschliesslich die Masse, die der Nutzer **selbst** benannt hat, und zwar als `datalist`: Sie schränkt nicht ein. Ein `select` machte die Liste zur Vorgabe. Der Nutzen ist trotzdem echt — er verhindert, dass derselbe Verlauf beim vierten Mal unter »Kniebeugen tief« weiterläuft.
+
+Eine Prüfung sichert die Abwesenheit ab: Fünf eigenwillige Namen (»Wie weit bis zum Briefkasten«, ein Emoji, »asdf«) müssen durchkommen. Eine Erlaubnisliste, die sich später einschleicht, macht sie rot.
+
+### Zwei stille Fehler, und beide ergeben einen plausiblen Verlauf
+
+| Fehler | Was passiert |
+|---|---|
+| **Dieselbe Zahl in zwei Einheiten** | Dreissig Minuten gegen dreissig Sekunden verglichen geht glatt auf und heisst nichts. Der Verlauf zeigt entweder gar keine Veränderung oder das Sechzigfache — je nachdem, welche zuerst kam |
+| **Dasselbe Mass in zwei Schreibweisen** | »Kniebeugen« und »kniebeugen« sind zwei Reihen, jede für sich plausibel, wo eine gemeint war. Auf dem Bildschirm ist der Unterschied nicht zu sehen |
+
+Den ersten hat 0001 gesehen und mit `one_unit_per_key` geschlossen. Den zweiten nicht: `unique (episode_id, key)` unterscheidet Gross- und Kleinschreibung. **0010** schliesst ihn mit einem Index über `lower(btrim(key))` — derselbe Fehler eine Spalte weiter links.
+
+Gespeichert bleibt die **erste Schreibweise**. Der Nutzer hat das Mass benannt, und es soll dastehen, wie er es geschrieben hat; verglichen wird unempfindlich. Dieselbe Regel wie bei der Einheit: Was zuerst da war, gilt.
+
+`0010` bringt ausserdem — wie 0009 für die Selbsttests — eine Messung je Mass und Tag. `progress.ts` sammelt in `seriesOf` jede Lesung; zwei Zeilen mit demselben Datum ergäben zwei Punkte übereinander.
+
+### Die Schreibschicht wirft, statt auszuweichen
+
+Ein erster Entwurf nahm bei einem Konflikt still die eingefrorene Einheit. Das klang nach Nachsicht und wäre genau der Fehler gewesen, den diese Karte verhindern soll: Wer 30 Sekunden eintippt und 30 Minuten gespeichert bekommt, hat eine Zahl im Verlauf, die niemand mehr als falsch erkennen kann.
+
+`UnitConflictError` ist deshalb eine eigene Klasse und kein `Error` mit einer Zeichenkette darin — die Server-Aktion soll daraus »dieses Mass ist in Sekunden erfasst« machen können und nicht »konnte nicht gespeichert werden«. Der zweite Satz schickte jemanden dazu, es noch einmal zu versuchen, mit demselben Ergebnis.
+
+Erreichbar wird der Wurf nur im Rennen zwischen zwei Reitern; die Prüfregeln lehnen den Konflikt vorher ab. Dass er schwer erreichbar ist, macht den Unterschied zwischen den beiden Sätzen nicht kleiner.
+
+### Und die Lücke, die dabei auffiel
+
+`verdicts.ts` hat die eigenen Masse **nie gelesen**. `EvaluationInput` hatte das Feld, die Datenbank hatte die Tabellen, der Aufruf liess es weg — dieselbe Lücke wie bei den Selbsttests, eine Tabelle weiter, und beide Male war jedes Bauteil für sich in Ordnung.
+
+### Was heute noch nichts bewirkt — und warum das hier steht
+
+`progress.ts` baut `records` nur für Masse, die ein **Meilenstein** nennt (`measuresInUse(input.milestones)`). Ohne Meilensteine erzeugen zwei erfasste Kniebeugen-Werte also keinen einzigen Eintrag.
+
+Das ist kein Fehler, sondern die Reihenfolge der Karten: 3.2 erfasst, **3.4** gibt dem Nutzer die Meilensteine, gegen die gemessen wird. Aber es ist genau der Zustand, den dieses Projekt sonst als »geschrieben und nie gelesen« verfolgt.
+
+Deshalb steht er als Prüfung in `test/verdicts-measurements.test.ts` und nicht als Kommentar. **Diese Prüfung soll rot werden, wenn 3.4 kommt** — dann muss jemand sie anfassen und dabei entscheiden, was nun gilt. Ein stiller Zustand, den niemand mehr erklärt, wäre die Alternative.
+
+Daneben steht die Gegenrichtung als Zusicherung: Derselbe Lauf mit und ohne Messungen ergibt **dasselbe Urteil**. Ein Meilenstein trägt keine Severity und zählt nicht in die Abdeckung — täte er es, schaltete ein erreichtes Ziel eine Entwarnung frei, die es nicht belegt.
+
+### Der Mutationslauf hat ausgerechnet die korrigierte Zeile gefunden
+
+Erster Lauf: **64 von 65.** Die eine, die durchkam, war der Wurf bei Einheitenkonflikt — also genau die Zeile, die im Bau als Fehler erkannt und geändert worden war.
+
+Der Grund ist eine Testschicht, die zu hoch ansetzt: `test/measurements-action.test.ts` **ersetzt** `saveMeasurement`. Es prüft damit die Aktion und nie die Schreibschicht. Ein Umbau, der das Werfen wieder herausnimmt und still auf die eingefrorene Einheit ausweicht, hätte 337 grüne Tests gehabt.
+
+`test/db-measurements.test.ts` schliesst das mit elf Prüfungen, und zwei davon sind der Kern:
+
+- Der Wurf **schreibt dabei nichts**. Ein Fehler, nach dem trotzdem eine Zeile in der Datenbank steht, wäre schlimmer als gar keine Prüfung.
+- Er wirft **nicht**, wenn die Einheit passt. Ohne diese Gegenprobe könnte die Prüfung jedes bekannte Mass ablehnen und wäre trotzdem grün.
+
+Die Lehre ist nicht neu, aber sie hat hier zum zweiten Mal in einer Woche zugeschlagen: Wo ein Test eine Schicht ersetzt, ist diese Schicht ungesichert — bei 3.1 war es die Server-Aktion, bei 3.2 die Schreibschicht darunter. Beide Male war das Bauteil für sich in Ordnung, und beide Male hat erst die Mutation es gezeigt.
+
+Zweiter Lauf: **65 von 65.**

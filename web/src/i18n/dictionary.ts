@@ -174,6 +174,50 @@ export interface Strings {
     invalid: string;
     noEpisode: string;
   };
+  /**
+   * Eigene Masse — Zahlen ohne Vergleichsseite.
+   *
+   * Hier steht **kein einziger Vorschlag**, was zu messen sich lohnt. Der
+   * Kommentar an `MeasureKey` im Motor sagt, warum: Eine Liste dessen, was zu
+   * messen sich lohnt, wäre ein klinisches Kriterium. Was das Formular
+   * anbietet, sind ausschliesslich die Masse, die der Nutzer selbst benannt
+   * hat.
+   */
+  measure: {
+    link: string;
+    heading: string;
+    intro: string;
+    name: string;
+    nameHint: string;
+    unit: string;
+    unitHint: string;
+    /** Steht statt der Auswahl, sobald das Mass eine Einheit hat. */
+    unitFrozen: string;
+    unitReps: string;
+    unitCm: string;
+    unitDeg: string;
+    unitMin: string;
+    unitSec: string;
+    unitScore: string;
+    date: string;
+    value: string;
+    valueHint: string;
+    note: string;
+    noteHint: string;
+    saved: string;
+    replacing: string;
+    historyHeading: string;
+    historyEmpty: string;
+    keyMissing: string;
+    keyTooLong: string;
+    unknownUnit: string;
+    unitConflict: string;
+    valueMissing: string;
+    outOfRange: string;
+    futureDate: string;
+    invalid: string;
+    noEpisode: string;
+  };
   diary: {
     day: string;
     anchorDeclared: string;
@@ -495,6 +539,43 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalid: "Something in the form did not come through. Please check the fields.",
       noEpisode: "This episode could not be found.",
     },
+    measure: {
+      link: "Own measures",
+      heading: "Your own measures",
+      intro:
+        "A number with no other side to compare it against — fifteen squats, eight minutes standing. You name the measure; nothing here suggests what is worth measuring.",
+      name: "Measure",
+      nameHint: "Your words. Reuse the same name and the readings line up into one record.",
+      unit: "Unit",
+      unitHint: "Fixed the first time and kept from then on. Thirty minutes against thirty seconds would compare cleanly and mean nothing.",
+      unitFrozen: "Recorded in",
+      unitReps: "repetitions",
+      unitCm: "centimetres",
+      unitDeg: "degrees",
+      unitMin: "minutes",
+      unitSec: "seconds",
+      unitScore: "0 to 10",
+      date: "Measured on",
+      value: "Reading",
+      valueHint: "Zero belongs here if that is what it was.",
+      note: "Note",
+      noteHint: "For you. No rule reads this.",
+      saved: "Stored.",
+      replacing:
+        "This measure is already recorded for this day. What you see here is what is stored, and saving replaces it.",
+      historyHeading: "Recorded so far",
+      historyEmpty: "No reading yet.",
+      keyMissing: "The measure needs a name.",
+      keyTooLong: "That name is too long for a label.",
+      unknownUnit: "That unit is not one this app records.",
+      unitConflict:
+        "This measure is already recorded in another unit. Two units under one name cannot be compared — either keep the first, or name the new one differently.",
+      valueMissing: "The reading is missing.",
+      outOfRange: "That number is outside what this unit can hold. Worth a second look.",
+      futureDate: "That date is ahead of today.",
+      invalid: "Something in the form did not come through. Please check the fields.",
+      noEpisode: "This episode could not be found.",
+    },
     diary: {
       day: "Day",
       anchorDeclared: "counted from the day you gave",
@@ -737,6 +818,43 @@ export const DICTIONARY: Record<Locale, Strings> = {
         "Die andere Seite kann nicht null sein — an ihr wird die verletzte Seite gemessen.",
       outOfRange: "Diese Zahl liegt ausserhalb dessen, was dieser Test hergibt. Lohnt einen zweiten Blick.",
       notInProfile: "Dieser Test gehört nicht zum Profil dieser Episode.",
+      futureDate: "Dieses Datum liegt nach heute.",
+      invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
+      noEpisode: "Diese Episode wurde nicht gefunden.",
+    },
+    measure: {
+      link: "Eigene Masse",
+      heading: "Deine eigenen Masse",
+      intro:
+        "Eine Zahl ohne zweite Seite, gegen die sie sich messen liesse — fünfzehn Kniebeugen, acht Minuten Stehen. Du benennst das Mass; hier schlägt nichts vor, was sich zu messen lohnt.",
+      name: "Mass",
+      nameHint: "Deine Worte. Derselbe Name wieder verwendet, und die Werte reihen sich zu einem Verlauf.",
+      unit: "Einheit",
+      unitHint: "Wird beim ersten Mal festgelegt und bleibt dann. Dreissig Minuten gegen dreissig Sekunden verglichen ginge glatt auf und hiesse nichts.",
+      unitFrozen: "Erfasst in",
+      unitReps: "Wiederholungen",
+      unitCm: "Zentimeter",
+      unitDeg: "Grad",
+      unitMin: "Minuten",
+      unitSec: "Sekunden",
+      unitScore: "0 bis 10",
+      date: "Gemessen am",
+      value: "Wert",
+      valueHint: "Null gehört hierher, wenn es null war.",
+      note: "Notiz",
+      noteHint: "Für dich. Keine Regel liest das.",
+      saved: "Gespeichert.",
+      replacing:
+        "Für diesen Tag ist dieses Mass schon erfasst. Was hier steht, ist das Gespeicherte — Speichern ersetzt es.",
+      historyHeading: "Bisher erfasst",
+      historyEmpty: "Noch kein Wert.",
+      keyMissing: "Das Mass braucht einen Namen.",
+      keyTooLong: "Dieser Name ist zu lang für eine Beschriftung.",
+      unknownUnit: "Diese Einheit erfasst die App nicht.",
+      unitConflict:
+        "Dieses Mass ist schon in einer anderen Einheit erfasst. Zwei Einheiten unter einem Namen lassen sich nicht vergleichen — entweder die erste behalten oder das neue anders benennen.",
+      valueMissing: "Der Wert fehlt.",
+      outOfRange: "Diese Zahl liegt ausserhalb dessen, was diese Einheit hergibt. Lohnt einen zweiten Blick.",
       futureDate: "Dieses Datum liegt nach heute.",
       invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
       noEpisode: "Diese Episode wurde nicht gefunden.",

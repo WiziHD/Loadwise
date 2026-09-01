@@ -481,6 +481,112 @@ const MUTATIONEN: Mutation[] = [
     von: '      .order("test_date", { ascending: true })',
     nach: "",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 3.2 — eigene Masse.
+  //
+  // Zwei stille Fehler, und beide ergeben einen Verlauf, der plausibel
+  // aussieht und nichts bedeutet: dieselbe Zahl in zwei Einheiten, dasselbe
+  // Mass in zwei Schreibweisen.
+  // -------------------------------------------------------------------------
+  {
+    // Der Fehler, den die Karte beim Namen nennt: 30 Minuten gegen 30 Sekunden.
+    name: "validateMeasurement: die Einheit friert nicht ein",
+    datei: "src/lib/measurement-validation.ts",
+    von: '  if (vorhanden !== undefined && vorhanden.unit !== unit) return "unit-conflict";',
+    nach: '  if (false) return "unit-conflict";',
+  },
+  {
+    // Verglichen wird mit Rücksicht auf Schreibweise. Dann liesse sich die
+    // eingefrorene Einheit mit einem grossen K umgehen, und es stünden zwei
+    // Reihen da, wo eine gemeint war.
+    name: "measureKeyId: die Schreibweise zaehlt wieder",
+    datei: "src/lib/measurement-validation.ts",
+    von: "  return key.trim().toLowerCase();",
+    nach: "  return key.trim();",
+  },
+  {
+    // Ein leerer Name kommt durch. Das zweite »   « träfe dann auf den Index
+    // aus 0010 — mit einer Meldung über Eindeutigkeit statt über ein leeres
+    // Feld.
+    name: "validateMeasurement: ein leerer Name geht durch",
+    datei: "src/lib/measurement-validation.ts",
+    von: '  if (name === "") return "key-missing";',
+    nach: '  if (false) return "key-missing";',
+  },
+  {
+    // Ein leeres Feld wird zur Null statt zu null — dieselbe Falle wie beim
+    // Seitenvergleich, und hier heisst sie »null Kniebeugen geschafft«.
+    name: "MeasurementForm: ein leeres Feld wird zur Null",
+    datei: "src/components/MeasurementForm.tsx",
+    von: '  if (sauber === "") return null;',
+    nach: '  if (sauber === "") return 0;',
+  },
+  {
+    // Die eingefrorene Einheit wird nicht nachgezogen: Das Formular schickt
+    // die zuletzt gewählte, und die Aktion lehnt ab, ohne dass jemand
+    // verstünde warum.
+    name: "MeasurementForm: die eingefrorene Einheit wird nicht uebernommen",
+    datei: "src/components/MeasurementForm.tsx",
+    von: "    if (eingefroren !== undefined) setDraft((d) => ({ ...d, unit: eingefroren.unit }));",
+    nach: "    if (false) setDraft((d) => d);",
+  },
+  {
+    // Das Formular vergleicht Namen mit Rücksicht auf Schreibweise. Dann bliebe
+    // die Auswahl offen, wo sie gesperrt gehoert.
+    name: "MeasurementForm: der Namensvergleich achtet auf Grossschreibung",
+    datei: "src/components/MeasurementForm.tsx",
+    von: "  const eingefroren = known.find((k) => measureKeyId(k.key) === measureKeyId(draft.key));",
+    nach: "  const eingefroren = known.find((k) => k.key === draft.key);",
+  },
+  {
+    // Die Vorschlagsliste zeigt etwas, das die App erfunden hat. Genau das,
+    // was `MeasureKey` im Motor ausdrücklich verhindern soll.
+    name: "MeasurementForm: die App schlaegt selbst Masse vor",
+    datei: "src/components/MeasurementForm.tsx",
+    von: "            {known.map((k) => (",
+    nach: '            {[...known, { key: "Kniebeugen", unit: "reps" as Unit }].map((k) => (',
+  },
+  {
+    // Die Schreibschicht weicht still auf die eingefrorene Einheit aus, statt
+    // zu werfen. Wer 30 Sekunden eintippt, bekommt 30 Minuten gespeichert.
+    name: "saveMeasurement: der Einheitenkonflikt wird stillschweigend umgedeutet",
+    datei: "src/lib/db/measurements.ts",
+    von: "      throw new UnitConflictError(treffer.key, treffer.unit, input.unit);",
+    nach: "      keyId = treffer.id;",
+  },
+  {
+    // Die Aktion nimmt die bekannten Masse aus dem Aufruf statt aus der
+    // Datenbank — dann kann sich ein Aufruf von aussen jede Einheit erlauben.
+    name: "saveMeasurementAction: die bekannten Masse kommen nicht aus der Datenbank",
+    datei: "src/app/actions/measurements.ts",
+    von: "  const problem = validateMeasurement(input, bekannt, utcToday());",
+    nach: "  const problem = validateMeasurement(input, [], utcToday());",
+  },
+  {
+    // Ein Konflikt aus der Schreibschicht wird zu »konnte nicht gespeichert
+    // werden«. Ein zweiter Versuch ergäbe dasselbe, und niemand wüsste warum.
+    name: "saveMeasurementAction: der Konflikt kommt als Fehlschlag an",
+    datei: "src/app/actions/measurements.ts",
+    von: '    if (fehler instanceof UnitConflictError) return { ok: false, reason: "unit-conflict" };',
+    nach: "",
+  },
+  {
+    // Der Name geht ungetrimmt in die Datenbank. Zwei Masse, die sich auf dem
+    // Bildschirm nicht unterscheiden lassen.
+    name: "saveMeasurementAction: der Name wird nicht beschnitten",
+    datei: "src/app/actions/measurements.ts",
+    von: "      key: input.key.trim(),",
+    nach: "      key: input.key,",
+  },
+  {
+    // Die eigenen Masse erreichen den Motor nicht — genau die Lücke, die 3.2
+    // geschlossen hat.
+    name: "verdicts: die eigenen Masse gehen nicht in den Motor",
+    datei: "src/lib/db/verdicts.ts",
+    von: "    measurements,\n    context,",
+    nach: "    measurements: [],\n    context,",
+  },
 ];
 
 type Bericht = {

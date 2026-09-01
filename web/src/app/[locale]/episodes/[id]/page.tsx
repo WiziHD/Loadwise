@@ -150,6 +150,12 @@ export default async function EpisodePage({
           <Link href={`/${locale}/episodes/${id}/tests`} style={navLink}>
             {s.selfTest.link}
           </Link>
+          {/* Eigene Masse. Neben dem Seitenvergleich und nicht darin: Ein Test
+              hat zwei Seiten und eine Anleitung, ein eigenes Mass hat einen
+              Namen, den der Nutzer erfunden hat. Karte 3.2. */}
+          <Link href={`/${locale}/episodes/${id}/measures`} style={navLink}>
+            {s.measure.link}
+          </Link>
           <Link href={`/${locale}/episodes/${id}/edit`} style={{ ...navLink, color: "var(--muted)" }}>
             {s.edit.link}
           </Link>

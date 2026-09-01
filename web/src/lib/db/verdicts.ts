@@ -1,6 +1,7 @@
 import { evaluateEpisode, type Evaluation, type EpisodeContext } from "loadwise-engine";
 import { supabaseServer } from "@/lib/supabase/server";
 import { listEntries } from "@/lib/db/entries";
+import { listMeasurements } from "@/lib/db/measurements";
 import { getEpisode } from "@/lib/db/episodes";
 import { saveEvaluationRun } from "@/lib/db/verdict-write";
 import {
@@ -55,8 +56,14 @@ export async function evaluateAndStore(episodeId: string): Promise<string | null
 async function evaluate(episodeId: string, context: EpisodeContext): Promise<Evaluation> {
   const supabase = await supabaseServer();
 
-  const [entries, { data: testRows, error }] = await Promise.all([
+  const [entries, measurements, { data: testRows, error }] = await Promise.all([
     listEntries(episodeId),
+    // Eigene Messungen. Sie ändern KEIN Urteil — ein Meilenstein trägt keine
+    // Severity und zählt nicht in die Abdeckung, sonst schaltete ein
+    // erreichtes Ziel eine Entwarnung frei, die es nicht belegt. Sie speisen
+    // den Fortschrittskanal (`evaluateProgress`), und ohne sie stünde dort
+    // dauerhaft »keine Messungen«, während welche in der Datenbank liegen.
+    listMeasurements(episodeId),
     // Sortiert, und das ist keine Kosmetik: `rules/asymmetry.ts` sortiert
     // stabil nach Datum und nimmt die letzte Messung. Bei gleichem Datum
     // entscheidet damit die Reihenfolge, in der die Abfrage geliefert hat —
@@ -80,6 +87,7 @@ async function evaluate(episodeId: string, context: EpisodeContext): Promise<Eva
     // »geschrieben und nie gelesen« hat dieses Projekt schon mehrfach
     // getroffen, und eine Abfrage kostet weniger als der Fund.
     tests: ((testRows ?? []) as SelfTestRow[]).map(toSelfTest),
+    measurements,
     context,
   });
 }
