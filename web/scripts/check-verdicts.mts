@@ -47,7 +47,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { evaluateEpisode, type Entry, type Evaluation } from "loadwise-engine";
-import { toEvaluationRow, toFlagRow } from "../src/lib/db/types.js";
+import { toEvaluationRow, toFlagRow, toSelfTest, type SelfTestRow } from "../src/lib/db/types.js";
 
 const ERLAUBNIS = "LOADWISE_ALLOW_PROBE_ACCOUNTS";
 const PROBE_LABEL = "Urteils-Sonde";
@@ -322,6 +322,109 @@ async function main(): Promise<void> {
       .select("id")
       .eq("evaluation_id", crypto.randomUUID());
     record("und eine fremde Laufkennung liefert nichts", (fremde ?? []).length === 0);
+
+    // ---------------------------------------------------------------------
+    // 4. DER SEITENVERGLEICH, DURCH DIE ECHTE DATENBANK.
+    //
+    // `test/selftest-abnahme.test.ts` beweist die Kette bis zum Motor —
+    // Formular, Prüfregeln, Urteil. Was es NICHT kann, ist der Teil
+    // dazwischen: ob `on conflict (episode_id, test_type, test_date)`
+    // überhaupt auflöst.
+    //
+    // Ohne den eindeutigen Index aus 0009 lehnt Postgres das rundweg ab
+    // (»there is no unique or exclusion constraint matching the ON CONFLICT
+    // specification«). Das Speichern schlüge also fehl statt still danebenzu-
+    // gehen — aber es schlüge fehl, und keine Attrappe könnte das zeigen:
+    // `test/self-tests-action.test.ts` ersetzt genau diese Funktion.
+    //
+    // Und die CHECK-Bedingungen aus 0001 sind derselbe Fall wie
+    // `severity_only_when_judged` oben: `involved >= 0` gegen
+    // `uninvolved > 0`. Eine Attrappe sagt darüber nichts, und die
+    // aussagekräftigste Messung überhaupt — null auf der verletzten Seite —
+    // hängt daran.
+    // ---------------------------------------------------------------------
+    const messung = (datum: string, involved: number, uninvolved: number) => ({
+      episode_id: episodeId,
+      test_type: "calf_raise",
+      test_date: datum,
+      involved,
+      uninvolved,
+      note: null,
+    });
+
+    const { error: ersteFehler } = await db
+      .from("self_tests")
+      .upsert(messung("2026-08-01", 12, 21), { onConflict: "episode_id,test_type,test_date" });
+    record(
+      "eine Messung geht durch — und damit greift der Index aus 0009",
+      ersteFehler === null,
+      ersteFehler?.message ?? "",
+    );
+
+    // Null auf der VERLETZTEN Seite: Tag eins einer Reha, Index 0, ein echtes
+    // Urteil. Eine frühere Fassung des Schemas hat genau das abgewiesen.
+    const { error: nullFehler } = await db
+      .from("self_tests")
+      .upsert(messung("2026-08-02", 0, 21), { onConflict: "episode_id,test_type,test_date" });
+    record("null auf der verletzten Seite nimmt die Datenbank an", nullFehler === null, nullFehler?.message ?? "");
+
+    // Die Gegenprobe: null auf der GESUNDEN Seite ist der Divisor.
+    const { error: divisorFehler } = await db
+      .from("self_tests")
+      .upsert(messung("2026-08-03", 5, 0), { onConflict: "episode_id,test_type,test_date" });
+    record(
+      "und null auf der gesunden Seite lehnt sie ab",
+      divisorFehler !== null,
+      divisorFehler?.code ?? "durchgelassen",
+    );
+
+    // Zweimal derselbe Tag, dieselbe Testart: ERSETZT, nicht angehängt. Genau
+    // das, was `saveSelfTest` tut, wenn jemand eine Messung korrigiert.
+    const { error: zweiteFehler } = await db
+      .from("self_tests")
+      .upsert(messung("2026-08-01", 17, 21), { onConflict: "episode_id,test_type,test_date" });
+    record("dieselbe Testart am selben Tag ersetzt", zweiteFehler === null, zweiteFehler?.message ?? "");
+
+    const { data: rohMessungen, error: messungLeseFehler } = await db
+      .from("self_tests")
+      .select("*")
+      .eq("episode_id", episodeId)
+      .order("test_date", { ascending: true });
+    if (messungLeseFehler !== null) fail(`Messungen zurücklesen: ${messungLeseFehler.message}`);
+
+    const messungenZurueck = ((rohMessungen ?? []) as SelfTestRow[]).map(toSelfTest);
+    record(
+      "es stehen zwei Zeilen da, nicht drei",
+      messungenZurueck.length === 2,
+      `${messungenZurueck.length} Zeile(n)`,
+    );
+    record(
+      "und die ersetzte trägt den neuen Wert",
+      messungenZurueck.find((m) => String(m.date) === "2026-08-01")?.involved === 17,
+      String(messungenZurueck.find((m) => String(m.date) === "2026-08-01")?.involved),
+    );
+
+    // Der Schluss: Was aus der Datenbank kommt, ergibt im Motor ein Urteil.
+    // `numeric` kommt über PostgREST als String zurück, wenn etwas schiefgeht
+    // — dann wäre `limbSymmetryIndex` NaN und die Regel stumm, ohne dass
+    // irgendetwas einen Fehler meldete.
+    const mitMessungen = evaluateEpisode({
+      entries: tagebuch(),
+      tests: messungenZurueck,
+      context: { bodyRegion: "achilles", profileKey: "achilles_midportion" },
+    });
+    const asym = mitMessungen.flags.filter((f) => f.kind === "asymmetry");
+    record(
+      "und aus der Datenbank gelesen ergibt sie ein Asymmetrie-Urteil",
+      asym.length === 1,
+      asym.map((f) => `${f.severity}/${f.reason}`).join(", ") || "keins",
+    );
+    record(
+      "die Zahlen sind Zahlen, nicht Zeichenketten",
+      typeof messungenZurueck[0]?.involved === "number" &&
+        typeof messungenZurueck[0]?.uninvolved === "number",
+      `${typeof messungenZurueck[0]?.involved} / ${typeof messungenZurueck[0]?.uninvolved}`,
+    );
   } finally {
     // Immer, auch nach einem Abbruch. `on delete cascade` auf episode_id nimmt
     // Flags und Auswertungen mit — sonst blieben Zeilen liegen, und die nächste

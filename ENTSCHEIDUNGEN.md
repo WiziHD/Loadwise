@@ -549,6 +549,18 @@ Dazu die Zuschreibung als eigener Test: Der Unterschied ist **genau ein Flag**, 
 
 Ein erster Entwurf des Tagebuchs stand 43 Tage konstant bei 3 — und erzeugte damit selbst ein `stagnation/amber`. Der Test wäre grün gewesen und hätte nichts bewiesen: Das Urteil kam gar nicht von den Messungen. Aufgefallen ist das nur, weil die Gegenprobe »ohne Messungen« mitlief und `judged` statt `insufficient` lieferte.
 
+**Und die Hälfte, die eine Attrappe nicht kann.** `check:verdicts` deckt seit 0009 auch den Seitenvergleich ab, acht Prüfungen gegen die echte Datenbank:
+
+| | |
+|---|---|
+| Eine Messung geht durch | Beweist zugleich den Index aus 0009 — ohne ihn lehnt Postgres `on conflict` mit 42P10 rundweg ab |
+| `involved = 0` wird angenommen, `uninvolved = 0` mit **23514** abgewiesen | Die CHECK-Bedingungen aus 0001. Über die sagt keine Attrappe etwas, und die aussagekräftigste Messung überhaupt hängt daran |
+| Dieselbe Testart am selben Tag ersetzt: **zwei Zeilen, nicht drei** | Das Upsert löst wirklich auf, statt anzuhängen |
+| Zurückgelesen ergibt sie ein Asymmetrie-Urteil | Der Schluss der Kette |
+| Die Zahlen sind `number`, nicht Zeichenkette | `numeric` kommt über PostgREST auch als String zurück. Dann wäre der Index `NaN` und die Regel stumm — ohne dass irgendetwas einen Fehler meldete |
+
+Dabei ist die Prüfung selbst über sich gestolpert: Der letzte Vergleich zeigte nach einer Umbenennung noch auf die äussere Variable — eine Auswertungszeile statt der Messungsliste. Ein Objekt hat kein `[0]`, also kam `undefined` heraus und die Prüfung schlug fehl. Sie hätte ebenso gut vakuum grün werden können, wäre dort etwas Wahrheitsfähiges gestanden.
+
 ### Was offen bleibt
 
 - **Kein MDC für den Fersenheber.** `PROFIL-ACHILLES.md` §8.2 hält es fest: 2 gegen 6 Wiederholungen aus verschiedenen Populationen. Ohne belastbaren Wert darf keine Ansicht sagen, eine Verbesserung sei **echt** — 12 → 15 ist von Messrauschen nicht zu trennen. Die Zahlen werden deshalb aufgezeichnet und nebeneinandergestellt, nie als erreichte Verbesserung ausgewiesen.
