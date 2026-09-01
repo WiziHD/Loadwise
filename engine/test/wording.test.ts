@@ -22,6 +22,7 @@ import {
   evidenceText,
   problemText,
   DISCLAIMER,
+  SELF_COMPARISON,
   VERDICT_WORDING,
   blockedText,
   milestoneText,
@@ -129,6 +130,12 @@ const allPhrases = (): { key: string; locale: Locale; text: string }[] => {
   // einen zu hohen Morgenwert ist »trag einen Wert zwischen 0 und 10 ein«, und
   // das ist eine Anweisung.
   collect(PROBLEM_WORDING as Record<string, Phrase>, "problem");
+
+  // Der Vorbehalt zum Seitenvergleich. Er trägt eine belegte Zahl (6 bis 70
+  // Wiederholungen bei Gesunden) und steht damit genau dort, wo die Ban-Listen
+  // gebraucht werden: Die natürliche Kurzfassung wäre »ein guter Wert sind 25«,
+  // und das ist ein Massstab, den niemand verantworten kann.
+  collect({ selfComparison: SELF_COMPARISON }, "note");
 
   // Profiles reach the user too, and an audit of this file found they were not
   // being checked at all. A red flag is the single likeliest place for the

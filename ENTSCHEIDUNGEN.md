@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-116 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+132 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -634,3 +634,54 @@ Der Grund ist eine Testschicht, die zu hoch ansetzt: `test/measurements-action.t
 Die Lehre ist nicht neu, aber sie hat hier zum zweiten Mal in einer Woche zugeschlagen: Wo ein Test eine Schicht ersetzt, ist diese Schicht ungesichert — bei 3.1 war es die Server-Aktion, bei 3.2 die Schreibschicht darunter. Beide Male war das Bauteil für sich in Ordnung, und beide Male hat erst die Mutation es gezeigt.
 
 Zweiter Lauf: **65 von 65.**
+
+---
+
+## E16 — Der Seitenvergleich wird als Zahl gezeigt, nie als Balken
+
+**Entschieden 31.08.2026** · `web/src/components/SideComparison.tsx`, `engine/src/wording.ts` (`SELF_COMPARISON`), Karte 3.3
+
+### Kein Fortschrittsbalken. Das ist die Gestaltungsentscheidung dieser Karte
+
+Ein Balken hätte ein Ende, und ein Ende ist ein Ziel. Der Symmetrieindex ist aber ein **Verhältnis**: Er sagt, wie sich eine Seite zur anderen verhält, nicht, wie weit jemand ist. **100 % heisst »beide Seiten gleich«** — nicht gesund, nicht fertig, nicht freigegeben.
+
+Ein Balken machte daraus stillschweigend eine Freigabeanzeige, und das ist die Linie aus `PROTOKOLLE.md` §1. Deshalb: eine Tabelle mit Zahlen, keine Skala mit Obergrenze.
+
+**Gesichert wird eine Abwesenheit**, und das ist der Grund, aus dem sie schwer zu erhalten ist: Niemand fügt einen Balken böswillig hinzu. Er kommt als Verbesserung — »die Zahl allein sagt so wenig« — und bringt das Ziel mit. Vier Prüfungen:
+
+| | |
+|---|---|
+| kein `progress`, kein `meter` | die offensichtliche Form |
+| keine Rolle `progressbar` | die Form, die ein `div` mit ARIA annimmt |
+| kein Element mit Prozentbreite | die Form ohne jede Semantik: `width: 81%`, aus dem Index gerechnet |
+| eine Gegenprobe, die genau so einen Balken findet | sonst wäre nicht sichtbar, dass das Muster trifft |
+
+Die dritte war zuerst zu grob und schlug auf `<table width: 100%>` an, also auf Layout. Geschärft statt aufgeweicht: `<table>` ausgenommen, mit **benannter Lücke** — ein Balken bei genau 100 % ginge durch. Eine Breite aus Daten ist fast nie glatt 100 %, und an den Werten dieser Fixtur (57, 71, 81) fiele sie sofort auf. Festgehalten, statt verschwiegen.
+
+### Beide Seiten absolut, nicht nur das Verhältnis
+
+Der Motor meldet `reference-eroding`, wenn auch die **gesunde** Seite absinkt. Der Fall ist unauffällig und übel: verletzte Seite bleibt bei 12, gesunde fällt von 21 auf 15 — das Verhältnis **steigt** von 57 % auf 80 %, und niemand ist besser geworden.
+
+Der Code ist im Motor gebaut und hat drei Szenarien in der Erwartungsdatei. Erreichte der Satz den Bildschirm nicht, wäre er umsonst gebaut, und die Ansicht zeigte ein Verhältnis, dessen Nenner wegbricht.
+
+Deshalb steht die Spalte der gesunden Seite gleichberechtigt neben der verletzten, und der Befund steht **über** der Tabelle: Wer liest, soll wissen, worauf er blickt, bevor er die Zahlen aufnimmt. Ein Nachsatz käme zu spät — dieselbe Überlegung wie bei `RunBehindNotice`.
+
+Zugeordnet wird er seiner Testart. Ohne die Einschränkung stünde der Befund des Fersenhebers über der Tabelle des Einbeinsprungs — ein Urteil über Messungen, die es nie gesehen hat.
+
+### Der Vorbehalt ist ein Motorsatz, kein App-Text
+
+`SELF_COMPARISON` trägt eine belegte Zahl: Gesunde zwischen 20 und 59 erreichen beim Fersenheber **6 bis 70** Wiederholungen (`asymmetry.selfComparison`, Grad B, UBC-Toolkit 2021). Eine Spannweite, aus der sich für einen einzelnen Menschen nichts ablesen lässt — genau deshalb kann ein absoluter Normwert hier kein Urteil tragen.
+
+Im App-Wörterbuch stünde der Satz ausserhalb der drei Ban-Listen, und die natürliche Kurzfassung wäre »ein guter Wert sind 25«. Also steht er in `wording.ts`, läuft durch `allPhrases()` und ist in `check:boundary` aufgenommen.
+
+### Die Zahlen kommen live, das Urteil aus dem gespeicherten Lauf
+
+Dieselbe Aufteilung wie auf dem Hauptbildschirm, und aus demselben Grund (E12): Ein Urteil ist nur reproduzierbar, wenn `ruleVersion` und `profileVersion` mitgeschrieben sind. Hier neu zu rechnen machte die Ansicht zu etwas, das sich bei jedem Aufruf ändern kann.
+
+Beides kann auseinanderfallen — die Messung gespeichert, die Neuberechnung danach fehlgeschlagen. Dafür steht `RunBehindNotice` über der Ansicht.
+
+### Wann man das wieder aufmacht
+
+- **Nicht beim Balken.** Dass 100 % kein Ziel ist, hängt an der Zweckbestimmung und nicht am Geschmack.
+- **Wenn eine Verlaufsdarstellung dazukommt** (eine Linie über die Zeit, wie `CourseCurve` sie für Morgenwerte zeichnet): Die darf keine Bezugslinie bei 100 % tragen. Eine Linie ohne Obergrenze ist zulässig, eine Skala, die bei 100 endet, ist der Balken in anderer Form.
+- **Wenn ein MDC für den Fersenheber gefunden wird.** Dann — und erst dann — darf die Ansicht zwischen »über dem Messfehler« und »innerhalb der Messgenauigkeit« unterscheiden. Heute steht dort bewusst nichts dergleichen.

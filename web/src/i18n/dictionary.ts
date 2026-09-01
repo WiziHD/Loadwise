@@ -175,6 +175,32 @@ export interface Strings {
     noEpisode: string;
   };
   /**
+   * Die Asymmetrie-Ansicht.
+   *
+   * Nur Beschriftungen. Der Befund kommt über `verdictText` aus dem Motor, und
+   * der Vorbehalt zum Selbstvergleich über `SELF_COMPARISON` — er trägt eine
+   * belegte Zahl und steht deshalb unter den Ban-Listen, nicht hier.
+   *
+   * Was hier ebenfalls NICHT steht: irgendein Wort über ein Ziel. Der Index ist
+   * ein Verhältnis; 100 % heisst »beide Seiten gleich« und nicht »fertig«.
+   */
+  comparison: {
+    heading: string;
+    calfRaise: string;
+    singleHop: string;
+    rom: string;
+    tableCaption: string;
+    colDate: string;
+    colInvolved: string;
+    colUninvolved: string;
+    colIndex: string;
+    /** Wenn die Bezugsseite null ist, gibt es kein Verhältnis — keine 0 %. */
+    noIndex: string;
+    unitReps: string;
+    unitCm: string;
+    unitDeg: string;
+  };
+  /**
    * Eigene Masse — Zahlen ohne Vergleichsseite.
    *
    * Hier steht **kein einziger Vorschlag**, was zu messen sich lohnt. Der
@@ -539,6 +565,21 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalid: "Something in the form did not come through. Please check the fields.",
       noEpisode: "This episode could not be found.",
     },
+    comparison: {
+      heading: "Side by side, over time",
+      calfRaise: "Single-leg heel raise",
+      singleHop: "Single hop for distance",
+      rom: "Ankle dorsiflexion",
+      tableCaption: "Both sides, measured in",
+      colDate: "Date",
+      colInvolved: "Injured",
+      colUninvolved: "Other",
+      colIndex: "Ratio",
+      noIndex: "—",
+      unitReps: "repetitions",
+      unitCm: "centimetres",
+      unitDeg: "degrees",
+    },
     measure: {
       link: "Own measures",
       heading: "Your own measures",
@@ -821,6 +862,21 @@ export const DICTIONARY: Record<Locale, Strings> = {
       futureDate: "Dieses Datum liegt nach heute.",
       invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
       noEpisode: "Diese Episode wurde nicht gefunden.",
+    },
+    comparison: {
+      heading: "Beide Seiten, über die Zeit",
+      calfRaise: "Einbeiniger Fersenheber",
+      singleHop: "Einbeinsprung auf Weite",
+      rom: "Sprunggelenk-Beweglichkeit",
+      tableCaption: "Beide Seiten, gemessen in",
+      colDate: "Datum",
+      colInvolved: "Verletzt",
+      colUninvolved: "Andere",
+      colIndex: "Verhältnis",
+      noIndex: "—",
+      unitReps: "Wiederholungen",
+      unitCm: "Zentimeter",
+      unitDeg: "Grad",
     },
     measure: {
       link: "Eigene Masse",

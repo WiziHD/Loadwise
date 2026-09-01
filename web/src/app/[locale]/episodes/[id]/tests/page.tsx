@@ -28,9 +28,13 @@ import { navLink } from "@/lib/ui";
 import { currentUser } from "@/lib/supabase/server";
 import { getEpisode } from "@/lib/db/episodes";
 import { listSelfTests } from "@/lib/db/self-tests";
+import { latestRun } from "@/lib/db/verdicts";
+import { runIsBehind } from "@/lib/run-freshness";
 import { profileOf } from "@/lib/profile-view";
 import { utcToday } from "@/lib/entry-validation";
 import { SelfTestForm } from "@/components/SelfTestForm";
+import { SideComparison } from "@/components/SideComparison";
+import { RunBehindNotice } from "@/components/RunBehindNotice";
 
 export default async function SelfTestPage({
   params,
@@ -47,7 +51,24 @@ export default async function SelfTestPage({
   if (episode === null) notFound();
 
   const { profile, substituted } = profileOf(episode);
-  const tests = await listSelfTests(id);
+  const [tests, run] = await Promise.all([listSelfTests(id), latestRun(id)]);
+
+  /**
+   * Die Zahlen kommen live, das Urteil aus dem gespeicherten Lauf.
+   *
+   * Dieselbe Aufteilung wie auf dem Hauptbildschirm: Die Kurve zeichnet die
+   * erfassten Tage, der Satz darüber stammt aus dem abgelegten Lauf. Der Grund
+   * ist E12 — ein Urteil ist nur reproduzierbar, wenn `ruleVersion` und
+   * `profileVersion` mitgeschrieben sind, und hier neu zu rechnen machte den
+   * Bericht zu einer Ansicht, die sich bei jedem Aufruf ändern kann.
+   *
+   * Beides kann auseinanderfallen — die Messung ist gespeichert, die
+   * Neuberechnung danach fehlgeschlagen. Genau dafür gibt es den Hinweis.
+   */
+  const asymmetrieFlags =
+    run.kind === "run" ? run.run.flags.filter((f) => f.kind === "asymmetry") : [];
+  const neuesteMessung = tests[tests.length - 1]?.date ?? null;
+  const laufHinktHinterher = run.kind === "run" ? runIsBehind(run.run, neuesteMessung) : false;
 
   return (
     <main>
@@ -62,6 +83,12 @@ export default async function SelfTestPage({
         {profile.label[locale]}
         {substituted && ` · ${s.episode.profileMissing}`}
       </p>
+
+      <RunBehindNotice active={laufHinktHinterher} strings={s.main} />
+
+      {/* Die Ansicht steht ÜBER dem Formular: Wer herkommt, will meistens
+          sehen, was dasteht, und misst seltener, als er nachschaut. */}
+      <SideComparison tests={tests} flags={asymmetrieFlags} strings={s.comparison} locale={locale} />
 
       <SelfTestForm
         locale={locale}

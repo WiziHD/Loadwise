@@ -33,6 +33,10 @@ function walk(value: unknown, path: string[] = []): Array<{ path: string; text: 
 const GLEICH_ERLAUBT = new Set([
   "appName", // Ein Produktname wird nicht übersetzt.
   "entry.everydayNormal", // »Normal« ist in beiden Sprachen dasselbe Wort.
+  // Ein Gedankenstrich, wo es kein Verhältnis gibt — weil die Bezugsseite null
+  // ist. Er steht ausdrücklich statt einer Zahl: »0 %« wäre eine Messung, die
+  // es nicht gibt. Ein Satzzeichen hat keine Sprache.
+  "comparison.noIndex",
 ]);
 
 describe("kein Eintrag ist leer", () => {

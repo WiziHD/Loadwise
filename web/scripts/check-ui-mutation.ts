@@ -587,6 +587,59 @@ const MUTATIONEN: Mutation[] = [
     von: "    measurements,\n    context,",
     nach: "    measurements: [],\n    context,",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 3.3 — den Seitenvergleich anzeigen.
+  //
+  // Die erste Mutation hier ist die Karte selbst: `reference-eroding` ist im
+  // Motor gebaut, hat drei Szenarien in der Erwartungsdatei — und wäre umsonst
+  // gebaut, wenn der Satz den Bildschirm nicht erreicht.
+  // -------------------------------------------------------------------------
+  {
+    name: "SideComparison: der Befund erreicht den Bildschirm nicht",
+    datei: "src/components/SideComparison.tsx",
+    von: "            {flag !== undefined && (",
+    nach: "            {false && (",
+  },
+  {
+    // Der Befund einer Testart steht über der Tabelle einer anderen — ein
+    // Urteil über Messungen, die es nie gesehen hat.
+    name: "SideComparison: der Befund wird seiner Testart nicht zugeordnet",
+    datei: "src/components/SideComparison.tsx",
+    von: '          (f) => f.kind === "asymmetry" && (f.detail as { type?: TestType }).type === art,',
+    nach: '          (f) => f.kind === "asymmetry",',
+  },
+  {
+    // Die gesunde Seite verschwindet. Dann steht nur noch das Verhältnis da,
+    // und eine erodierende Referenz ist an den Zahlen nicht mehr zu sehen.
+    name: "SideComparison: die gesunde Seite faellt aus der Tabelle",
+    datei: "src/components/SideComparison.tsx",
+    von: '                      <td style={{ padding: "0.3rem 0.6rem 0.3rem 0" }}>{z.uninvolved}</td>',
+    nach: "",
+  },
+  {
+    // Eine Bezugsseite von null ergibt »0 %« statt eines Gedankenstrichs —
+    // eine Prozentzahl für eine Messung, die es nicht gibt.
+    name: "SideComparison: eine fehlende Bezugsseite wird zu null Prozent",
+    datei: "src/components/SideComparison.tsx",
+    von: "      index: t.uninvolved > 0 ? Math.round((t.involved / t.uninvolved) * 100) : null,",
+    nach: "      index: Math.round((t.involved / (t.uninvolved || 1)) * 100),",
+  },
+  {
+    // Der Vorbehalt zum Selbstvergleich fällt weg. Dann stehen absolute Zahlen
+    // ohne den Satz da, der erklärt, warum es keinen Normwert gibt.
+    name: "SideComparison: der Vorbehalt zum Selbstvergleich faellt weg",
+    datei: "src/components/SideComparison.tsx",
+    von: "        {SELF_COMPARISON[locale]}",
+    nach: "        {null}",
+  },
+  {
+    // Die Ansicht zeigt eine leere Tabelle, statt zu schweigen.
+    name: "SideComparison: eine leere Ansicht wird trotzdem gerendert",
+    datei: "src/components/SideComparison.tsx",
+    von: "  if (tests.length === 0) return null;",
+    nach: "  if (false) return null;",
+  },
 ];
 
 type Bericht = {

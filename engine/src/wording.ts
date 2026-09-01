@@ -325,6 +325,38 @@ export const DISCLAIMER: Phrase = {
   en: "Loadwise documents and structures. It does not treat and gives no recommendations. Persistent, new or unusual symptoms belong with a health professional.",
 };
 
+/**
+ * Warum der Seitenvergleich gegen die eigene andere Seite läuft und nicht
+ * gegen einen Normwert.
+ *
+ * ---------------------------------------------------------------------------
+ * EIN MOTORSATZ, WEIL ER EINE BELEGTE AUSSAGE TRÄGT.
+ *
+ * Im App-Wörterbuch stünde er ausserhalb der drei Ban-Listen, und die
+ * Versuchung ist hier greifbar: Die natürliche Kurzfassung lautet »ein guter
+ * Wert sind 25 Wiederholungen«, und das wäre ein Massstab, den niemand
+ * verantworten kann.
+ *
+ * Die Zahl dahinter steht in `profiles/achilles.ts` unter
+ * `asymmetry.selfComparison`, Grad B: Gesunde zwischen 20 und 59 erreichten im
+ * UBC-Toolkit **6 bis 70** Wiederholungen. Eine Spannweite, die fast nichts
+ * ausschliesst — genau deshalb kann ein absoluter Normwert hier kein Urteil
+ * tragen, und genau deshalb steht in dieser App nirgends einer.
+ *
+ * Der Satz sagt, WAS DER FALL IST, und zieht keinen Schluss für die lesende
+ * Person. Ein Balken gegen 100 % wäre die Bildfassung des verbotenen Satzes:
+ * Der Index ist ein Verhältnis, kein Ziel.
+ * ---------------------------------------------------------------------------
+ */
+export const SELF_COMPARISON: Phrase = {
+  de:
+    "Verglichen wird mit deiner eigenen anderen Seite, nicht mit einem Normwert. " +
+    "Gesunde zwischen 20 und 59 erreichen beim Fersenheber zwischen 6 und 70 Wiederholungen — eine Spannweite, aus der sich für einen einzelnen Menschen nichts ablesen lässt.",
+  en:
+    "The comparison is with your own other side, not with a norm. " +
+    "Healthy adults aged 20 to 59 reach between 6 and 70 heel raises — a range from which nothing follows for any one person.",
+};
+
 export function verdictText(reason: ReasonCode, locale: Locale = "de"): string {
   return VERDICT_WORDING[reason][locale];
 }

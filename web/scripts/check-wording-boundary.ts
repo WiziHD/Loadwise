@@ -34,6 +34,7 @@ import {
   MILESTONE_WORDING,
   PROBLEM_WORDING,
   PROGRESS_BLOCK_WORDING,
+  SELF_COMPARISON,
   TEST_PROCEDURE,
   VERDICT_WORDING,
 } from "loadwise-engine";
@@ -55,6 +56,7 @@ function engineSentences(): { where: string; text: string }[] {
   for (const [key, phrase] of Object.entries(PROBLEM_WORDING)) add(`problem:${key}`, phrase);
   for (const [key, phrase] of Object.entries(PROGRESS_BLOCK_WORDING)) add(`block:${key}`, phrase);
   add("disclaimer", DISCLAIMER);
+  add("note:selfComparison", SELF_COMPARISON);
 
   // ---------------------------------------------------------------------
   // Messanleitungen. Sie stehen ausserhalb der Ban-Listen, aber NICHT
