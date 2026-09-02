@@ -22,6 +22,7 @@ import { listEntries } from "@/lib/db/entries";
 import { DayCount } from "@/components/DayCount";
 import { EntryForm } from "@/components/EntryForm";
 import { MainVerdict } from "@/components/MainVerdict";
+import { FirstDays, inFirstDays } from "@/components/FirstDays";
 import { latestRun } from "@/lib/db/verdicts";
 import { coursePoints } from "@/lib/course-points";
 import { runIsBehind } from "@/lib/run-freshness";
@@ -202,6 +203,28 @@ export default async function EpisodePage({
           Und die Schleife stimmt so herum: Wer morgens die App öffnet, sieht
           zuerst, was gestern daraus geworden ist, und trägt dann heute ein.
           ------------------------------------------------------------------ */}
+      {/* ------------------------------------------------------------------
+          DIE ERSTEN ZWEI WOCHEN — VOR DEM URTEIL, NICHT STATT DESSEN.
+
+          Solange der Motor keinen Vergleichswert haben KANN, sagt er zu Recht
+          nichts. Ein Ladebalken oder ein erfundener erster Befund wären die
+          üblichen Antworten darauf und beide falsch: Sie behaupten, es passiere
+          etwas.
+
+          Der Abschnitt verschwindet von selbst, sobald genug Tage da sind —
+          die Bedingung hängt an `baseline.minEntries` aus der Config DES
+          LAUFS. Karte 4.4.
+          ------------------------------------------------------------------ */}
+      {inFirstDays(run.kind === "run" ? run.run : null, entries.length) && (
+        <FirstDays
+          run={run.kind === "run" ? run.run : null}
+          entryCount={entries.length}
+          limitations={profile.limitations[locale]}
+          strings={s.firstDays}
+          locale={locale}
+        />
+      )}
+
       {run.kind === "run" ? (
         <MainVerdict
           run={run.run}

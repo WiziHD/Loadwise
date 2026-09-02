@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-204 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+222 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -823,7 +823,7 @@ Eine der neuen setzte `hidden` an ein Element. `textContent` in jsdom ignoriert 
 
 **Entschieden 02.09.2026** · `engine/src/types.ts`, `web/src/lib/db/types.ts`, Abnahme der Karten 3.1 bis 3.5
 
-Woche 3 stand mit 85 von 85 gefangenen Mutationen, 402 Motortests, 493 Webtests und allen Wächtern grün. Die Abnahme hat trotzdem einen Fund ergeben — und zwar von genau der Sorte, gegen die dieses Projekt sonst gebaut ist.
+Woche 3 stand mit 85 von 85 gefangenen Mutationen, 402 Motortests, 511 Webtests und allen Wächtern grün. Die Abnahme hat trotzdem einen Fund ergeben — und zwar von genau der Sorte, gegen die dieses Projekt sonst gebaut ist.
 
 ### Drei Formulare boten ein Notizfeld an. Zwei gaben es nie wieder her
 
@@ -1006,3 +1006,58 @@ Kein Netz, keine Datenbank, nur Quelltext. Anders als `check:rls`, `check:verdic
 
 - **Bei einer dritten Sprache.** Dann taugt eine handgeschriebene Wortliste je Sprachpaar nicht mehr, und die Frage ist eine andere: eine Spracherkennung als Abhängigkeit gegen eine gepflegte Liste. Heute wäre das Werkzeug grösser als das Problem.
 - **Nicht bei den Gegenproben.** Ein Muster ohne sie ist nicht prüfbar, sondern geglaubt.
+
+---
+
+## E23 — Die ersten zwei Wochen: sagen, dass nichts zu sagen ist
+
+**Entschieden 02.09.2026** · `web/src/components/FirstDays.tsx`, Karte 4.4
+
+Nach dem ersten Eintrag hat der Motor **nichts** zu sagen. Die 24-Stunden-Regel vergleicht einen Tag mit einem Vergleichswert, und der braucht zehn Einträge in vierzehn Tagen. Vorher gibt es kein Urteil — nicht weil etwas fehlschlägt, sondern weil es nichts zu vergleichen gibt.
+
+### Was eine App an dieser Stelle üblicherweise tut, ist genau das Falsche
+
+Ein Ladebalken, ein »wird ausgewertet«, ein erfundener erster Befund. Alle drei behaupten, es passiere etwas. Der Preis wird zwei Wochen später fällig, wenn das erste echte Urteil kommt und niemand mehr unterscheiden kann, was daran neu ist.
+
+Stattdessen drei Abschnitte, und zwei davon kommen aus dem Motor:
+
+| | |
+|---|---|
+| **Was im Tagebuch steht** | Die eigenen Tage, gezählt gegen `baseline.minEntries` aus der Config **dieses Laufs** — nicht gegen eine hier hingeschriebene Zehn |
+| **Was noch fehlt** | `blockedText` über die Gründe, die der Motor selbst nennt. Kein Satz von hier |
+| **Die Frage für morgen** | Eine Frage, keine Anweisung |
+
+Zwei Prüfungen halten fest, dass hier **kein Ladebalken und keine Urteilsfarbe** stehen. Grün, Bernstein oder Rot wären ein Urteil, das der Motor ausdrücklich verweigert.
+
+### Warum eine Frage und kein »Trag morgen ein«
+
+»Trag morgen früh deinen Morgenwert ein« wäre eine Anweisung zur Bedienung und regulatorisch harmlos. Sie wäre trotzdem die falsche Form: Sie sagt, was jemand tun soll, an genau der Stelle, an der die App sonst peinlich genau nichts sagt.
+
+Eine Frage — *»Wie fühlt es sich an, bevor du aufstehst?«* — tut dasselbe und lässt die Entscheidung dort, wo sie hingehört. Sie erklärt nebenbei, warum vor dem Aufstehen: Der Wert soll vergleichbar sein, und ein Morgen nach zwei Stunden Bürostuhl ist es nicht mehr.
+
+Ein Test hält beides fest: Der Satz endet auf ein Fragezeichen und enthält keine Aufforderung.
+
+### Die Bedingung hängt an den Einträgen, nicht am Urteilszustand
+
+Die naheliegende Bedingung wäre `overall.status === "insufficient"`. Sie ist falsch: Der Zustand tritt auch nach Monaten auf, wenn ein Schmerzmittel im Fenster liegt. Wer seit zwölf Wochen einträgt, bekäme dann »die ersten zwei Wochen« zu lesen.
+
+Die ehrliche Bedingung ist die, um die es geht: Der Motor kann noch keinen Vergleichswert haben. Sie hängt an `baseline.minEntries` **aus der Config des Laufs** — ein Profil, das die Schwelle verschiebt, verschiebt damit auch, wie lange diese Ansicht steht. Gegen `DEFAULT_CONFIG` zu prüfen hiesse, dass ein solches Profil die falsche Ansicht bekommt, ohne dass irgendetwas rot würde.
+
+### Die Grenzen des Profils stehen hier noch einmal
+
+`ProfilePicker` zeigt sie vor dem Anlegen. Das ist der richtige Zeitpunkt für die Entscheidung — und der falsche, um sie zu behalten: Wer ein Formular ausfüllt, liest den Satz über zwanzig Differentialdiagnosen nicht zu Ende.
+
+Hier, in den ersten Tagen, ist Platz dafür. Danach verschwindet der ganze Abschnitt, weil der Motor dann selbst redet.
+
+### Was offen bleibt — und bewusst nicht hier entschieden wird
+
+Die Karte nennt einen offenen Befund: **In den ersten zwei Wochen ist das offensichtlichste Signal für den Motor unsichtbar.** Morgenwerte, die 2 → 4 → 5 → 7 steigen, erzeugen kein Flag, weil jede Regel einen Vergleichswert braucht, den es noch nicht gibt.
+
+Ob das eine achte Regel rechtfertigt, ist **nicht entschieden**, und diese Karte entscheidet es nicht. Was sie tut, ist den Zustand ehrlich zu benennen, statt ihn mit einer Anzeige zu überdecken, die ihn wie einen Ladevorgang aussehen lässt.
+
+Wer die Frage später aufnimmt, muss zwei Dinge gegeneinander abwägen: Eine Regel, die aus vier Punkten einen Trend liest, ist genau die erfundene Genauigkeit, die dieses Projekt sonst überall ablehnt — und ein Signal, das jeder Mensch sieht und die App nicht, untergräbt ihre Glaubwürdigkeit auf andere Weise. E10 hat für den Spiegel die vorsichtige Seite gewählt; diese Frage ist dieselbe, eine Stufe schärfer.
+
+### Wann man das wieder aufmacht
+
+- **Wenn die achte Regel entschieden wird.** Dann bekommt dieser Abschnitt einen Satz weniger — oder die Regel spricht, und er verschwindet früher.
+- **Nicht beim Ladebalken.** Dass hier nichts läuft, ist die Aussage.

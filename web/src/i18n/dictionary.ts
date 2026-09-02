@@ -248,6 +248,33 @@ export interface Strings {
     noEpisode: string;
   };
   /**
+   * Die ersten Tage — der heikelste Moment des ganzen Produkts.
+   *
+   * Nach dem ersten Eintrag hat der Motor **nichts** zu sagen: Die
+   * 24-Stunden-Regel braucht zehn Einträge in vierzehn Tagen für ihren
+   * Vergleichswert. Was hier steht, sagt das — statt einen Ladebalken zu
+   * zeigen oder eine Auswertung zu erfinden.
+   *
+   * Die Gründe, WAS genau fehlt, kommen über `blockedText` aus dem Motor.
+   * Hier stehen nur die Rahmensätze.
+   */
+  firstDays: {
+    heading: string;
+    /** Was die App ist -- und was sie nicht ist. Zwei Saetze, keine Broschuere. */
+    whatThisIs: string;
+    whatThisIsNot: string;
+    recordedHeading: string;
+    /** »1 von 10 Tagen erfasst« -- die Zahl aus der Config, nicht erfunden. */
+    recordedCount: string;
+    missingHeading: string;
+    /** Wenn der Motor noch gar keinen Grund nennen kann. */
+    missingNothingYet: string;
+    tomorrowHeading: string;
+    /** Eine FRAGE, keine Anweisung. Siehe den Kopf des Bauteils. */
+    tomorrowQuestion: string;
+    limitsHeading: string;
+  };
+  /**
    * Konto: Export und Loeschung.
    *
    * Gesundheitsdaten nach Art. 9 DSGVO. Ohne diese beiden Wege darf niemand
@@ -805,6 +832,22 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalid: "Something in the form did not come through. Please check the fields.",
       noEpisode: "This episode could not be found.",
     },
+    firstDays: {
+      heading: "The first two weeks",
+      whatThisIs:
+        "This is a diary that watches the other 167 hours — what you did, and how the next morning felt.",
+      whatThisIsNot:
+        "It does not treat, does not diagnose, and gives no instructions. It says what is in the record, and says so when there is not enough of it.",
+      recordedHeading: "What is in the record",
+      recordedCount: "{done} of {needed} days",
+      missingHeading: "What is still missing",
+      missingNothingYet:
+        "Nothing has been evaluated yet. The rules compare one day against the days before it, so the first of them has nothing to compare against.",
+      tomorrowHeading: "The question for tomorrow morning",
+      tomorrowQuestion:
+        "How does it feel before you get up — on the same scale, before the day has had a chance to change it?",
+      limitsHeading: "What this profile cannot tell apart",
+    },
     account: {
       link: "Your data",
       heading: "Your data",
@@ -1235,6 +1278,22 @@ export const DICTIONARY: Record<Locale, Strings> = {
       tooManyThresholds: "Das sind mehr Bedingungen, als ein Ziel fasst.",
       invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
       noEpisode: "Diese Episode wurde nicht gefunden.",
+    },
+    firstDays: {
+      heading: "Die ersten zwei Wochen",
+      whatThisIs:
+        "Das hier ist ein Tagebuch für die anderen 167 Stunden — was du gemacht hast, und wie sich der Morgen danach angefühlt hat.",
+      whatThisIsNot:
+        "Es behandelt nicht, stellt keine Diagnose und gibt keine Anweisungen. Es sagt, was im Tagebuch steht — und sagt es, wenn davon noch zu wenig da ist.",
+      recordedHeading: "Was im Tagebuch steht",
+      recordedCount: "{done} von {needed} Tagen",
+      missingHeading: "Was noch fehlt",
+      missingNothingYet:
+        "Es wurde noch nichts ausgewertet. Die Regeln vergleichen einen Tag mit den Tagen davor — der erste hat nichts, womit er sich vergleichen liesse.",
+      tomorrowHeading: "Die Frage für morgen früh",
+      tomorrowQuestion:
+        "Wie fühlt es sich an, bevor du aufstehst — auf derselben Skala, bevor der Tag etwas daran ändern konnte?",
+      limitsHeading: "Was dieses Profil nicht unterscheiden kann",
     },
     account: {
       link: "Deine Daten",

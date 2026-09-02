@@ -922,6 +922,61 @@ const MUTATIONEN: Mutation[] = [
     von: "  for (const m of measurements) {",
     nach: "  for (const m of measurements.slice(0, 0)) {",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 4.4 — die ersten zwei Wochen.
+  //
+  // Der heikelste Moment des Produkts: Der Motor hat nichts zu sagen, und die
+  // übliche Antwort darauf — ein Ladebalken, ein erfundener erster Befund —
+  // wäre genau die Behauptung, dass etwas passiert.
+  // -------------------------------------------------------------------------
+  {
+    // Die Bedingung hängt an DEFAULT_CONFIG statt an der Config des Laufs. Ein
+    // Profil mit anderer Schwelle bekäme die falsche Ansicht, ohne dass etwas
+    // rot würde.
+    name: "inFirstDays: die Schwelle kommt nicht aus dem Lauf",
+    datei: "src/components/FirstDays.tsx",
+    von: "  return entryCount < run.config.baseline.minEntries;",
+    nach: "  return entryCount < 10;",
+  },
+  {
+    // Der Abschnitt bleibt für immer stehen — auch nach zwölf Wochen.
+    name: "inFirstDays: die ersten Tage hoeren nie auf",
+    datei: "src/components/FirstDays.tsx",
+    von: "  if (run === null) return true;",
+    nach: "  return true;\n  if (run === null) return true;",
+  },
+  {
+    // Derselbe Grund steht zehnmal untereinander.
+    name: "FirstDays: die Gruende werden nicht entdoppelt",
+    datei: "src/components/FirstDays.tsx",
+    von: "  const gruende = [\n    ...new Set(",
+    nach: "  const gruende = [\n    ...(",
+  },
+  {
+    // Ein Grund aus einer Fassung, die es nicht mehr gibt, erscheint als leere
+    // Zeile — statt weggelassen zu werden.
+    name: "FirstDays: unbekannte Gruende werden nicht gefiltert",
+    datei: "src/components/FirstDays.tsx",
+    von: "        .filter((r) => IST_BLOCKADEGRUND.has(r)),",
+    nach: "        .filter(() => true),",
+  },
+  {
+    // Am Tag null steht ein leerer Abschnitt statt eines Satzes — die Antwort,
+    // gegen die diese ganze Karte gebaut ist.
+    name: "FirstDays: der leere Zustand schweigt",
+    datei: "src/components/FirstDays.tsx",
+    von: "      {gruende.length === 0 ? (",
+    nach: "      {false ? (",
+  },
+  {
+    // Die Grenzen des Profils fallen weg. Sie stehen sonst nur im
+    // Auswahlformular, das niemand zu Ende liest.
+    name: "FirstDays: die Grenzen des Profils fehlen",
+    datei: "src/components/FirstDays.tsx",
+    von: "      <p style={{ ...hint, margin: \"0 0 var(--space-4)\", maxWidth: \"42rem\" }}>{limitations}</p>",
+    nach: "      <p />",
+  },
 ];
 
 type Bericht = {
