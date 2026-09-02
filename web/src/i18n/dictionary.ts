@@ -248,6 +248,33 @@ export interface Strings {
     noEpisode: string;
   };
   /**
+   * Die Fortschritts-Ansicht — aufgezeichnet, nie »verbessert«.
+   *
+   * ---------------------------------------------------------------------------
+   * HIER STEHT KEIN VERB DER VERÄNDERUNG, UND DAS IST KEINE STILFRAGE.
+   *
+   * Nicht »besser«, nicht »+7«, nicht »Bestwert«. Für keinen Test dieser neun
+   * Profile ist belegt, wie weit zwei Messungen allein durch Zufall
+   * auseinanderliegen — ohne diese Zahl lässt sich »acht, dann fünfzehn« nicht
+   * von Messrauschen trennen.
+   *
+   * Der Satz dazu kommt über `claimText` aus dem Motor und steht deshalb nicht
+   * hier. Was hier liegt, sind Überschriften und die Wörter »erste« und
+   * »jüngste« — beides Angaben über die POSITION in einer Reihe, nicht über
+   * ihren Wert.
+   */
+  progress: {
+    heading: string;
+    intro: string;
+    empty: string;
+    /** Positionen in der Reihe. Nicht »schlechteste« und »beste«. */
+    firstReading: string;
+    latestReading: string;
+    seriesHeading: string;
+    /** Wie viele Messungen die Reihe trägt. */
+    readingCount: string;
+  };
+  /**
    * Die Asymmetrie-Ansicht.
    *
    * Nur Beschriftungen. Der Befund kommt über `verdictText` aus dem Motor, und
@@ -693,6 +720,16 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalid: "Something in the form did not come through. Please check the fields.",
       noEpisode: "This episode could not be found.",
     },
+    progress: {
+      heading: "Your own numbers, over time",
+      intro:
+        "What the record holds, in the order it was written. Nothing here says whether the distance between two numbers means anything — see the note under each series.",
+      empty: "No series yet. A series appears once a goal names a measure you have recorded.",
+      firstReading: "first",
+      latestReading: "most recent",
+      seriesHeading: "Every reading",
+      readingCount: "{count} readings",
+    },
     comparison: {
       heading: "Side by side, over time",
       calfRaise: "Single-leg heel raise",
@@ -1045,6 +1082,16 @@ export const DICTIONARY: Record<Locale, Strings> = {
       tooManyThresholds: "Das sind mehr Bedingungen, als ein Ziel fasst.",
       invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
       noEpisode: "Diese Episode wurde nicht gefunden.",
+    },
+    progress: {
+      heading: "Deine eigenen Zahlen, über die Zeit",
+      intro:
+        "Was im Tagebuch steht, in der Reihenfolge, in der es geschrieben wurde. Nichts hier sagt, ob der Abstand zwischen zwei Zahlen etwas bedeutet — siehe den Hinweis unter jeder Reihe.",
+      empty: "Noch keine Reihe. Eine entsteht, sobald ein Ziel ein Mass nennt, zu dem du etwas erfasst hast.",
+      firstReading: "erste",
+      latestReading: "jüngste",
+      seriesHeading: "Alle Messungen",
+      readingCount: "{count} Messungen",
     },
     comparison: {
       heading: "Beide Seiten, über die Zeit",

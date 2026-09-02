@@ -30,6 +30,7 @@ import { profileOf } from "@/lib/profile-view";
 import { utcToday } from "@/lib/entry-validation";
 import { MilestoneForm } from "@/components/MilestoneForm";
 import { MilestoneList } from "@/components/MilestoneList";
+import { ProgressRecords } from "@/components/ProgressRecords";
 import { RunBehindNotice } from "@/components/RunBehindNotice";
 
 export default async function GoalsPage({
@@ -87,6 +88,16 @@ export default async function GoalsPage({
         progress={progress}
         strings={s.goal}
         errorStrings={s.errors}
+      />
+
+      {/* Die Zahlenreihen zwischen Liste und Formular: Sie gehören zu dem, was
+          dasteht, nicht zu dem, was man neu anlegt. */}
+      <ProgressRecords
+        progress={progress}
+        strings={s.progress}
+        goalStrings={s.goal}
+        unitStrings={s.measure}
+        locale={locale}
       />
 
       <MilestoneForm

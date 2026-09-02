@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-151 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+171 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -761,3 +761,58 @@ Festgehalten, weil die Lehre allgemein ist: Eine Prüfung, von der man erwartet,
 - **Nicht beim Zieltext.** Dass ein Mensch im eigenen Tagebuch sagen darf, was er will, hängt nicht am Geschmack.
 - **Stufe 3 — der Katalog publizierter Kriterien** — bleibt gebaut und aus, bis die Zweckbestimmung anwaltlich geprüft ist (Schritt D im Fahrplan). Erst dann stellt sich die Frage, ob die App überhaupt etwas vorschlagen darf.
 - **Wenn ein MDC vorliegt.** Dann darf der Bestwert zwischen »über dem Messfehler« und »innerhalb der Messgenauigkeit« unterscheiden. Heute sagt der Motor dazu ausdrücklich `no-mdc-established`, und dieser Satz erreicht den Bildschirm.
+
+---
+
+## E18 — Aufgezeichnet, nie »verbessert« — und ein Wächter, der benutzbar bleiben muss
+
+**Entschieden 02.09.2026** · `web/src/components/ProgressRecords.tsx`, `engine/src/wording.ts` (`claimText`, `ClaimKey`), `web/scripts/check-ui-mutation.ts`, Karte 3.5
+
+### Kein Verb der Veränderung. Für keinen Test dieser neun Profile
+
+Nicht »besser«, nicht »+7«, nicht »Bestwert«. Für keinen Test ist belegt, wie weit zwei Messungen allein durch Zufall auseinanderliegen — ohne diese Zahl lässt sich »acht, dann fünfzehn« nicht von Messrauschen trennen.
+
+Wie ernst das ist, zeigt der VISA-A-Fragebogen: **6,5 Punkte** als klinisch bedeutsamer Unterschied bei einer Messgenauigkeit von **mindestens 7**. Die kleinste Änderung, die etwas bedeutet, liegt dort unter der Genauigkeit der Messung.
+
+Die Ansicht rechnet deshalb auch **keine Differenz** aus. 15 minus 8 ist 7, und stünde die Zahl irgendwo, wäre sie eine Behauptung über einen Abstand, den niemand einordnen kann.
+
+Die Reihe heisst »erste« und »jüngste«, nicht »schlechteste« und »beste«. Beides sind Angaben über die POSITION; der Motortyp sagt es an `PersonalRecord.latest` selbst: *»Not 'best': that word needs a direction.«* Eine Richtung hätte die App zu erfinden — und bei einem Beschwerdewert zeigte sie in die andere Richtung als bei Wiederholungen.
+
+Gesichert durch eine Wortliste mit **Gegenprobe**: drei gepflanzte Sätze (»Deine Werte haben sich verbessert«, »Neuer Bestwert«, »Du hast 7 zugelegt«) müssen gefangen werden, sonst ist die Liste Dekoration. Dazu die Zusicherung, dass überhaupt etwas gerendert wurde — eine leere Ansicht bestünde jede Verbotsprüfung.
+
+### Zwei Schwächen im Motor, die dabei auffielen
+
+`CLAIM_WORDING` stand als `Record<string, Phrase>` da. Ein fehlender Satz wäre damit kein Übersetzungsfehler gewesen, sondern eine leere Zeile — ausgerechnet dort, wo der Motor sagt, dass er den Abstand **nicht** einordnen kann. Ein stummer Vorbehalt ist schlimmer als gar keiner: Die Zahlen stünden nebeneinander, und nichts sagte, dass ihr Abstand nichts bedeutet. `ClaimKey` zieht die Schlüssel jetzt aus `ChangeClaim`.
+
+Und `claimText` gab es nicht — die App hätte den Record selbst indexieren müssen, also die Zuordnung von Variante zu Schlüssel ein zweites Mal geschrieben.
+
+### `check:boundary` deckte die neue Ansicht nicht ab
+
+`ProgressRecords` gibt Motorsätze über die Zahlen eines Menschen aus. Den Disclaimer hatte sie — **freiwillig**, und »freiwillig« ist genau der Zustand, den diese Prüfung ersetzen soll. `claimText` steht jetzt in `VERDICT_CALLS`.
+
+`milestoneText` und `progressBlockText` bleiben bewusst draussen. Sie sagen, was im Tagebuch steht und was dem Motor fehlt — Aussagen über den Bestand, gemessen an einem Massstab, den der Nutzer geschrieben hat. Sie an die Zweckbestimmung zu binden hiesse, jeden Bestandshinweis wie ein Urteil zu behandeln, und einen Satz, der überall steht, liest am Ende niemand mehr.
+
+### Der Mutationswächter war zu langsam, um benutzt zu werden
+
+**Das ist keine Bequemlichkeitsfrage.** Jede Mutation lässt die ganze Suite laufen — 442 Webtests in 30 Dateien. Bei 85 Mutationen sind das über eine Viertelstunde. Ein Wächter, dessen Lauf so lange dauert, wird beim Bauen nicht mehr gestartet, und ein Wächter, den niemand startet, ist keiner.
+
+`npm run check:ui-mutation -- ProgressRecords` läuft nur die passenden Mutationen: vier statt 85, unter einer Minute. Die Bilanz nennt das Muster und sagt ausdrücklich, dass es kein vollständiger Lauf war — ein Filter, der still eine Teilmenge prüft und »alles gefangen« meldet, wäre die Halbwahrheit, gegen die dieses Skript gebaut ist.
+
+### Und er liess bei einem Abbruch mutierten Code zurück
+
+Die Wiederherstellung stand in einem `finally`. Das greift bei jedem normalen Ende — **nicht**, wenn der Prozess getötet wird. Genau das ist passiert: Ein abgebrochener Lauf hinterliess `SideComparison.tsx` mit `if (false) return null;`.
+
+Gefunden wurde es nur, weil `git diff` daneben lief. Ohne das wäre eine kaputte Zeile im nächsten Commit gelandet — aus einem Werkzeug, das den Quelltext absichtlich beschädigt und darauf baut, ihn zurückzustellen.
+
+Der Lauf legt jetzt vor jeder Mutation den unversehrten Inhalt in einer Datei ab und stellt ihn beim nächsten Start wieder her, bevor er irgendetwas anderes tut. Dieselbe Bauform, mit der `check:verdicts` seine Probeepisoden aufräumt.
+
+### Eine untaugliche Mutation, gefunden vom Wächter selbst
+
+Eine der neuen setzte `hidden` an ein Element. `textContent` in jsdom ignoriert das — die Prüfung blieb grün, und der Wächter meldete UEBERLEBT für einen Test, der einwandfrei ist. Ersetzt durch einen echten Fehler: erste und jüngste Messung zeigen dieselbe Zahl.
+
+**Eine Mutation muss das Verhalten ändern, nicht die Darstellung.** Sonst prüft man, ob der Test die Darstellung liest, und nicht, ob er die Zusicherung hält.
+
+### Wann man das wieder aufmacht
+
+- **Wenn ein MDC vorliegt.** Dann — und erst dann — darf die Ansicht zwischen »über dem Messfehler« und »innerhalb der Messgenauigkeit« unterscheiden. Der Motor hat beide Sätze bereits; heute erreicht keiner den Bildschirm, weil kein Profil einen belastbaren Wert trägt.
+- **Nicht bei den Serien.** Der Motor kann einen weggelassenen schlechten Tag nicht erkennen; das ist dokumentiert und unlösbar. Eine Serie macht das Weglassen doppelt lohnend, und eine gerissene Serie bestraft jemanden dafür, dass sein Knie nicht mitgespielt hat.

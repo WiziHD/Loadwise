@@ -52,7 +52,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const WEB = resolve(import.meta.dirname, "..");
@@ -732,6 +732,55 @@ const MUTATIONEN: Mutation[] = [
     von: "    progress: evaluation.progress,",
     nach: "    progress: { milestones: [], records: [], pending: [], episodeDay: null },",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 3.5 — die Fortschritts-Ansicht.
+  //
+  // Drei Verbote, und alle drei sichern eine Abwesenheit. Niemand baut einen
+  // Balken böswillig ein; er kommt als Verbesserung — »die Zahlen allein sagen
+  // so wenig«.
+  // -------------------------------------------------------------------------
+  {
+    // Der Vorbehalt des Motors verschwindet. Dann stehen zwei Zahlen
+    // nebeneinander, und nichts sagt, dass ihr Abstand nichts bedeutet.
+    name: "ProgressRecords: der Vorbehalt zur Messgenauigkeit faellt weg",
+    datei: "src/components/ProgressRecords.tsx",
+    von: "                {claimText(r.claim, locale)}",
+    nach: "                {null}",
+  },
+  // Dass der Vorbehalt am GRUND hängt und nicht immer derselbe Satz ist, steht
+  // hier bewusst nicht als Mutation: `claimText` liegt im Motor, und dieses
+  // Skript arbeitet auf `web/src`. Gesichert ist es stattdessen durch die
+  // Prüfung »gibt für jede Art von Vorbehalt einen Satz aus«, die vier
+  // verschiedene Gründe rendert und vier verschiedene Sätze verlangt.
+  {
+    // Erste und jüngste zeigen dieselbe Zahl. Der Verlauf sähe damit aus, als
+    // habe sich nichts bewegt — und das ist eine Aussage.
+    //
+    // Hier stand zuerst `hidden` am Element. Das war eine untaugliche Mutation:
+    // `textContent` in jsdom ignoriert `hidden`, die Prüfung blieb grün, und
+    // der Wächter meldete UEBERLEBT für einen Test, der einwandfrei ist. Eine
+    // Mutation muss das Verhalten ändern, nicht bloss die Darstellung.
+    name: "ProgressRecords: erste und juengste Messung sind dieselbe",
+    datei: "src/components/ProgressRecords.tsx",
+    von: "                  {r.latest.value} {einheit}",
+    nach: "                  {r.first.value} {einheit}",
+  },
+  {
+    // Gründe ohne Ziel verschwinden — gesetzt und nie gezeigt, der
+    // Standardfehler dieses Projekts.
+    name: "ProgressRecords: allgemeine Gruende erreichen den Bildschirm nicht",
+    datei: "src/components/ProgressRecords.tsx",
+    von: "  const allgemein = (progress?.pending ?? []).filter((p) => p.milestoneId === null);",
+    nach: "  const allgemein = [];",
+  },
+  {
+    // Die leere Ansicht schweigt, statt zu sagen, dass es nichts gibt.
+    name: "ProgressRecords: die leere Ansicht sagt nichts",
+    datei: "src/components/ProgressRecords.tsx",
+    von: "  if (records.length === 0 && allgemein.length === 0) {",
+    nach: "  if (false) {",
+  },
 ];
 
 type Bericht = {
@@ -804,9 +853,82 @@ if (schonRot.length > 0) {
 }
 
 type Zeile = { name: string; ergebnis: string; welche: string; offen: boolean };
+/**
+ * Ein Filter, damit dieser Wächter benutzbar bleibt.
+ *
+ * ---------------------------------------------------------------------------
+ * WARUM DAS NÖTIG WURDE.
+ *
+ * Jede Mutation lässt die GANZE Suite laufen — inzwischen 442 Tests in 30
+ * Dateien. Bei 85 Mutationen sind das über eine Viertelstunde für einen
+ * Befund, der fast immer eine einzelne Karte betrifft. Ein Wächter, dessen
+ * Lauf so lange dauert, wird beim Bauen nicht mehr gestartet, und ein Wächter,
+ * den niemand startet, ist keiner.
+ *
+ * `npm run check:ui-mutation -- SelfTestForm` läuft nur die Mutationen, deren
+ * Name das Muster enthält. Sekunden statt Minuten, während man an einer Karte
+ * arbeitet.
+ *
+ * ---------------------------------------------------------------------------
+ * DER VOLLE LAUF BLEIBT DIE ABNAHME, UND DAS SAGT DIE AUSGABE.
+ *
+ * Ein Filter, der still eine Teilmenge prüft und »alles gefangen« meldet, wäre
+ * genau die Sorte Halbwahrheit, gegen die dieses Skript gebaut ist. Deshalb
+ * nennt die Bilanz unten das Muster, und die Schlusszeile sagt ausdrücklich,
+ * dass dies kein vollständiger Lauf war.
+ * ---------------------------------------------------------------------------
+ */
+/**
+ * Wo steht, was gerade mutiert ist — für den Fall, dass dieser Lauf stirbt.
+ *
+ * ---------------------------------------------------------------------------
+ * `finally` REICHT NICHT, UND DAS IST NACHGEWIESEN.
+ *
+ * Die Wiederherstellung unten steht in einem `finally` und greift bei jedem
+ * normalen Ende, auch bei einem Fehler. Sie greift NICHT, wenn der Prozess
+ * getötet wird — und genau das ist passiert: Ein abgebrochener Lauf hat
+ * `SideComparison.tsx` mit `if (false) return null;` zurückgelassen.
+ *
+ * Gefunden wurde es nur, weil `git diff` daneben lief. Ohne das wäre eine
+ * kaputte Zeile im nächsten Commit gelandet — aus einem Werkzeug, das den
+ * Quelltext absichtlich beschädigt und darauf baut, ihn zurückzustellen.
+ *
+ * Diese Datei ist die Versicherung: Sie trägt den unversehrten Inhalt, und der
+ * nächste Lauf stellt ihn wieder her, bevor er irgendetwas anderes tut.
+ * ---------------------------------------------------------------------------
+ */
+const SICHERUNG = join(WEB, "node_modules", ".mutation-in-progress.json");
+
+// Hat ein früherer Lauf etwas liegen lassen?
+if (existsSync(SICHERUNG)) {
+  const rest = JSON.parse(readFileSync(SICHERUNG, "utf8")) as { datei: string; inhalt: string };
+  writeFileSync(join(WEB, rest.datei), rest.inhalt);
+  rmSync(SICHERUNG, { force: true });
+  console.log(
+    `  --    ${rest.datei} aus einem abgebrochenen Lauf zurückgestellt\n` +
+      `        Dort ist ein Prozess gestorben, bevor das Aufräumen dran war.\n`,
+  );
+}
+
+const muster = process.argv[2] ?? "";
+const ausgewaehlt =
+  muster === ""
+    ? MUTATIONEN
+    : MUTATIONEN.filter((m) => m.name.toLowerCase().includes(muster.toLowerCase()));
+
+if (ausgewaehlt.length === 0) {
+  console.error(
+    `\nKeine Mutation enthält »${muster}«.\n\n` +
+      `Vorhandene Namen beginnen mit: ${[...new Set(MUTATIONEN.map((m) => m.name.split(":")[0]))]
+        .slice(0, 12)
+        .join(", ")}\n`,
+  );
+  process.exit(1);
+}
+
 const zeilen: Zeile[] = [];
 
-for (const m of MUTATIONEN) {
+for (const m of ausgewaehlt) {
   const pfad = join(WEB, m.datei);
   const original = readFileSync(pfad, "utf8");
 
@@ -815,7 +937,10 @@ for (const m of MUTATIONEN) {
     continue;
   }
 
+  // Vor dem Schreiben festhalten, WAS gleich mutiert wird. Siehe `SICHERUNG`.
+  writeFileSync(SICHERUNG, JSON.stringify({ datei: m.datei, inhalt: original }), "utf8");
   writeFileSync(pfad, original.replace(m.von, m.nach));
+
   let bericht: Bericht | null;
   try {
     bericht = lauf();
@@ -823,6 +948,7 @@ for (const m of MUTATIONEN) {
     // Immer zurückstellen. Ein abgebrochener Lauf, der eine mutierte Datei
     // zurücklässt, ist schlimmer als gar keine Prüfung.
     writeFileSync(pfad, original);
+    rmSync(SICHERUNG, { force: true });
   }
 
   if (bericht === null) {
@@ -891,6 +1017,16 @@ for (const z of zeilen) {
 
 const offen = zeilen.filter((z) => z.offen);
 console.log(`\n${zeilen.length - offen.length} von ${zeilen.length} Mutationen wurden gefangen.`);
+
+// Ein Filter, der still eine Teilmenge prüft und »alles gefangen« meldet, wäre
+// genau die Halbwahrheit, gegen die dieses Skript gebaut ist. Also sagt die
+// Ausgabe es.
+if (muster !== "") {
+  console.log(
+    `\nGEFILTERT auf »${muster}« — ${zeilen.length} von ${MUTATIONEN.length} Mutationen.\n` +
+      `Das ist kein vollständiger Lauf. Für die Abnahme ohne Argument starten.`,
+  );
+}
 
 // Fail-closed, und das ist keine Formsache. »NICHT ANWENDBAR« heisst, dass die
 // mutierte Zeile es nicht mehr gibt — der Test dahinter ist dann ungeprüft.

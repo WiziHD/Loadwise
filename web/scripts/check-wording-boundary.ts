@@ -134,7 +134,34 @@ for (const sentence of engineSentences()) {
 // dazukommt, kann ihn nicht vergessen.
 // ---------------------------------------------------------------------------
 
-const VERDICT_CALLS = ["verdictText", "blockedText"];
+/**
+ * Welche Motorsätze die Zweckbestimmung nach sich ziehen — und welche nicht.
+ *
+ * ---------------------------------------------------------------------------
+ * DIE LINIE LIEGT ZWISCHEN »ÜBER DEN KÖRPER« UND »ÜBER DAS BUCH«.
+ *
+ * `verdictText` und `blockedText` sagen etwas über einen Menschen: was
+ * auffällig ist, und warum es keine Entwarnung gibt. `claimText` ebenso — es
+ * ordnet den Abstand zwischen zwei seiner Zahlen ein, oder sagt ausdrücklich,
+ * dass es das nicht kann. Alle drei verschieben die Frage, ob dieses Produkt
+ * ein Medizinprodukt ist, und gehören deshalb mit dem Satz zusammen, der sie
+ * beantwortet.
+ *
+ * `claimText` kam mit Karte 3.5 dazu. `ProgressRecords` trug den Disclaimer
+ * schon vorher — aber freiwillig, und »freiwillig« ist genau der Zustand, den
+ * diese Prüfung ersetzen soll. Eine Ansicht, die morgen dazukommt, kann ihn
+ * jetzt nicht mehr vergessen.
+ *
+ * BEWUSST NICHT DABEI: `milestoneText` und `progressBlockText`. Sie sagen, was
+ * im Tagebuch steht und was dem Motor dafür fehlt — »im Tagebuch steht ein
+ * Tag, der das erfüllt«, »zu diesem Mass steht noch keine Zahl«. Das sind
+ * Aussagen über den Bestand, gemessen an einem Massstab, den der Nutzer selbst
+ * geschrieben hat. Sie an die Zweckbestimmung zu binden hiesse, jeden
+ * Bestandshinweis wie ein Urteil zu behandeln — und einen Satz, der überall
+ * steht, liest am Ende niemand mehr.
+ * ---------------------------------------------------------------------------
+ */
+const VERDICT_CALLS = ["verdictText", "blockedText", "claimText"];
 
 /** Importiert diese Datei den Namen aus dem Motor? */
 function importsFromEngine(text: string, name: string): boolean {

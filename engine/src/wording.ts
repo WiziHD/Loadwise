@@ -30,7 +30,7 @@
  */
 
 import type { BlockingReason, Config, Flag, ReasonCode } from "./types.js";
-import type { MilestoneState, ProgressBlock } from "./progress.js";
+import type { ChangeClaim, MilestoneState, ProgressBlock } from "./progress.js";
 import type { ProblemCode } from "./validate.js";
 
 export type Locale = "de" | "en";
@@ -269,7 +269,30 @@ export const MILESTONE_WORDING: Record<MilestoneState, Phrase> = {
  * today, for every test in every profile, and it has to be said out loud
  * rather than left as a silence somebody fills in for themselves.
  */
-export const CLAIM_WORDING: Record<string, Phrase> = {
+/**
+ * Die Schlüssel, unter denen ein `ChangeClaim` seinen Satz findet.
+ *
+ * ---------------------------------------------------------------------------
+ * ABGELEITET AUS DEM TYP, NICHT DANEBEN GESCHRIEBEN.
+ *
+ * `CLAIM_WORDING` stand als `Record<string, Phrase>` da. Damit war ein
+ * fehlender Satz kein Übersetzungsfehler, sondern eine leere Zeile auf einem
+ * Bildschirm — und zwar ausgerechnet an der Stelle, an der der Motor sagt,
+ * dass er den Abstand zwischen zwei Zahlen NICHT einordnen kann.
+ *
+ * Ein stummer Vorbehalt ist schlimmer als gar keiner: Die Zahlen stünden
+ * nebeneinander, und nichts sagte, dass ihr Abstand nichts bedeutet.
+ *
+ * Der Typ zieht die Schlüssel jetzt aus `ChangeClaim` selbst. Eine neue
+ * Variante ist damit ein Compilerfehler, hier wie überall sonst in dieser
+ * Datei.
+ * ---------------------------------------------------------------------------
+ */
+export type ClaimKey =
+  | Extract<ChangeClaim, { level: "recorded-only" }>["why"]
+  | Exclude<ChangeClaim["level"], "recorded-only">;
+
+export const CLAIM_WORDING: Record<ClaimKey, Phrase> = {
   "no-mdc-established": {
     de: "Aufgezeichnet. Wie weit zwei Messungen dieses Tests allein durch Zufall auseinanderliegen, ist nicht belegt — der Abstand zwischen diesen Zahlen lässt sich deshalb nicht einordnen.",
     en: "Recorded. How far two measurements of this test lie apart by chance alone is not established, so the distance between these numbers cannot be placed.",
@@ -311,6 +334,33 @@ export const PROGRESS_BLOCK_WORDING: Record<ProgressBlock, Phrase> = {
     en: "For the tests in use it is not established how far two measurements lie apart by chance alone.",
   },
 };
+
+/**
+ * Der Satz zu einer Zahlenreihe — und warum die App ihn nicht selbst bilden darf.
+ *
+ * ---------------------------------------------------------------------------
+ * DIESE FUNKTION IST DER GRUND, WARUM »BESSER« NIRGENDS STEHT.
+ *
+ * Für keinen Test dieser neun Profile ist belegt, wie weit zwei Messungen
+ * allein durch Zufall auseinanderliegen. Ohne diese Zahl lässt sich »acht,
+ * dann fünfzehn« nicht von Messrauschen trennen — und jede Formulierung mit
+ * einem Verb der Veränderung behauptete genau das.
+ *
+ * Wie ernst das ist, zeigt der VISA-A-Fragebogen: Eine Arbeit nennt 6,5 Punkte
+ * als klinisch bedeutsamen Unterschied, bei einer Messgenauigkeit von
+ * mindestens 7. Die kleinste Änderung, die etwas bedeutet, liegt dort UNTER
+ * der Genauigkeit der Messung.
+ *
+ * Der Motor sagt deshalb, was der Fall ist — »Aufgezeichnet« — und benennt in
+ * demselben Satz, warum er nicht mehr sagt. Eine Ansicht, die daraus »+7« oder
+ * »Bestwert« machte, hätte die Genauigkeit erfunden, die die Messung nicht
+ * hergibt.
+ * ---------------------------------------------------------------------------
+ */
+export function claimText(claim: ChangeClaim, locale: Locale = "de"): string {
+  const key: ClaimKey = claim.level === "recorded-only" ? claim.why : claim.level;
+  return CLAIM_WORDING[key][locale];
+}
 
 export function milestoneText(state: MilestoneState, locale: Locale = "de"): string {
   return MILESTONE_WORDING[state][locale];
