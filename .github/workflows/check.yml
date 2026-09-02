@@ -143,6 +143,14 @@ jobs:
       - name: App — Wortgrenze
         run: npm run check:boundary --workspace=web
 
+      # Englisch führt, geschrieben wird zuerst auf Deutsch — der kürzeste Weg
+      # von einem deutschen Satz in ein englisches Feld ist Kopieren-und-
+      # vergessen. Das fällt niemandem auf, der die App auf Deutsch benutzt,
+      # und genau der Person, die sie zum ersten Mal auf Englisch öffnet.
+      # Deckt Wörterbuch UND Motorsätze ab; beide Gegenproben laufen mit.
+      - name: App — kein Deutsch in der englischen Fassung
+        run: npm run check:language --workspace=web
+
       # Die Gegenrichtung zur Wortgrenze: Jeder Satz, der IM Wörterbuch steht,
       # muss auch irgendwo herauskommen. 18 Einträge taten das nicht — darunter
       # der einzige Satz, der einen stillen Profilwechsel benannt hätte.

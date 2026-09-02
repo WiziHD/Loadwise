@@ -20,7 +20,8 @@
     "check:service-role": "tsx scripts/check-service-role.ts",
     "check:verdicts": "tsx scripts/check-verdicts.mts",
     "check:tokens": "tsx scripts/check-tokens.ts",
-    "check:delete-account": "tsx scripts/check-delete-account.mts"
+    "check:delete-account": "tsx scripts/check-delete-account.mts",
+    "check:language": "tsx scripts/check-language.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

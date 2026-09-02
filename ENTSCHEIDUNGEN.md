@@ -961,3 +961,48 @@ E5 hat das Löschen zurückgestellt, bis es einen Export gibt: *löschen darf nu
 
 - **Wenn ein Import dazukommt.** Der Export ist heute ein Weg hinaus, der zufällig auch hineinführt. Eine echte Import-Oberfläche müsste die Doubletten-Meldung des Motors zeigen, statt sie zu verschlucken.
 - **Nicht beim Service-Role-Schlüssel.** Dass genau eine Datei ihn anfasst, ist die Zusicherung, an der die ganze Konstruktion hängt.
+
+---
+
+## E22 — Der Sprachwächter, und wie er sich zweimal selbst korrigiert hat
+
+**Entschieden 02.09.2026** · `web/scripts/check-language.ts`, Karte 4.3
+
+Die Karte verlangt zwei Dinge: die englische Fassung vollständig, und **»dass keine deutsche Zeichenkette in der englischen Fassung durchschlägt«**.
+
+### Der Befund vor der Arbeit: nichts zu übersetzen
+
+Der englische Block war bereits sauber — kein Umlaut, kein deutsches Funktionswort. Das ist keine Leistung, sondern die Folge des Typs: `Record<Locale, Strings>` macht einen fehlenden Schlüssel zum Compilerfehler, und jeder sichtbare Text geht über `Strings`. Eine Durchsicht aller `.tsx` fand keinen fest verdrahteten Satz — alle Treffer standen in Kommentaren.
+
+Die Arbeit der Karte ist deshalb der **Wächter**, der das so hält. Ein sauberer Zustand ohne Prüfung ist ein Zufall mit Ablaufdatum.
+
+### Warum die Prüfung überhaupt nötig ist
+
+`config.ts` hält fest: *»English leads. German is second.«* Geschrieben wird trotzdem zuerst auf Deutsch, weil der Entwickler deutsch denkt. Der kürzeste Weg von einem deutschen Satz in ein englisches Feld ist Kopieren-und-vergessen.
+
+Das fällt **niemandem** auf, der die App auf Deutsch benutzt — und genau der Person, die sie zum ersten Mal auf Englisch öffnet. Die ist die Zielgruppe.
+
+Geprüft werden beide Seiten: Wörterbuch **und** Motorsätze. Ein deutscher Satz in einem `Phrase.en` erreicht den Bildschirm auf demselben Weg; die Ban-Listen in `wording.test.ts` prüfen, WAS ein Satz sagt, nicht in welcher Sprache. 529 Zeichenketten, 347 aus dem Wörterbuch, 182 aus dem Motor.
+
+### Zwei Gegenproben, und beide haben zugeschlagen
+
+Der Wächter prüft sich selbst in zwei Richtungen, bevor er das Produkt anschaut: fünf gepflanzte deutsche Sätze müssen gefangen werden, sieben echte englische Sätze aus dem Produkt nicht. **Beide Hälften haben je einen Fehler in meinem eigenen Muster gefunden.**
+
+**Zu eng.** Die erste Fassung hatte nur Funktionswörter — und liess »Beide Seiten, gemessen in« durch, die echte deutsche Tabellenbeschriftung aus dem Seitenvergleich. Kein Umlaut, kein »und«, kein »nicht«: Eine kurze Beschriftung besteht oft genau aus den Wörtern, die keine Funktionswörter sind. Ohne den gepflanzten Satz hätte der Wächter »alles sauber« gemeldet und wäre für kurze Beschriftungen — also für die halbe Oberfläche — blind gewesen.
+
+**Zu breit.** Nach der Erweiterung stand `also` in der Liste deutscher Wörter. Es ist englisch, und es fing prompt drei echte Motorsätze. Genau der Fehlalarm, vor dem der Kopf derselben Datei warnt: *»eine Liste mit Fehlalarmen ist eine Liste, die abgeschaltet wird.«* Der Satz, an dem es hing, steht jetzt als achte Gegenprobe da.
+
+Die Lehre ist die allgemeine Form: **Eine Mustererkennung braucht beide Richtungen.** Nur zu prüfen, dass sie trifft, lässt ein zu breites Muster durch; nur zu prüfen, dass sie nicht danebentrifft, lässt ein zu enges durch. Jede für sich sieht wie eine vollständige Prüfung aus.
+
+### Nur eine Richtung, und das ist entschieden
+
+Englisch im deutschen Block wird nicht geprüft. Eine Liste englischer Wörter schlüge auf jedes Lehnwort an — »Level«, »Score«, »Update« —, und die deutsche Fassung ist ohnehin die, in der geschrieben wird. Der Fehler läuft in eine Richtung, die Prüfung auch.
+
+### Läuft in CI
+
+Kein Netz, keine Datenbank, nur Quelltext. Anders als `check:rls`, `check:verdicts` und `check:delete-account` gehört diese Prüfung deshalb in die Kette und in den Arbeitsablauf.
+
+### Wann man das wieder aufmacht
+
+- **Bei einer dritten Sprache.** Dann taugt eine handgeschriebene Wortliste je Sprachpaar nicht mehr, und die Frage ist eine andere: eine Spracherkennung als Abhängigkeit gegen eine gepflegte Liste. Heute wäre das Werkzeug grösser als das Problem.
+- **Nicht bei den Gegenproben.** Ein Muster ohne sie ist nicht prüfbar, sondern geglaubt.
