@@ -1,9 +1,10 @@
+import Link from "next/link";
 import type { Locale } from "loadwise-engine";
 import { t } from "@/i18n/dictionary";
 import { currentUser } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions/auth";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
-import { quietButton } from "@/lib/ui";
+import { navLink, quietButton } from "@/lib/ui";
 
 /**
  * The one bar that is on every page, and the way out of the app.
@@ -51,6 +52,16 @@ export async function AppHeader({ locale }: { locale: Locale }) {
       }}
     >
       <LanguageSwitch current={locale} />
+
+      {/* Der Weg zu Export und Löschung.
+          Er gehört in die Kopfzeile und nicht auf eine Unterseite: Wer seine
+          Daten mitnehmen oder loswerden will, sucht nicht — und wenn er sucht
+          und nichts findet, ist die Zusicherung aus Karte 4.2 keine. */}
+      {user !== null && (
+        <Link href={`/${locale}/account`} style={navLink}>
+          {s.account.link}
+        </Link>
+      )}
 
       {user !== null && (
         <form action={signOut.bind(null, locale)} style={{ margin: 0 }}>

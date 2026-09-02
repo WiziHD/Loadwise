@@ -865,6 +865,63 @@ const MUTATIONEN: Mutation[] = [
     von: '      <div data-screen-only=""',
     nach: "      <div",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 4.2 — Export und Kontolöschung.
+  //
+  // Hier ist ein falscher grüner Test teurer als sonst wo: Überall sonst
+  // kostet ein Fehler einen Eintrag, hier das Tagebuch eines Menschen —
+  // unwiderruflich und ohne Kopie.
+  // -------------------------------------------------------------------------
+  {
+    // Der Knopf ist auch ohne das getippte Wort frei. Ein Klick daneben
+    // löscht dann ein Konto.
+    name: "DeleteAccountForm: der Knopf ist immer frei",
+    datei: "src/components/DeleteAccountForm.tsx",
+    von: "        disabled={!passt || pending}",
+    nach: "        disabled={pending}",
+  },
+  {
+    // Das Wort wird nicht verglichen, sondern nur auf »nicht leer« geprüft.
+    name: "DeleteAccountForm: jedes Wort passt",
+    datei: "src/components/DeleteAccountForm.tsx",
+    von: "  const passt = wort.trim().toLowerCase() === strings.deleteConfirmWord.trim().toLowerCase();",
+    nach: "  const passt = wort.trim() !== \"\";",
+  },
+  {
+    // Der Fehlschlag wird geschluckt. Jemand sähe nichts und wüsste nicht, ob
+    // sein Konto noch da ist — an dem Punkt, an dem er es am dringendsten
+    // wissen will.
+    name: "DeleteAccountForm: ein Fehlschlag bleibt stumm",
+    datei: "src/components/DeleteAccountForm.tsx",
+    von: "            setState(result.reason);",
+    nach: "",
+  },
+  {
+    // Eine Zeile je Einheit wird zu einer Zeile je Tag: die zweite Einheit
+    // fällt still aus dem Export — im einen Dokument, das jemand aufhebt,
+    // wenn er sein Konto löscht.
+    name: "diaryCsv: nur die erste Einheit eines Tages",
+    datei: "src/lib/export/build.ts",
+    von: "    for (const s of e.sessions) {",
+    nach: "    for (const s of e.sessions.slice(0, 1)) {",
+  },
+  {
+    // Die Maskierung fällt weg. Ein Komma in einer Notiz zerreisst die Zeile,
+    // und alle Spalten danach stehen um eins verschoben.
+    name: "diaryCsv: Zellen werden nicht maskiert",
+    datei: "src/lib/export/build.ts",
+    von: '  return /[",\\n\\r]/.test(text) ? `"${text.replace(/"/g, \'""\')}"` : text;',
+    nach: "  return text;",
+  },
+  {
+    // Die eigenen Masse fallen aus der Testdatei. Ein Backup ohne sie sähe
+    // vollständig aus.
+    name: "testsCsv: die eigenen Masse fehlen",
+    datei: "src/lib/export/build.ts",
+    von: "  for (const m of measurements) {",
+    nach: "  for (const m of measurements.slice(0, 0)) {",
+  },
 ];
 
 type Bericht = {

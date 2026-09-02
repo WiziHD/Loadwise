@@ -19,7 +19,8 @@
     "check:ui-mutation": "tsx scripts/check-ui-mutation.ts",
     "check:service-role": "tsx scripts/check-service-role.ts",
     "check:verdicts": "tsx scripts/check-verdicts.mts",
-    "check:tokens": "tsx scripts/check-tokens.ts"
+    "check:tokens": "tsx scripts/check-tokens.ts",
+    "check:delete-account": "tsx scripts/check-delete-account.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

@@ -167,6 +167,16 @@ export default async function EpisodePage({
           <Link href={`/${locale}/episodes/${id}/print`} style={navLink}>
             {s.print.link}
           </Link>
+          {/* Die CSV-Ausgaben stehen an der EPISODE, nicht am Konto:
+              `parseDiary` kennt keine Episodenspalte, und zwei Verläufe in
+              einer Datei liefen beim Wiedereinlesen ineinander. Die
+              vollständige Sicherung liegt unter »Deine Daten«. Karte 4.2. */}
+          <a href={`/${locale}/episodes/${id}/export?format=diary`} style={navLink}>
+            {s.account.exportDiary}
+          </a>
+          <a href={`/${locale}/episodes/${id}/export?format=tests`} style={navLink}>
+            {s.account.exportTests}
+          </a>
           <Link href={`/${locale}/episodes/${id}/edit`} style={{ ...navLink, color: "var(--muted)" }}>
             {s.edit.link}
           </Link>

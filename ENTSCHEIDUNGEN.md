@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-192 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+204 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -823,7 +823,7 @@ Eine der neuen setzte `hidden` an ein Element. `textContent` in jsdom ignoriert 
 
 **Entschieden 02.09.2026** · `engine/src/types.ts`, `web/src/lib/db/types.ts`, Abnahme der Karten 3.1 bis 3.5
 
-Woche 3 stand mit 85 von 85 gefangenen Mutationen, 402 Motortests, 464 Webtests und allen Wächtern grün. Die Abnahme hat trotzdem einen Fund ergeben — und zwar von genau der Sorte, gegen die dieses Projekt sonst gebaut ist.
+Woche 3 stand mit 85 von 85 gefangenen Mutationen, 402 Motortests, 493 Webtests und allen Wächtern grün. Die Abnahme hat trotzdem einen Fund ergeben — und zwar von genau der Sorte, gegen die dieses Projekt sonst gebaut ist.
 
 ### Drei Formulare boten ein Notizfeld an. Zwei gaben es nie wieder her
 
@@ -893,3 +893,71 @@ Ein PDF-Erzeuger wäre eine Abhängigkeit mehr, ein zweiter Satz Schriftarten un
 
 - **Wenn ein Ausdruck mehrere Episoden tragen soll.** Heute ist er eine Episode; die Kaskade (zwei gleichzeitige Episoden mit Bezug) steht bewusst nach Tag 25.
 - **Nicht beim PDF-Erzeuger**, solange der Browser druckt. Erst wenn ein Ausdruck ohne Browser entstehen muss — etwa als Anhang einer E-Mail —, stellt sich die Frage neu.
+
+---
+
+## E21 — Löschen ohne Service-Role-Schlüssel, und zwei Formate statt eines
+
+**Entschieden 02.09.2026** · `supabase/migrations/0012_delete_own_account.sql`, `web/src/lib/export/build.ts`, `web/scripts/check-delete-account.mts`, Karte 4.2
+
+Gesundheitsdaten nach Art. 9 DSGVO. Ohne Export und Löschung darf niemand ausser dem Entwickler die App benutzen — keine Vorsichtsmassnahme, sondern die Bedingung dafür, sie überhaupt anzubieten.
+
+### Die Löschung braucht den Schlüssel nicht, und das ist der Kern
+
+`check:service-role` hält fest, dass **genau eine** Datei den Service-Role-Schlüssel anfasst. Eine zweite wäre nicht bloss eine Zeile mehr in einer Erlaubnisliste — sie wäre der Punkt, an dem aus »die eine Ausnahme« eine Sammlung wird.
+
+`delete_own_account()` macht ihn überflüssig: eine `security definer`-Funktion **ohne Argumente**, die ausschliesslich auf `auth.uid()` handelt.
+
+Der Kopf von `verdict-write.ts` verwirft dieselbe Bauform für das Schreiben eines Urteils, und der Unterschied ist genau der Parameter, den es hier nicht gibt:
+
+| | |
+|---|---|
+| `record_evaluation(episode_id, severity, …)` | **Das Konto liefert das Urteil.** Jeder Angemeldete könnte `severity = 'green'` schreiben |
+| `delete_own_account()` | Nimmt nichts entgegen. Ein Konto kann sie nicht belügen, weil es ihr nichts sagt |
+
+`search_path` ist auf den leeren Pfad festgenagelt: Ohne das könnte ein Aufrufer ein eigenes Schema voranstellen und damit bestimmen, welche Tabelle `auth.users` meint.
+
+**Geprüft gegen die echte Datenbank**, `check:delete-account`: Der Lauf legt **zwei** Wegwerf-Konten an, löscht eines über den anon key mit dessen eigenem Token — also genau so, wie die App es tut — und schaut beim anderen nach. Die entscheidende Zeile ist nicht »das Konto ist weg«, sondern **»das andere Konto ist unberührt«**: Eine Funktion, die zu viel löscht, bestünde alle anderen Prüfungen mit Auszeichnung. Zehn von zehn, dazu `42501` für einen Aufruf ohne Anmeldung.
+
+### Zwei Formate, weil eines zwei Aufgaben nicht erfüllt
+
+**JSON ist die Sicherung.** Vollständig. Alltagslast, Morgensteifigkeit und Schmerzmittel haben in `COLUMNS` keinen Namen — sie kamen mit H17 und H18 in die App, nicht in den Importer für handgeführte Tagebücher. Aus einem reinen CSV-Export wären sie auf immer weg.
+
+**CSV ist der Austausch**, lesbar von `parseDiary` und `parseTests`. Dass das stimmt, ist nachgewiesen und nicht behauptet: Die Tests schicken jede erzeugte Datei durch den Importer zurück, erschöpfend über `ALL_ACTIVITY_KINDS` und alle drei Zeitpunkte.
+
+Eine **Gegenprobe** hält fest, dass die CSV-Fassung die drei Felder nachweislich nicht trägt. Ohne sie stünde »CSV ist auch ein Backup« unwidersprochen im Raum, und jemand löschte sein Konto im Vertrauen darauf.
+
+### CSV steht an der Episode, nicht am Konto
+
+Eine erste Fassung bot CSV über das ganze Konto an. Das war falsch: `parseDiary` kennt keine Episodenspalte. Zwei Verläufe mit einem gemeinsamen Tag — eine Achillessehne und ein Knie im selben Sommer, genau der Fall aus dem Konzept — landeten in derselben Datei, und beim Wiedereinlesen behielte `buildIndex` einen der beiden Tage.
+
+Ein Austauschformat, das zwei Verläufe stillschweigend zu einem macht, ist keines.
+
+### Mehrere Einheiten werden zu mehreren Zeilen
+
+`parseDiary` liest eine Einheit je Zeile. Die erste zu schreiben und die übrigen wegzulassen wäre ein stiller Verlust **im Export** — im einen Dokument, das jemand aufhebt, wenn er sein Konto löscht.
+
+Also eine Zeile je Einheit, Datum und Morgenwert wiederholt. In der Datei steht dann alles; beim Wiedereinlesen behält `buildIndex` die letzte Zeile und **meldet** die Doublette. Der Verlust ist damit angesagt statt still.
+
+### Drei Funde im Importer, alle durch den Rundlauf
+
+- **`parseTests` las die Notizspalte und hängte sie nicht an den Selbsttest.** Die Variable stand unterhalb des Zweigs, der einen baut. Derselbe Fund wie in der Abnahme von Woche 3, eine Ebene weiter.
+- **Der Name eines eigenen Masses kam kleingeschrieben zurück** — er lief über dieselbe Normalisierung wie der Testnachschlag. Ein Export, der die eigene Schreibweise verliert, ist als Sicherung entsprechend weniger wert.
+- **Zwei Abbildungen im Export waren toter Ballast**, und vier ihrer Einträge nannten Aktivitäten, die es nicht gibt (`strength`, `court`, `team`, `climb`), während `strength_lower`, `strength_upper` und `court_sport` fehlten. Ein `Record<string, string>` nimmt jeden Schlüssel an — deshalb hat sie kein Typfehler getroffen, und deshalb ist die erschöpfende Prüfung der eigentliche Wächter.
+
+### Ein getipptes Wort, kein zweiter Klick
+
+Ein Bestätigungsfeld lässt sich nicht wegklicken, ohne gelesen zu haben, was danebensteht; ein zweiter Knopf wird zur zweiten Bewegung derselben Hand. Die Server-Aktion prüft dasselbe noch einmal — ein Formular ist eine Hürde für den Menschen davor, eine Server-Aktion ist ein öffentlicher Endpunkt.
+
+Beide Fehlermeldungen sagen ausdrücklich, dass **nichts gelöscht wurde**. »Fehlgeschlagen« allein liesse jemanden im Unklaren, ob sein Tagebuch noch da ist — an dem Punkt, an dem er es am dringendsten wissen will.
+
+Und der Erfolgsfall wirft: `redirect` in der Aktion. Ein `catch`, das daraus eine Fehlermeldung machte, zeigte jemandem »ist nicht durchgegangen«, während sein Konto gerade verschwunden ist.
+
+### Der Export steht über der Löschung, auf derselben Seite
+
+E5 hat das Löschen zurückgestellt, bis es einen Export gibt: *löschen darf nur, wer vorher exportieren konnte.* Diese Reihenfolge steht als Anordnung auf der Seite — wer zum Löschknopf will, scrollt an der Sicherung vorbei. Zwei Seiten wären die Alternative gewesen; dann fände jemand die Löschung, ohne die Sicherung je gesehen zu haben.
+
+### Wann man das wieder aufmacht
+
+- **Wenn ein Import dazukommt.** Der Export ist heute ein Weg hinaus, der zufällig auch hineinführt. Eine echte Import-Oberfläche müsste die Doubletten-Meldung des Motors zeigen, statt sie zu verschlucken.
+- **Nicht beim Service-Role-Schlüssel.** Dass genau eine Datei ihn anfasst, ist die Zusicherung, an der die ganze Konstruktion hängt.

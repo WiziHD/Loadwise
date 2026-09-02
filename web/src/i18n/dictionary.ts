@@ -248,6 +248,46 @@ export interface Strings {
     noEpisode: string;
   };
   /**
+   * Konto: Export und Loeschung.
+   *
+   * Gesundheitsdaten nach Art. 9 DSGVO. Ohne diese beiden Wege darf niemand
+   * ausser dem Entwickler die App benutzen -- das ist keine Vorsichts-
+   * massnahme, sondern die Bedingung dafuer, sie ueberhaupt anzubieten.
+   */
+  account: {
+    link: string;
+    heading: string;
+    exportHeading: string;
+    exportIntro: string;
+    exportBackup: string;
+    exportBackupHint: string;
+    exportDiary: string;
+    exportTests: string;
+    exportPerEpisodeHint: string;
+    deleteHeading: string;
+    deleteIntro: string;
+    /** Das Wort, das getippt werden muss. Auch die Aktion prueft dagegen. */
+    deleteConfirmWord: string;
+    deleteConfirmLabel: string;
+    deleteButton: string;
+    deleteNotConfirmed: string;
+    deleteFailed: string;
+    privacyLink: string;
+  };
+  privacy: {
+    heading: string;
+    storedHeading: string;
+    storedBody: string;
+    whereHeading: string;
+    whereBody: string;
+    howLongHeading: string;
+    howLongBody: string;
+    rightsHeading: string;
+    rightsBody: string;
+    noTrackingHeading: string;
+    noTrackingBody: string;
+  };
+  /**
    * Der Physio-Bericht als Druckansicht.
    *
    * ---------------------------------------------------------------------------
@@ -765,6 +805,47 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalid: "Something in the form did not come through. Please check the fields.",
       noEpisode: "This episode could not be found.",
     },
+    account: {
+      link: "Your data",
+      heading: "Your data",
+      exportHeading: "Take everything with you",
+      exportIntro:
+        "Your diary belongs to you. Two ways out: a complete backup, and files another tool can read.",
+      exportBackup: "Download complete backup (JSON)",
+      exportBackupHint:
+        "Everything, every field, every record. This is the file to keep if you delete your account.",
+      exportDiary: "Diary as CSV",
+      exportTests: "Measurements as CSV",
+      exportPerEpisodeHint:
+        "Per record, on its own page. CSV has no column for which record a day belongs to, so two records in one file would run together.",
+      deleteHeading: "Delete your account",
+      deleteIntro:
+        "Your account and everything in it: entries, sessions, measurements, goals, evaluations. This cannot be undone, and no copy stays behind. Download your backup first.",
+      deleteConfirmWord: "DELETE",
+      deleteConfirmLabel: "Type DELETE to confirm",
+      deleteButton: "Delete account and all data",
+      deleteNotConfirmed: "The word does not match. Nothing was deleted.",
+      deleteFailed: "That did not go through. Nothing was deleted.",
+      privacyLink: "What is stored, and where",
+    },
+    privacy: {
+      heading: "What is stored, and where",
+      storedHeading: "What is stored",
+      storedBody:
+        "Your email address, and what you enter: daily entries with sessions, side-by-side measurements, your own measures, your own goals, and the evaluations calculated from them. Nothing else. No device data, no location, no contacts.",
+      whereHeading: "Where",
+      whereBody:
+        "In a Supabase project in the EU (Frankfurt). The application itself runs on Vercel. Neither holds a copy beyond what the database contains.",
+      howLongHeading: "How long",
+      howLongBody:
+        "Until you delete it. There is no retention period and no archive that outlives your account: deleting removes the rows, not a flag on them.",
+      rightsHeading: "What you can do",
+      rightsBody:
+        "Download everything at any time, and delete everything at any time — both from this page, without asking anyone.",
+      noTrackingHeading: "What does not happen",
+      noTrackingBody:
+        "No analytics, no third-party scripts, no advertising, no sign-in through another provider. With health data, even belonging somewhere is information.",
+    },
     print: {
       link: "Printable report",
       heading: "Report for a practitioner",
@@ -1154,6 +1235,47 @@ export const DICTIONARY: Record<Locale, Strings> = {
       tooManyThresholds: "Das sind mehr Bedingungen, als ein Ziel fasst.",
       invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
       noEpisode: "Diese Episode wurde nicht gefunden.",
+    },
+    account: {
+      link: "Deine Daten",
+      heading: "Deine Daten",
+      exportHeading: "Alles mitnehmen",
+      exportIntro:
+        "Dein Tagebuch gehört dir. Zwei Wege hinaus: eine vollständige Sicherung, und Dateien, die ein anderes Werkzeug lesen kann.",
+      exportBackup: "Vollständige Sicherung herunterladen (JSON)",
+      exportBackupHint:
+        "Alles, jedes Feld, jeder Verlauf. Das ist die Datei, die du behältst, wenn du dein Konto löschst.",
+      exportDiary: "Tagebuch als CSV",
+      exportTests: "Messungen als CSV",
+      exportPerEpisodeHint:
+        "Je Verlauf, auf dessen eigener Seite. CSV hat keine Spalte dafür, zu welchem Verlauf ein Tag gehört — zwei Verläufe in einer Datei liefen ineinander.",
+      deleteHeading: "Konto löschen",
+      deleteIntro:
+        "Dein Konto und alles darin: Einträge, Einheiten, Messungen, Ziele, Auswertungen. Das lässt sich nicht rückgängig machen, und es bleibt keine Kopie zurück. Lade vorher deine Sicherung herunter.",
+      deleteConfirmWord: "LÖSCHEN",
+      deleteConfirmLabel: "Zum Bestätigen LÖSCHEN eintippen",
+      deleteButton: "Konto und alle Daten löschen",
+      deleteNotConfirmed: "Das Wort stimmt nicht. Es wurde nichts gelöscht.",
+      deleteFailed: "Das ist nicht durchgegangen. Es wurde nichts gelöscht.",
+      privacyLink: "Was gespeichert wird, und wo",
+    },
+    privacy: {
+      heading: "Was gespeichert wird, und wo",
+      storedHeading: "Was gespeichert wird",
+      storedBody:
+        "Deine E-Mail-Adresse, und was du einträgst: Tageseinträge mit Einheiten, Seitenvergleiche, eigene Masse, eigene Ziele und die daraus gerechneten Auswertungen. Sonst nichts. Keine Gerätedaten, kein Standort, keine Kontakte.",
+      whereHeading: "Wo",
+      whereBody:
+        "In einem Supabase-Projekt in der EU (Frankfurt). Die Anwendung selbst läuft auf Vercel. Keiner von beiden hält eine Kopie über das hinaus, was in der Datenbank steht.",
+      howLongHeading: "Wie lange",
+      howLongBody:
+        "Bis du es löschst. Es gibt keine Aufbewahrungsfrist und kein Archiv, das dein Konto überlebt: Löschen entfernt die Zeilen, nicht eine Markierung darauf.",
+      rightsHeading: "Was du tun kannst",
+      rightsBody:
+        "Jederzeit alles herunterladen und jederzeit alles löschen — beides von dieser Seite aus, ohne jemanden zu fragen.",
+      noTrackingHeading: "Was nicht passiert",
+      noTrackingBody:
+        "Keine Analysewerkzeuge, keine fremden Skripte, keine Werbung, keine Anmeldung über einen anderen Anbieter. Bei Gesundheitsdaten ist schon die Zugehörigkeit eine Auskunft.",
     },
     print: {
       link: "Bericht zum Ausdrucken",
