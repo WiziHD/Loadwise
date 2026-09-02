@@ -8,8 +8,24 @@
 
 function required(name: string, value: string | undefined): string {
   if (value === undefined || value.trim() === "") {
+    /**
+     * Zwei Wege, weil es zwei Orte gibt und der erste Entwurf nur den einen
+     * kannte: »Copy .env.example to .env.local« ist in einer Bauumgebung ein
+     * Rat ins Leere — dort gibt es keine `.env.local`, und wer ihn befolgt,
+     * sucht an einer Stelle, die es nicht gibt.
+     *
+     * Der Hinweis auf das Neubauen steht dabei, weil er die Falle ist:
+     * `NEXT_PUBLIC_`-Werte werden beim BAUEN eingesetzt, nicht beim Starten.
+     * Wer sie nachträgt und nicht neu baut, sieht denselben Fehler und hält
+     * die Angabe für falsch.
+     */
     throw new Error(
-      `Missing environment variable ${name}. Copy .env.example to .env.local and fill it in.`,
+      `Missing environment variable ${name}.
+` +
+        `  Local:  copy .env.example to .env.local and fill it in.
+` +
+        `  Hosted: set it in the platform's environment variables, then REDEPLOY — ` +
+        `NEXT_PUBLIC_* values are baked in at build time, not read at startup.`,
     );
   }
   return value;

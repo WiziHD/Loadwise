@@ -21,7 +21,7 @@ supabase/   Schema und zeilenbasierter Zugriffsschutz.
 ```bash
 npm install
 npm run check      # Motor: Typen, 402 Motortests, Abdeckungsschwellen
-                   # App:   523 Webtests (rein + Bauteile), Typen, Wortlaut-Grenze
+                   # App:   527 Webtests (rein + Bauteile), Typen, Wortlaut-Grenze
 npm run check:full # dasselbe plus Build und Prerender-Wächter
 npm run dev        # Entwicklungsserver
 ```
@@ -89,6 +89,7 @@ Sie tragen die **Begründungen**, nicht bloss Beschreibungen — und `npm run ch
 | [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) | Warum eine Alternative verworfen wurde — samt der Bedingung, unter der man sie wieder aufmacht |
 | [SICHERHEIT.md](SICHERHEIT.md) | Die Durchsicht der ganzen Fläche: behoben oder begründet getragen |
 | [ANMELDUNG.md](ANMELDUNG.md) | Warum passwortlos, und was zum Einrichten des Mailversands noch fehlt |
+| [DEPLOY.md](DEPLOY.md) | Die Auslieferung: was gesetzt sein muss, und was bewusst wegbleibt |
 | [PROTOKOLLE.md](PROTOKOLLE.md) | Das Verfahren je Profil, und die Grenze zum Medizinprodukt |
 | [PROFILE.md](PROFILE.md) · [PROFIL-ACHILLES.md](PROFIL-ACHILLES.md) | Was bei welcher Verletzung gemessen wird, mit Quelle je Wert |
 | [MEILENSTEINE.md](MEILENSTEINE.md) | Heilungsverläufe, Kriterien, und warum Stufe 3 aus bleibt |
