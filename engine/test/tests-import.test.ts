@@ -30,6 +30,11 @@ describe("parseTests", () => {
       date: "2026-03-02",
       involved: 18,
       uninvolved: 20,
+      // Explicitly null rather than absent. The note column was read all along
+      // but never reached the test — the variable was declared below the branch
+      // that builds one. A note on a measurement is the context that explains a
+      // number six weeks later, and it was being dropped at the door.
+      note: null,
     });
   });
 

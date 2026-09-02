@@ -423,7 +423,20 @@ export function parseTests(text: string): TestImportResult {
     }
     const date = rawDate as DateStr;
 
-    const rawTest = normalise(at("test"));
+    // Die Notiz frueh gelesen, weil BEIDE Zweige sie brauchen. Sie stand
+    // erst weiter unten und war im Selbsttest-Zweig gar nicht im Geltungs-
+    // bereich -- eine Notiz zu einem Seitenvergleich ging deshalb beim Import
+    // verloren, obwohl die Spalte gelesen wurde. Derselbe Fund wie in der
+    // Abnahme von Woche 3, eine Ebene weiter.
+    const note = at("note");
+
+    // Kleingeschrieben NUR fuer den Nachschlag in TEST_LABELS. Der Name eines
+    // eigenen Masses ist das Wort des Nutzers und wird unveraendert behalten:
+    // »Kniebeugen« bleibt »Kniebeugen«. Vorher lief er ueber dieselbe
+    // Normalisierung und kam als »kniebeugen« zurueck -- ein Export, der die
+    // eigene Schreibweise verliert, ist als Sicherung genau so viel schlechter.
+    const rohTest = at("test");
+    const rawTest = normalise(rohTest);
     if (rawTest === "") {
       problems.push(problem("unknown-test-type", date, "test", `${where}: Es fehlt die Angabe, welcher Test gemessen wurde.`));
       continue;
@@ -470,7 +483,7 @@ export function parseTests(text: string): TestImportResult {
         }
       }
 
-      tests.push({ type: known, date, involved, uninvolved });
+      tests.push({ type: known, date, involved, uninvolved, note: note === "" ? null : note });
       continue;
     }
 
@@ -501,8 +514,7 @@ export function parseTests(text: string): TestImportResult {
       continue;
     }
 
-    const note = at("note");
-    measurements.push({ key: rawTest, date, value, unit, note: note === "" ? null : note });
+    measurements.push({ key: rohTest, date, value, unit, note: note === "" ? null : note });
   }
 
   return { tests, measurements, problems };
