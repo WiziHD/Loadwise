@@ -10,7 +10,7 @@
     "check:boundary": "tsx scripts/check-wording-boundary.ts",
     "check:contrast": "tsx scripts/check-contrast.ts",
     "check:dictionary": "tsx scripts/check-dictionary.ts",
-    "check:prerender": "tsx scripts/check-no-prerendered-private.ts",
+    "check:prerender": "node --experimental-strip-types scripts/check-no-prerendered-private.mts",
     "check:rls": "tsx scripts/check-rls.mts",
     "check:signin": "tsx scripts/check-signin.mts",
     "check:migrations": "tsx scripts/check-migrations.mts",

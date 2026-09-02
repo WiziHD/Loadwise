@@ -72,7 +72,7 @@ function main(): void {
         leaked.map((r) => `  ${r}`).join("\n") +
         `\n\nEither the route must not read user data, or it must stay dynamic.\n` +
         `If it genuinely holds nothing personal, add it to PUBLIC_ROUTES in\n` +
-        `scripts/check-no-prerendered-private.ts — deliberately.`,
+        `scripts/check-no-prerendered-private.mts — deliberately.`,
     );
   }
 

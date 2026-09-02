@@ -111,3 +111,58 @@ startet die App nicht.
 - **Die rechtliche Prüfung** der Zweckbestimmung nach MepV. Sie blockiert
   nichts, was heute ausgeliefert wird — das Präskriptive ist aus — aber sie
   steht vor dem Tag, an dem es angeht.
+
+---
+
+## Warum im Build kein `tsx` mehr steckt
+
+Aus dem zweiten Bereitstellungsprotokoll:
+
+```
+npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+```
+
+Neuere npm-Fassungen führen Installationsskripte fremder Pakete nicht mehr
+ungefragt aus. Das ist richtig so — ein `postinstall` ist beliebiger Code aus
+dem Netz, der beim Installieren läuft. Nur hängt `esbuild` genau daran, um
+seine plattformeigene Binärdatei an ihren Platz zu legen.
+
+Und `tsx`, mit dem der Prerender-Wächter lief, benutzt `esbuild`.
+
+Damit hing eine **Sicherheitsprüfung des Builds an einem Installationsskript,
+das die Bauumgebung aus guten Gründen nicht mehr ausführt.** Die naheliegende
+Antwort wäre gewesen, das Skript freizugeben. Die bessere ist, die Abhängigkeit
+loszuwerden:
+
+```
+"check:prerender": "node --experimental-strip-types scripts/check-no-prerendered-private.mts"
+```
+
+Node führt TypeScript seit 22.6 selbst aus. Der Wächter ist 85 Zeilen mit
+einem einzigen Typ auf einem JSON-Manifest — dafür einen Übersetzer mit
+nativer Binärdatei zu starten, war ohnehin zu viel Maschine. `tsc --noEmit`
+prüft die Datei unverändert weiter; die Typdisziplin bleibt, der Werkzeugbaum
+im Build-Pfad verschwindet.
+
+Nachgewiesen, nicht behauptet: Eine private Route ins Manifest geschmuggelt,
+der Wächter wird rot; zurückgesetzt, er wird grün.
+
+`tsx` bleibt für alles andere — die Prüfungen laufen von Hand, nicht in einer
+Bauumgebung.
+
+## Die Node-Version
+
+```
+Warning: Detected "engines": { "node": ">=20.19 <21 || >=22.12" } that will
+automatically upgrade when a new major Node.js Version is released.
+```
+
+Der `<21`-Zweig ist weg. Node 20 hat im April 2026 die Wartung verlassen, und
+`--experimental-strip-types` gibt es dort nicht. Die Angabe lautet jetzt
+`>=22.12` und beschreibt damit, was der Code wirklich braucht.
+
+Die Warnung selbst bleibt bestehen — sie gilt jedem `>=`. Wer sie loswerden
+will, nagelt die Version im Dashboard fest (Settings → General → Node.js
+Version) statt die Angabe in `package.json` zu verengen: Die beschreibt, was
+läuft, nicht was Vercel wählen soll. `.nvmrc` sagt 24; Vercel liest sie nicht.

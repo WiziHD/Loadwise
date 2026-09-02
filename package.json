@@ -19,6 +19,6 @@
     "check:docs": "tsx scripts/check-docs.mts"
   },
   "engines": {
-    "node": ">=20.19 <21 || >=22.12"
+    "node": ">=22.12"
   }
 }
