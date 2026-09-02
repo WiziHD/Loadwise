@@ -21,7 +21,8 @@
     "check:verdicts": "tsx scripts/check-verdicts.mts",
     "check:tokens": "tsx scripts/check-tokens.ts",
     "check:delete-account": "tsx scripts/check-delete-account.mts",
-    "check:language": "tsx scripts/check-language.ts"
+    "check:language": "tsx scripts/check-language.ts",
+    "check:paywall-trigger": "tsx scripts/check-paywall-trigger.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

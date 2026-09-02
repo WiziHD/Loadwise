@@ -21,6 +21,19 @@
  * Profil ändert — und der Ausdruck ist genau das Dokument, das jemand
  * mitnimmt und aufhebt.
  * ---------------------------------------------------------------------------
+ * DIE EINZIGE STELLE, AN DER DIE BEZAHLSCHRANKE HEUTE GREIFEN WÜRDE.
+ *
+ * Sie ist AUS, solange `LOADWISE_PAYWALL` nicht ausdrücklich auf `"an"` steht —
+ * siehe `lib/paywall.ts`. Die Prüfung steht hier trotzdem, weil eine Schranke,
+ * deren Ort erst am Tag des Einschaltens gesucht wird, an dem Tag falsch sitzt.
+ *
+ * Sie steht VOR jeder Abfrage, und das ist Absicht: Wer den Bericht nicht
+ * bekommt, soll nicht über die Antwortzeit erfahren, ob eine Episode existiert.
+ *
+ * Was hier NICHT verschlossen wird, steht im Text der Sperrseite und ist der
+ * eigentliche Punkt: Tagebuch, Messungen, Ziele und der vollständige Export
+ * bleiben offen. Der Ausdruck ist eine Bequemlichkeit, keine Geisel.
+ * ---------------------------------------------------------------------------
  */
 
 import Link from "next/link";
@@ -37,6 +50,8 @@ import { latestRun } from "@/lib/db/verdicts";
 import { coursePoints } from "@/lib/course-points";
 import { profileOf } from "@/lib/profile-view";
 import { PrintReport } from "@/components/PrintReport";
+import { isLocked } from "@/lib/paywall";
+import { PrintLocked } from "@/components/PrintLocked";
 
 export default async function PrintPage({
   params,
@@ -48,6 +63,25 @@ export default async function PrintPage({
   const s = t(locale);
 
   if ((await currentUser()) === null) redirect(`/${locale}/signin`);
+
+  // Vor der ersten Abfrage. Heute immer `false`.
+  if (isLocked("print-report")) {
+    return (
+      <main>
+        <PrintLocked
+          locale={locale}
+          episodeId={id}
+          strings={{
+            heading: s.print.heading,
+            locked: s.print.locked,
+            lockedHint: s.print.lockedHint,
+            back: s.diary.back,
+            dataLink: s.account.link,
+          }}
+        />
+      </main>
+    );
+  }
 
   const episode = await getEpisode(id);
   if (episode === null) notFound();

@@ -355,6 +355,9 @@ export interface Strings {
     testsEmpty: string;
     daysInPeriod: string;
     noRun: string;
+    /** Wenn die Bezahlschranke an ist. Siehe `lib/paywall.ts` — heute aus. */
+    locked: string;
+    lockedHint: string;
   };
   /**
    * Die Fortschritts-Ansicht — aufgezeichnet, nie »verbessert«.
@@ -914,6 +917,9 @@ export const DICTIONARY: Record<Locale, Strings> = {
       testsEmpty: "No measurement falls in this period.",
       daysInPeriod: "{count} days recorded in this period",
       noRun: "No evaluation has been stored for this record yet.",
+      locked: "This report is not part of the free version.",
+      lockedHint:
+        "Your diary, your measurements and your goals stay open, and the complete export stays where it was.",
     },
     progress: {
       heading: "Your own numbers, over time",
@@ -1361,6 +1367,9 @@ export const DICTIONARY: Record<Locale, Strings> = {
       testsEmpty: "In diesen Zeitraum fällt keine Messung.",
       daysInPeriod: "{count} Tage in diesem Zeitraum erfasst",
       noRun: "Für diesen Verlauf ist noch keine Auswertung gespeichert.",
+      locked: "Dieser Bericht gehört nicht zur kostenlosen Fassung.",
+      lockedHint:
+        "Dein Tagebuch, deine Messungen und deine Ziele bleiben offen, und du kannst alles davon jederzeit unter »Deine Daten« herunterladen.",
     },
     progress: {
       heading: "Deine eigenen Zahlen, über die Zeit",

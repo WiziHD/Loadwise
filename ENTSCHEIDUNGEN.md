@@ -1061,3 +1061,71 @@ Wer die Frage später aufnimmt, muss zwei Dinge gegeneinander abwägen: Eine Reg
 
 - **Wenn die achte Regel entschieden wird.** Dann bekommt dieser Abschnitt einen Satz weniger — oder die Regel spricht, und er verschwindet früher.
 - **Nicht beim Ladebalken.** Dass hier nichts läuft, ist die Aussage.
+
+---
+
+## E24 — Die Bezahlschranke: gebaut, versioniert, geprüft, ausgeschaltet
+
+**Entschieden 02.09.2026** · `web/src/lib/paywall.ts`, `web/src/components/PrintLocked.tsx`, `web/scripts/check-paywall-trigger.mts`, Karte 4.5
+
+Dieselbe Konstruktion wie beim Kriterienkatalog — mit einem Unterschied in der Bauform, und der Unterschied ist die eigentliche Entscheidung.
+
+### Warum kein Literal-Typ wie bei `Protocol.enabled`
+
+`Protocol.enabled` im Motor ist als `false` typisiert: Ein eingeschaltetes Protokoll ist **nicht konstruierbar**. Das ist dort richtig, weil das Einschalten eine regulatorische Entscheidung ist, die eine anwaltliche Prüfung braucht — kein Schalter, den jemand umlegt.
+
+Hier ist es anders. Ob eine Bezahlschranke angeht, ist eine geschäftliche Entscheidung. Sie gehört an eine Konfiguration und nicht an einen Typ. Der Standardwert ist trotzdem AUS.
+
+Geprüft wird auf genau `"an"` und **nicht** auf »irgendein Wert« oder »nicht leer«: Ein versehentlich gesetztes `LOADWISE_PAYWALL=` oder `=false` würde sonst zu einer eingeschalteten Schranke. Zwei Mutationen halten beides fest.
+
+Kein `NEXT_PUBLIC_`. Im Browser wäre der Schalter eine Zeichenkette im Bündel, die jeder umschreiben kann — eine Schranke, die der Client entscheidet, ist keine.
+
+### Die eine Grenze, die hier keine Geschäftsentscheidung ist
+
+Export, Kontolöschung, Tagebuch und Datenschutzerklärung können **nie** hinter der Schranke stehen. Sie sind kein Leistungsmerkmal, sondern die Bedingung dafür, dass dieses Produkt jemandem angeboten werden darf — Gesundheitsdaten nach Art. 9 DSGVO, siehe E21.
+
+Erzwungen über den Typ: `GatedFeature` ist eine geschlossene Union, und diese Namen stehen nicht darin. Zusätzlich hält ein Test sie **namentlich** fest, weil eine Union sich leise erweitern lässt — und weil ein Compilerfehler an einer Stelle, die niemand anfasst, nie ausgelöst wird.
+
+Dazu eine Laufzeitprüfung in `isLocked`, die auf den ersten Blick tot aussieht: Der Typ gilt beim Übersetzen, ein Merkmalsname aus einer Konfiguration ist zur Laufzeit eine beliebige Zeichenkette. Was nicht ausdrücklich als verschliessbar erklärt wurde, bleibt offen — die sichere Richtung. Ein erster Entwurf hatte stattdessen `void feature;` darunter stehen; das wäre der tote Code gewesen, den dieses Projekt sonst verfolgt.
+
+### Was heute hinter der Schranke stünde — eine Annahme, keine Entscheidung
+
+Der Physio-Ausdruck, und die Begründung ist die naheliegende: Er ist das Stück, das jemand zu einem bezahlten Termin mitnimmt, also der klarste Mehrwert über das Tagebuch hinaus. **Wer ihn nicht bekommt, verliert keine eigenen Daten** — der Export gibt sie vollständig heraus.
+
+Das steht an **einer** Stelle, damit das Verschieben eine Zeile ist und keine Suche.
+
+### Die Sperrseite ist ein eigenes Bauteil, und das ist der Punkt
+
+Die Druckseite ist eine `async`-Serverkomponente mit drei Abfragen. Ein Zustand darin ist im Test nicht erreichbar, ohne die halbe Datenbank zu stellen — und ein Zustand, den kein Test rendert, wird zum ersten Mal im Betrieb gesehen.
+
+`PrintLocked` ist deshalb ein reines Bauteil: gerendert, geprüft, mutiert. Die Prüfung, auf die es ankommt, ist nicht der Sperrtext, sondern der **Link zu den eigenen Daten auf derselben Seite**. Ohne ihn liest sich eine Sperre wie ein Datenverlust. Eine Mutation nimmt den Link weg und wird gefangen.
+
+Die Prüfung steht in der Seite **vor** jeder Abfrage. Wer den Bericht nicht bekommt, soll nicht über die Antwortzeit erfahren, ob eine Episode existiert.
+
+### Der Auslöser ist eine Zahl, und jetzt auch eine Zählung
+
+`KONZEPT.md`: *»Die Bezahlschranke geht an, sobald 50 Personen mindestens 30 Tage lang Einträge gemacht haben.«*
+
+Die Zahl steht als `PAYWALL_TRIGGER` im Code, und `check:paywall-trigger` zählt gegen genau diese Konstante. Ohne so eine Zählung ist der Auslöser eine Zahl in einem Dokument, und »irgendwann« entscheidet dann jemand nach Gefühl — laut demselben Abschnitt die häufigste Art, wie ein Produkt nie Geld verdient.
+
+Gezählt werden **Tage mit Eintrag**, nicht Tage seit der Anmeldung, und je Person über alle Episoden hinweg. Nicht verlangt wird, dass die Tage aufeinanderfolgen: Wer zwei Wochen aussetzt und weitermacht, hat nicht abgebrochen — das ist der Normalfall einer Verletzung.
+
+Die Ausgabe nennt keine E-Mail-Adressen. Es gäbe keinen Grund dafür.
+
+Erster Lauf gegen das echte Projekt: **0 von 50.** Zwei Personen mit Einträgen, keine bei dreissig Tagen.
+
+### Kein Zahlungsanbieter
+
+Die Schranke ist der **Ort**, nicht der Kaufvorgang. Damit hängt der Start nicht an einer Preisentscheidung, und die Arbeit ist trotzdem getan: Am Tag, an dem die Schranke angeht, ist die Frage »wo greift sie« bereits beantwortet und geprüft.
+
+Erreicht der Zähler die Fünfzig, sagt er ausdrücklich, dass eine **Entscheidung** fällig ist und kein Schalter: ein Preis, ein Anbieter, und die Bestätigung, dass der Ausdruck das richtige Merkmal ist.
+
+### Was der Sprachwächter dabei gefunden hat
+
+Der englische Sperrtext trug deutsche Anführungszeichen — `»Your data«`. Genau der Fund, für den E22 gebaut wurde, beim ersten Lauf danach. Der Satz ist umgeschrieben.
+
+### Wann man das wieder aufmacht
+
+- **Wenn der Zähler die Fünfzig erreicht.** Dann steht die Entscheidung an, nicht der Schalter.
+- **Wenn ein zweites Merkmal dazukommen soll.** Eine Zeile in `ALL_GATED_FEATURES` — und die Frage, ob es die eigenen Daten berührt, beantwortet der Compiler.
+- **Nicht, um Export oder Löschung zu verschliessen.** Das ist keine Preisfrage.

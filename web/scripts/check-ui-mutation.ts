@@ -977,6 +977,55 @@ const MUTATIONEN: Mutation[] = [
     von: "      <p style={{ ...hint, margin: \"0 0 var(--space-4)\", maxWidth: \"42rem\" }}>{limitations}</p>",
     nach: "      <p />",
   },
+
+  // -------------------------------------------------------------------------
+  // DIE BEZAHLSCHRANKE — GEBAUT, GEPRÜFT, AUS.
+  //
+  // Ein ausgeschalteter Schalter und ein kaputter Schalter sehen im Betrieb
+  // gleich aus. Diese vier Mutationen sind der einzige Unterschied zwischen
+  // beiden: Sie kippen den Standardwert, die Grenze und die Sperrseite und
+  // verlangen, dass jedes Mal etwas rot wird.
+  // -------------------------------------------------------------------------
+  {
+    // Die Schranke geht bei JEDEM gesetzten Wert an — auch bei
+    // `LOADWISE_PAYWALL=false`. Der Fehler, den niemand beim Lesen sieht.
+    name: "paywall: jeder Wert schaltet ein",
+    datei: "src/lib/paywall.ts",
+    von: '  return env.LOADWISE_PAYWALL === "an";',
+    nach: "  return env.LOADWISE_PAYWALL !== undefined;",
+  },
+  {
+    // Die Schranke ist standardmässig AN. Der harmlose Standardwert ist die
+    // halbe Karte.
+    name: "paywall: standardmaessig an",
+    datei: "src/lib/paywall.ts",
+    von: '  return env.LOADWISE_PAYWALL === "an";',
+    nach: '  return env.LOADWISE_PAYWALL !== "aus";',
+  },
+  {
+    // Die Laufzeitprüfung fällt weg: Ein Name, der gar nicht als
+    // verschliessbar erklärt ist — Export, Löschung — würde verschlossen.
+    name: "paywall: die Grenze wird nicht zur Laufzeit geprueft",
+    datei: "src/lib/paywall.ts",
+    von: "  if (!(ALL_GATED_FEATURES as readonly string[]).includes(feature)) return false;",
+    nach: "",
+  },
+  {
+    // Der Auslöser verschiebt sich still von 50 auf 5. Eine Zahl, die niemand
+    // prüft, ist keine Entscheidung.
+    name: "paywall: der Ausloeser wandert",
+    datei: "src/lib/paywall.ts",
+    von: "export const PAYWALL_TRIGGER = { people: 50, days: 30 } as const;",
+    nach: "export const PAYWALL_TRIGGER = { people: 5, days: 3 } as const;",
+  },
+  {
+    // Die Sperrseite nennt keinen Weg zu den eigenen Daten mehr. Damit liest
+    // sie sich wie ein Datenverlust — der eine Satz, der hier zählt.
+    name: "PrintLocked: der Weg zu den eigenen Daten fehlt",
+    datei: "src/components/PrintLocked.tsx",
+    von: "        <Link href={`/${locale}/account`} style={navLink}>",
+    nach: "        <Link href={`/${locale}`} style={navLink}>",
+  },
 ];
 
 type Bericht = {
