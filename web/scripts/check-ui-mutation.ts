@@ -818,6 +818,53 @@ const MUTATIONEN: Mutation[] = [
     von: "      note: t.note ?? null,",
     nach: "      note: tests[0]?.note ?? null,",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 4.1 — der Physio-Bericht als Druckansicht.
+  //
+  // Die erste Mutation ist die Falle der Karte: Das Gesamturteil gilt für den
+  // ganzen Verlauf, nicht für den gewählten Zeitraum. Ohne den Satz darüber
+  // schriebe ein Ausdruck über »letzte vier Wochen« ein Urteil zu, das aus
+  // einem Befund von vor zwei Monaten stammt.
+  // -------------------------------------------------------------------------
+  {
+    name: "PrintReport: der Gesamtstand sagt nicht, worauf er sich bezieht",
+    datei: "src/components/PrintReport.tsx",
+    von: "            <p style={{ ...hint, margin: 0 }}>{strings.overallScope}</p>",
+    nach: "            <p style={{ ...hint, margin: 0 }} />",
+  },
+  {
+    // Der Zeitraum engt nichts ein. Der Ausdruck über »letzte vier Wochen«
+    // trüge dann den ganzen Verlauf — und niemand könnte den Unterschied sehen.
+    name: "PrintReport: der Zeitraum engt die Befunde nicht ein",
+    datei: "src/components/PrintReport.tsx",
+    von: "  const befunde = (run?.flags ?? [])\n    .filter((f) => imZeitraum(f.forDate))",
+    nach: "  const befunde = (run?.flags ?? [])\n    .filter(() => true)",
+  },
+  {
+    // Das Fenster wird von HEUTE gerechnet statt vom jüngsten Eintrag. Wer
+    // zwei Wochen nichts erfasst hat, bekäme eine halb leere Seite.
+    name: "PrintReport: das Fenster rechnet von heute",
+    datei: "src/components/PrintReport.tsx",
+    von: "    const letzter = entries[entries.length - 1]?.date;",
+    nach: "    const letzter = new Date().toISOString().slice(0, 10);",
+  },
+  {
+    // Die Profilversion fällt weg. Ein Ausdruck von vor drei Monaten wäre
+    // nicht mehr einzuordnen — die Schwellen können sich geändert haben.
+    name: "PrintReport: die Profilversion steht nicht auf dem Ausdruck",
+    datei: "src/components/PrintReport.tsx",
+    von: "                [strings.profileVersion, run.profileVersion],",
+    nach: '                [strings.profileVersion, ""],',
+  },
+  {
+    // Die Zeitraumwahl landet mit auf dem Papier: ein Knopf auf einem
+    // Ausdruck, also eine Aufforderung, die ins Leere geht.
+    name: "PrintReport: die Bedienelemente sind nicht als bildschirmeigen markiert",
+    datei: "src/components/PrintReport.tsx",
+    von: '      <div data-screen-only=""',
+    nach: "      <div",
+  },
 ];
 
 type Bericht = {

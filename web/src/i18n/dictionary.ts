@@ -248,6 +248,48 @@ export interface Strings {
     noEpisode: string;
   };
   /**
+   * Der Physio-Bericht als Druckansicht.
+   *
+   * ---------------------------------------------------------------------------
+   * FÜR JEMANDEN GESCHRIEBEN, DER DAS PRODUKT NICHT KENNT.
+   *
+   * Der Kern des Konzepts: nicht die dreissig Minuten beim Physio, sondern die
+   * anderen 167 Stunden. Ein Ausdruck muss ohne Erklärung verständlich sein
+   * — also stehen hier Beschriftungen, die sagen, WAS eine Zahl ist, nicht
+   * Abkürzungen, die jemand nachschlagen müsste.
+   *
+   * Die Urteilssätze selbst kommen über `verdictText` und `evidenceText` aus
+   * dem Motor. Hier steht kein einziger.
+   */
+  print: {
+    link: string;
+    heading: string;
+    intro: string;
+    /** Der Zeitraum. Am Bildschirm wählbar, im Ausdruck eine Zeile. */
+    period: string;
+    periodAll: string;
+    periodDays: string;
+    periodFrom: string;
+    periodTo: string;
+    printButton: string;
+    /** Wonach beurteilt wurde — der Grund, warum die Karte es ausdrücklich fordert. */
+    basisHeading: string;
+    profileLabel: string;
+    profileVersion: string;
+    ruleVersion: string;
+    computedAt: string;
+    /** Das Gesamturteil gilt für den GANZEN Verlauf, nicht für den Zeitraum. */
+    overallHeading: string;
+    overallScope: string;
+    curveHeading: string;
+    findingsHeading: string;
+    findingsEmpty: string;
+    testsHeading: string;
+    testsEmpty: string;
+    daysInPeriod: string;
+    noRun: string;
+  };
+  /**
    * Die Fortschritts-Ansicht — aufgezeichnet, nie »verbessert«.
    *
    * ---------------------------------------------------------------------------
@@ -723,6 +765,32 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalid: "Something in the form did not come through. Please check the fields.",
       noEpisode: "This episode could not be found.",
     },
+    print: {
+      link: "Printable report",
+      heading: "Report for a practitioner",
+      intro:
+        "What the diary holds, in the period you choose. Written to be read without this app open.",
+      period: "Period",
+      periodAll: "Whole record",
+      periodDays: "Last {days} days",
+      periodFrom: "from",
+      periodTo: "to",
+      printButton: "Print",
+      basisHeading: "What this was judged against",
+      profileLabel: "Profile",
+      profileVersion: "Profile version",
+      ruleVersion: "Rule version",
+      computedAt: "Calculated",
+      overallHeading: "Overall",
+      overallScope: "Covers the whole record up to the calculation, not the period below.",
+      curveHeading: "Morning rating and load",
+      findingsHeading: "Findings in this period",
+      findingsEmpty: "No finding falls in this period.",
+      testsHeading: "Side-by-side measurements in this period",
+      testsEmpty: "No measurement falls in this period.",
+      daysInPeriod: "{count} days recorded in this period",
+      noRun: "No evaluation has been stored for this record yet.",
+    },
     progress: {
       heading: "Your own numbers, over time",
       intro:
@@ -1086,6 +1154,32 @@ export const DICTIONARY: Record<Locale, Strings> = {
       tooManyThresholds: "Das sind mehr Bedingungen, als ein Ziel fasst.",
       invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
       noEpisode: "Diese Episode wurde nicht gefunden.",
+    },
+    print: {
+      link: "Bericht zum Ausdrucken",
+      heading: "Bericht für eine behandelnde Person",
+      intro:
+        "Was im Tagebuch steht, im Zeitraum deiner Wahl. Geschrieben, um ohne diese App gelesen zu werden.",
+      period: "Zeitraum",
+      periodAll: "Ganzer Verlauf",
+      periodDays: "Letzte {days} Tage",
+      periodFrom: "von",
+      periodTo: "bis",
+      printButton: "Drucken",
+      basisHeading: "Wonach beurteilt wurde",
+      profileLabel: "Profil",
+      profileVersion: "Profilversion",
+      ruleVersion: "Regelversion",
+      computedAt: "Berechnet",
+      overallHeading: "Gesamtstand",
+      overallScope: "Gilt für den ganzen Verlauf bis zur Berechnung, nicht für den Zeitraum darunter.",
+      curveHeading: "Morgenwert und Last",
+      findingsHeading: "Auffälligkeiten in diesem Zeitraum",
+      findingsEmpty: "In diesen Zeitraum fällt keine Auffälligkeit.",
+      testsHeading: "Seitenvergleich in diesem Zeitraum",
+      testsEmpty: "In diesen Zeitraum fällt keine Messung.",
+      daysInPeriod: "{count} Tage in diesem Zeitraum erfasst",
+      noRun: "Für diesen Verlauf ist noch keine Auswertung gespeichert.",
     },
     progress: {
       heading: "Deine eigenen Zahlen, über die Zeit",

@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-174 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+192 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -823,7 +823,7 @@ Eine der neuen setzte `hidden` an ein Element. `textContent` in jsdom ignoriert 
 
 **Entschieden 02.09.2026** · `engine/src/types.ts`, `web/src/lib/db/types.ts`, Abnahme der Karten 3.1 bis 3.5
 
-Woche 3 stand mit 85 von 85 gefangenen Mutationen, 402 Motortests, 446 Webtests und allen Wächtern grün. Die Abnahme hat trotzdem einen Fund ergeben — und zwar von genau der Sorte, gegen die dieses Projekt sonst gebaut ist.
+Woche 3 stand mit 85 von 85 gefangenen Mutationen, 402 Motortests, 464 Webtests und allen Wächtern grün. Die Abnahme hat trotzdem einen Fund ergeben — und zwar von genau der Sorte, gegen die dieses Projekt sonst gebaut ist.
 
 ### Drei Formulare boten ein Notizfeld an. Zwei gaben es nie wieder her
 
@@ -851,3 +851,45 @@ Die Notizspalte im Seitenvergleich hat eine **Gegenprobe**: Wo keine Notiz steht
 
 - **`progress.episodeDay` wird gerechnet, gespeichert und von nichts gelesen.** Die Episodenseite rechnet ihren Tageszähler live aus dem Index. Zwei Quellen für dieselbe Zahl, aber nur eine erreicht den Bildschirm — heute kein Widerspruch, latent einer. Den ganzen Kanal zu speichern bleibt richtig; das Feld einzeln herauszuschneiden wäre eine Sonderregel im Ablegen.
 - **Die beiden Messfehler-Sätze sind unerreichbar**, weil kein Profil `measurementError` setzt. Jedes dokumentiert unter `evidence` mit Grad D, warum — »No MDC found«. Konsistent mit E18, kein Fund.
+
+---
+
+## E20 — Der Ausdruck ist ein anderes Dokument, nicht dieselbe Seite in Grau
+
+**Entschieden 02.09.2026** · `web/src/components/PrintReport.tsx`, `web/src/app/globals.css`, Karte 4.1
+
+### Eine eigene Seite, kein Druckstil auf dem Bericht
+
+Der Bericht (Karte 2.3) ist für die betroffene Person geschrieben: fünf Abschnitte, Warnzeichen, Erklärungen. Ein Ausdruck für eine behandelnde Person ist ein anderes Dokument — kürzer, mit wählbarem Zeitraum, und mit vier Versionsangaben, die ihn Monate später noch einordbar machen.
+
+Dieselbe Seite mit `@media print` in zwei Dokumente zu verwandeln hiesse, beide Fassungen in einer Datei zu halten und bei jeder Änderung an die andere zu denken.
+
+### Die Falle: Der Zeitraum engt ein, was aufgelistet wird — nicht das Gesamturteil
+
+Wer »letzte vier Wochen« wählt, sieht eine kürzere Liste. Das **Gesamturteil** bleibt aber die Aussage über den ganzen Verlauf bis zur Berechnung. Es unter einer Zeitraumüberschrift zu zeigen hiesse, einen Befund von vor zwei Monaten dem gewählten Fenster zuzuschreiben — und ausgerechnet diese eine Zeile sucht eine behandelnde Person zuerst.
+
+Also: eigener Abschnitt, mit einem Satz darüber, worauf er sich bezieht. Ihn ganz wegzulassen war die Alternative und ist verworfen.
+
+Das Fenster rechnet vom **jüngsten erfassten Tag**, nicht von heute. Wer zwei Wochen nichts eingetragen hat, bekäme sonst eine halb leere Seite und den Eindruck, es fehlten Daten.
+
+### Vier Angaben, ohne die ein alter Ausdruck wertlos ist
+
+Profilname, **Profilversion**, Regelversion, Berechnungszeitpunkt. Ohne sie ist ein Blatt von vor drei Monaten nicht mehr einzuordnen: Die Schwellen können sich geändert haben, und niemand könnte sagen, ob ein anderes Ergebnis am Körper oder an einer Profilverbesserung liegt. Das ist dieselbe Überlegung, die E12 zum Ablegen der Läufe geführt hat — hier auf Papier.
+
+### Drucken ohne PDF-Erzeuger
+
+`@media print` in `globals.css` blendet über `[data-screen-only]` aus, was auf Papier nichts zu suchen hat: Navigation, Zeitraumwahl, Druckknopf. Ein Knopf auf einem Ausdruck ist kein Schönheitsfehler, sondern eine Aufforderung, die ins Leere geht.
+
+Ein PDF-Erzeuger wäre eine Abhängigkeit mehr, ein zweiter Satz Schriftarten und ein Weg, auf dem Gesundheitsdaten durch fremden Code laufen.
+
+**Die Urteilsfarben werden schwarz.** Viele Drucker sind schwarzweiss, und ein grauer Balken neben einem anderen grauen Balken sagt weniger als gar keiner. Der Satz daneben trägt die Aussage ohnehin — Farbe war nie die einzige Auskunft, das verlangt schon WCAG 1.4.1.
+
+### Zwei Fallen beim Bauen, beide dokumentiert gewesen
+
+- **Ein halbes Flag-Detail bringt `evidenceText` zu Fall.** Die Fixtur trug `acute`, `chronic`, `ratio` — der Typ verlangt auch die ungewichteten Zahlen. Kein Typfehler, weil die Fixtur zugesichert war; ein Absturz beim ersten Rendern.
+- **Eine stehende Uhr lässt jeden Klick hängen.** `vi.useFakeTimers()` ohne `shouldAdvanceTime` liess zwei Prüfungen in den Zeitüberlauf laufen. Der Kopf von `EntryForm.test.tsx` beschreibt genau das seit der Härtungswoche.
+
+### Wann man das wieder aufmacht
+
+- **Wenn ein Ausdruck mehrere Episoden tragen soll.** Heute ist er eine Episode; die Kaskade (zwei gleichzeitige Episoden mit Bezug) steht bewusst nach Tag 25.
+- **Nicht beim PDF-Erzeuger**, solange der Browser druckt. Erst wenn ein Ausdruck ohne Browser entstehen muss — etwa als Anhang einer E-Mail —, stellt sich die Frage neu.

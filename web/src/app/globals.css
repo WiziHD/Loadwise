@@ -196,3 +196,64 @@ main {
 :where(a, button, input, select, textarea, summary):focus:not(:focus-visible) {
   outline: none;
 }
+
+/* ---------------------------------------------------------------------------
+   DRUCK — OHNE PDF-ERZEUGER.
+
+   Karte 4.1 verlangt einen Ausdruck, den eine behandelnde Person in dreissig
+   Sekunden liest. Ein PDF-Erzeuger waere eine Abhaengigkeit mehr, ein zweiter
+   Satz Schriftarten und ein Weg, auf dem Gesundheitsdaten durch fremden Code
+   laufen. Der Browser kann drucken; er braucht nur zu wissen, was weg soll.
+
+   `[data-screen-only]` markiert, was auf Papier nichts zu suchen hat:
+   Navigation, Zeitraumwahl, Druckknopf. Ein Knopf auf einem Ausdruck ist kein
+   Schoenheitsfehler, sondern eine Aufforderung, die ins Leere geht.
+
+   ---------------------------------------------------------------------------
+   FARBEN WERDEN SCHWARZ, ABER NICHT DIE BEDEUTUNG.
+
+   Die Urteilsfarben tragen im Ausdruck nichts: Viele Drucker sind
+   schwarzweiss, und ein grauer Balken neben einem anderen grauen Balken sagt
+   weniger als gar keiner. Der Satz daneben sagt ohnehin, was der Fall ist —
+   die Farbe war nie die einzige Auskunft, das verlangt schon WCAG 1.4.1.
+   --------------------------------------------------------------------------- */
+@media print {
+  [data-screen-only] {
+    display: none !important;
+  }
+
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --fg: #000000;
+    --muted: #444444;
+    --line: #999999;
+    --edge: #666666;
+    /* Die Urteilsfarben auf Schwarz. Der Satz traegt die Aussage. */
+    --green: #000000;
+    --amber: #000000;
+    --red: #000000;
+    --unjudged: #444444;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  /* Ein Abschnitt gehoert nicht ueber zwei Blaetter verteilt: Eine
+     Auffaelligkeit, deren Zahlen auf der naechsten Seite stehen, ist auf
+     Papier nicht mehr als Einheit zu lesen. */
+  section,
+  li {
+    break-inside: avoid;
+  }
+
+  /* Der Bericht faengt oben an. Ohne das steht der Seitenrand des Bildschirms
+     auf dem Blatt und schiebt alles auf zwei Seiten, was auf eine passt. */
+  main {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+  }
+}

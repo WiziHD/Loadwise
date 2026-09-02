@@ -161,6 +161,12 @@ export default async function EpisodePage({
           <Link href={`/${locale}/episodes/${id}/goals`} style={navLink}>
             {s.goal.link}
           </Link>
+          {/* Der Ausdruck für eine behandelnde Person. Eigene Seite und nicht
+              ein Druckstil auf dem Bericht: Es ist ein anderes Dokument, für
+              jemanden geschrieben, der diese App nie gesehen hat. Karte 4.1. */}
+          <Link href={`/${locale}/episodes/${id}/print`} style={navLink}>
+            {s.print.link}
+          </Link>
           <Link href={`/${locale}/episodes/${id}/edit`} style={{ ...navLink, color: "var(--muted)" }}>
             {s.edit.link}
           </Link>
