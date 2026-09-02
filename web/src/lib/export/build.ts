@@ -56,33 +56,28 @@ function zeile(werte: (string | number | null | undefined)[]): string {
 }
 
 /**
- * Die Aktivitätsnamen, die `parseDiary` versteht.
+ * Die Motorschlüssel gehen unverändert hinaus — und das ist geprüft.
  *
- * Aus `ACTIVITIES` dort rückwärts gelesen. Ein englischer Schlüssel schreibt
- * sich als englisches Wort — `run` liest der Importer, `laufen` auch, und der
- * kürzere Weg ist der, der bei einer neuen Aktivität nicht vergessen wird.
+ * ---------------------------------------------------------------------------
+ * HIER STANDEN ZWEI ABBILDUNGEN, UND BEIDE WAREN TOTER BALLAST.
+ *
+ * Die erste Fassung übersetzte `ActivityKind` und `SymptomTiming` in Wörter für
+ * den Importer. Überflüssig: `ACTIVITIES` und `TIMINGS` in `import.ts` kennen
+ * die Motorschlüssel bereits alle, neben ihren deutschen und englischen Namen.
+ *
+ * Schlimmer als überflüssig: Vier Einträge nannten Aktivitäten, die es nicht
+ * gibt — `strength`, `court`, `team`, `climb` —, während `strength_lower`,
+ * `strength_upper` und `court_sport` fehlten. Die Abbildung sah vollständig aus
+ * und war es nie; alles lief über den Rückfall auf den Rohschlüssel, der
+ * ohnehin funktioniert.
+ *
+ * Aufgefallen ist es dem Typprüfer an einer Testfixtur, nicht an der Abbildung
+ * selbst: Ein `Record<string, string>` nimmt jeden Schlüssel an. Genau deshalb
+ * ist die erschöpfende Prüfung über `ALL_ACTIVITY_KINDS` in
+ * `test/export-build.test.ts` der eigentliche Wächter hier — sie schickt jede
+ * Art durch den Importer zurück.
+ * ---------------------------------------------------------------------------
  */
-const AKTIVITAET: Record<string, string> = {
-  run: "run",
-  walk: "walk",
-  hike: "hike",
-  cycle: "cycle",
-  swim: "swim",
-  strength: "strength",
-  plyometric: "plyometric",
-  court: "court",
-  team: "team",
-  climb: "climb",
-  row: "row",
-  other: "other",
-};
-
-/** Die Zeitpunkte, die `parseDiary` versteht. */
-const ZEITPUNKT: Record<string, string> = {
-  during: "during",
-  after: "after",
-  evening: "evening",
-};
 
 /**
  * Das Tagebuch als CSV, in genau den Spalten, die `parseDiary` liest.
@@ -100,7 +95,7 @@ export function diaryCsv(entries: Entry[]): string {
       e.symptomScore ?? null,
       e.symptomTiming === null || e.symptomTiming === undefined
         ? null
-        : (ZEITPUNKT[e.symptomTiming] ?? e.symptomTiming),
+        : e.symptomTiming,
       e.note ?? null,
     ];
 
@@ -114,7 +109,7 @@ export function diaryCsv(entries: Entry[]): string {
       zeilen.push(
         zeile([
           ...gemeinsam,
-          AKTIVITAET[s.activityKind] ?? s.activityKind,
+          s.activityKind,
           s.durationMin,
           s.rpe,
           ...schluss,

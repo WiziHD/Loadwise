@@ -112,7 +112,7 @@ describe("mehrere Einheiten an einem Tag", () => {
   const ZWEI = eintrag({
     sessions: [
       { activityKind: "run", durationMin: 45, rpe: 6 },
-      { activityKind: "strength", durationMin: 30, rpe: 7 },
+      { activityKind: "strength_lower", durationMin: 30, rpe: 7 },
     ],
   });
 
@@ -127,7 +127,7 @@ describe("mehrere Einheiten an einem Tag", () => {
 
     expect(datenzeilen).toHaveLength(2);
     expect(datenzeilen[0]).toContain("run");
-    expect(datenzeilen[1]).toContain("strength");
+    expect(datenzeilen[1]).toContain("strength_lower");
   });
 
   it("und der Morgenwert steht auf beiden", () => {
