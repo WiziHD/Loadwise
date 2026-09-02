@@ -781,6 +781,43 @@ const MUTATIONEN: Mutation[] = [
     von: "  if (records.length === 0 && allgemein.length === 0) {",
     nach: "  if (false) {",
   },
+
+  // -------------------------------------------------------------------------
+  // Abnahme Woche 3 — die Notiz, die nie zurückkam.
+  //
+  // Das Formular bot das Feld an, die Server-Aktion schrieb es, die Spalte
+  // hielt es — und nichts las es je. Kein Test konnte das finden: Ein Wert,
+  // den niemand liest, fehlt nirgends. Diese drei Mutationen sind das Netz für
+  // den nächsten Umbau.
+  // -------------------------------------------------------------------------
+  {
+    name: "toSelfTest: die Notiz geht an der Zuordnung verloren",
+    datei: "src/lib/db/types.ts",
+    von: "    uninvolved: row.uninvolved,\n    note: row.note,",
+    nach: "    uninvolved: row.uninvolved,",
+  },
+  {
+    // Das Formular lädt die Notiz nicht zurück. Damit löscht jedes erneute
+    // Speichern desselben Tages die Notiz — gemeldet als »Gespeichert.«
+    name: "SelfTestForm: die Notiz wird nicht zurueckgeladen",
+    datei: "src/components/SelfTestForm.tsx",
+    von: "            note: vorhanden.note ?? \"\",",
+    nach: "            note: \"\",",
+  },
+  {
+    name: "MeasurementForm: die Notiz wird nicht zurueckgeladen",
+    datei: "src/components/MeasurementForm.tsx",
+    von: "      note: vorhanden?.note ?? \"\",",
+    nach: "      note: \"\",",
+  },
+  {
+    // Die Spalte zeigt in jeder Zeile dasselbe. Ohne die Gegenprobe im Test
+    // wäre das nicht zu unterscheiden.
+    name: "SideComparison: die Notizspalte zeigt ueberall dasselbe",
+    datei: "src/components/SideComparison.tsx",
+    von: "      note: t.note ?? null,",
+    nach: "      note: tests[0]?.note ?? null,",
+  },
 ];
 
 type Bericht = {

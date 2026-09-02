@@ -108,6 +108,21 @@ describe("toSelfTest", () => {
     note: null,
   };
 
+  it("reicht die Notiz durch — sie war hier verloren gegangen", () => {
+    /**
+     * DER FUND AUS DER ABNAHME VON WOCHE 3.
+     *
+     * Diese Zuordnung liess `note` fallen. Das Formular bot das Feld an, die
+     * Server-Aktion schrieb es, die Spalte hielt es — und es kam nie wieder
+     * heraus. Weder ins Formular noch in eine Ansicht.
+     *
+     * Kein Test hätte das finden können: Ein Wert, den niemand liest, fehlt
+     * nirgends. Gefunden wurde es beim Durchsehen der Karten, nicht von der
+     * Suite. Diese Prüfung ist das Netz für den nächsten Umbau.
+     */
+    expect(toSelfTest({ ...row, note: "Neue Schuhe" }).note).toBe("Neue Schuhe");
+  });
+
   it("hält die verletzte und die gesunde Seite auseinander", () => {
     // Der Motor rechnet daraus ein Verhältnis. Vertauscht käme der Kehrwert
     // heraus — aus einem deutlichen Defizit würde ein Überschuss, und das
@@ -122,6 +137,7 @@ describe("toSelfTest", () => {
     expect(toSelfTest(row)).toEqual({
       type: "calf_raise",
       date: "2026-08-20",
+      note: null,
       involved: 8,
       uninvolved: 20,
     });

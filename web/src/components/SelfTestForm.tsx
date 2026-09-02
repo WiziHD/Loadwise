@@ -144,7 +144,14 @@ export function SelfTestForm({
     setDraft(
       vorhanden === undefined
         ? LEER
-        : { involved: String(vorhanden.involved), uninvolved: String(vorhanden.uninvolved), note: "" },
+        : {
+            involved: String(vorhanden.involved),
+            uninvolved: String(vorhanden.uninvolved),
+            // Die Notiz gehört zurück ins Feld. Sie stand hier fest auf "",
+            // und damit löschte jedes Speichern die Notiz des Tages — ohne
+            // dass jemand sie je gesehen hätte. Siehe `toSelfTest`.
+            note: vorhanden.note ?? "",
+          },
     );
     setState("idle");
     // eslint-disable-next-line react-hooks/exhaustive-deps

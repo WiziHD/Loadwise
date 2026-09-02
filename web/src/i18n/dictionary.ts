@@ -294,6 +294,9 @@ export interface Strings {
     colInvolved: string;
     colUninvolved: string;
     colIndex: string;
+    /** Die eigenen Worte zu einer Messung. Ohne diese Spalte waere das
+     *  Notizfeld im Formular ein Eingang ohne Ausgang. */
+    colNote: string;
     /** Wenn die Bezugsseite null ist, gibt es kein Verhältnis — keine 0 %. */
     noIndex: string;
     unitReps: string;
@@ -740,6 +743,7 @@ export const DICTIONARY: Record<Locale, Strings> = {
       colInvolved: "Injured",
       colUninvolved: "Other",
       colIndex: "Ratio",
+      colNote: "Note",
       noIndex: "—",
       unitReps: "repetitions",
       unitCm: "centimetres",
@@ -1103,6 +1107,7 @@ export const DICTIONARY: Record<Locale, Strings> = {
       colInvolved: "Verletzt",
       colUninvolved: "Andere",
       colIndex: "Verhältnis",
+      colNote: "Notiz",
       noIndex: "—",
       unitReps: "Wiederholungen",
       unitCm: "Zentimeter",

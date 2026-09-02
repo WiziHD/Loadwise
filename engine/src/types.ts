@@ -213,6 +213,17 @@ export interface SelfTest {
   involved: number;
   /** Healthy side, used as the reference. */
   uninvolved: number;
+  /**
+   * Free text. Deliberately never read by any rule — same standing as
+   * `Entry.note` and `Measurement.note`.
+   *
+   * It was missing here while both neighbours had it, and the gap was not
+   * harmless: the database column existed, the form offered the field, and the
+   * mapping in the app dropped it. A note about a measurement — "new shoes",
+   * "after a long day" — is exactly the context that explains a number six
+   * weeks later, and it was being written to a column nothing ever read.
+   */
+  note?: string | null;
 }
 
 export type Severity = "green" | "amber" | "red";

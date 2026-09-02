@@ -343,7 +343,7 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-171 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+174 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
 
@@ -794,7 +794,7 @@ Und `claimText` gab es nicht — die App hätte den Record selbst indexieren mü
 
 ### Der Mutationswächter war zu langsam, um benutzt zu werden
 
-**Das ist keine Bequemlichkeitsfrage.** Jede Mutation lässt die ganze Suite laufen — 442 Webtests in 30 Dateien. Bei 85 Mutationen sind das über eine Viertelstunde. Ein Wächter, dessen Lauf so lange dauert, wird beim Bauen nicht mehr gestartet, und ein Wächter, den niemand startet, ist keiner.
+**Das ist keine Bequemlichkeitsfrage.** Jede Mutation lässt die ganze Suite laufen — alle dreissig Testdateien, jedes Mal. Bei 85 Mutationen sind das über eine Viertelstunde. Ein Wächter, dessen Lauf so lange dauert, wird beim Bauen nicht mehr gestartet, und ein Wächter, den niemand startet, ist keiner.
 
 `npm run check:ui-mutation -- ProgressRecords` läuft nur die passenden Mutationen: vier statt 85, unter einer Minute. Die Bilanz nennt das Muster und sagt ausdrücklich, dass es kein vollständiger Lauf war — ein Filter, der still eine Teilmenge prüft und »alles gefangen« meldet, wäre die Halbwahrheit, gegen die dieses Skript gebaut ist.
 
@@ -816,3 +816,38 @@ Eine der neuen setzte `hidden` an ein Element. `textContent` in jsdom ignoriert 
 
 - **Wenn ein MDC vorliegt.** Dann — und erst dann — darf die Ansicht zwischen »über dem Messfehler« und »innerhalb der Messgenauigkeit« unterscheiden. Der Motor hat beide Sätze bereits; heute erreicht keiner den Bildschirm, weil kein Profil einen belastbaren Wert trägt.
 - **Nicht bei den Serien.** Der Motor kann einen weggelassenen schlechten Tag nicht erkennen; das ist dokumentiert und unlösbar. Eine Serie macht das Weglassen doppelt lohnend, und eine gerissene Serie bestraft jemanden dafür, dass sein Knie nicht mitgespielt hat.
+
+---
+
+## E19 — Abnahme Woche 3: Eine Notiz, die nie zurückkam
+
+**Entschieden 02.09.2026** · `engine/src/types.ts`, `web/src/lib/db/types.ts`, Abnahme der Karten 3.1 bis 3.5
+
+Woche 3 stand mit 85 von 85 gefangenen Mutationen, 402 Motortests, 446 Webtests und allen Wächtern grün. Die Abnahme hat trotzdem einen Fund ergeben — und zwar von genau der Sorte, gegen die dieses Projekt sonst gebaut ist.
+
+### Drei Formulare boten ein Notizfeld an. Zwei gaben es nie wieder her
+
+`SelfTest` im Motor trug **kein** Notizfeld, während `Entry` und `Measurement` beide eines haben. Die Datenbankspalte gab es seit 0001, das Formular bot das Feld an, die Server-Aktion schrieb es — und `toSelfTest` liess es fallen. Bei den eigenen Massen dasselbe eine Ebene später: Die Zuordnung reichte die Notiz durch, aber weder Formular noch Ansicht las sie.
+
+**Doppelt verloren.** Sie kam nie auf einen Bildschirm zurück, UND das leere Feld überschrieb sie beim nächsten Speichern desselben Tages — gemeldet als »Gespeichert.«, genau wie die sechs Datenverluste der Härtungswoche.
+
+Das ist schlechter als gar kein Feld. Ein Feld lädt dazu ein, Zusammenhang festzuhalten — »neue Schuhe«, »nach der Arbeit« —, und dieser Zusammenhang ist genau das, was eine Zahl sechs Wochen später erklärt.
+
+### Warum kein Test das finden konnte
+
+**Ein Wert, den niemand liest, fehlt nirgends.** Es gab keine Zusicherung, die brechen konnte: Der Motor braucht die Notiz nicht (keine Regel liest sie), die Datenbank hielt sie klaglos, und jede Ansicht war für sich vollständig.
+
+Gefunden wurde es beim Durchsehen der Karten gegen den Code — nicht von der Suite, nicht vom Mutationswächter. Der Mutationswächter konnte es nicht finden, weil er prüft, ob eine Zeile GEBRAUCHT wird; eine fehlende Zeile hat er nicht zu mutieren.
+
+Die Lehre: Der Mutationslauf sichert, was da ist. Was fehlt, findet nur ein Abgleich zwischen dem, was ein Formular verspricht, und dem, was eine Ansicht zeigt.
+
+### Behoben, und jetzt prüfbar
+
+`SelfTest.note` im Motor, `toSelfTest` reicht sie durch, beide Formulare laden sie zurück, beide Ansichten zeigen sie. Erst dadurch wird sie überhaupt prüfbar — vier Mutationen decken die vier Stellen ab, an denen sie wieder verschwinden könnte.
+
+Die Notizspalte im Seitenvergleich hat eine **Gegenprobe**: Wo keine Notiz steht, steht auch nichts. Ohne sie könnte die Spalte in jeder Zeile denselben Text zeigen und wäre trotzdem grün.
+
+### Zwei kleinere Befunde, beide stehen gelassen
+
+- **`progress.episodeDay` wird gerechnet, gespeichert und von nichts gelesen.** Die Episodenseite rechnet ihren Tageszähler live aus dem Index. Zwei Quellen für dieselbe Zahl, aber nur eine erreicht den Bildschirm — heute kein Widerspruch, latent einer. Den ganzen Kanal zu speichern bleibt richtig; das Feld einzeln herauszuschneiden wäre eine Sonderregel im Ablegen.
+- **Die beiden Messfehler-Sätze sind unerreichbar**, weil kein Profil `measurementError` setzt. Jedes dokumentiert unter `evidence` mit Grad D, warum — »No MDC found«. Konsistent mit E18, kein Fund.

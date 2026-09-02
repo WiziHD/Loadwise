@@ -127,9 +127,16 @@ export function MeasurementForm({
   // Zieht das Gespeicherte ins Formular und räumt es wieder weg. Ohne den
   // zweiten Fall bliebe ein fremder Wert stehen und würde als neuer gespeichert.
   useEffect(() => {
-    setDraft((d) => ({ ...d, value: vorhanden === undefined ? "" : String(vorhanden.value) }));
+    setDraft((d) => ({
+      ...d,
+      value: vorhanden === undefined ? "" : String(vorhanden.value),
+      // Auch die Notiz. Ohne diese Zeile löschte jedes erneute Speichern die
+      // Notiz des Tages, und niemand hätte sie je wiedergesehen — siehe den
+      // Kopf von `toSelfTest`.
+      note: vorhanden?.note ?? "",
+    }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vorhanden?.value, date]);
+  }, [vorhanden?.value, vorhanden?.note, date]);
 
   // Die eingefrorene Einheit gewinnt, sobald der Name auf ein bekanntes Mass
   // zeigt — und gibt das Feld wieder frei, wenn er woandershin zeigt.
@@ -339,6 +346,14 @@ export function MeasurementForm({
           {existing.map((m) => (
             <li key={`${m.key}-${m.date}`}>
               {String(m.date)} · {m.key} · {m.value} {einheitentext(m.unit)}
+              {/* Die Notiz, wo es eine gibt. Ohne sie war das Feld ein Eingang
+                  ohne Ausgang: geschrieben, gespeichert, nie wiedergesehen. */}
+              {m.note != null && m.note !== "" && (
+                <span data-note="" style={{ color: "var(--muted)" }}>
+                  {" "}
+                  · {m.note}
+                </span>
+              )}
             </li>
           ))}
         </ul>

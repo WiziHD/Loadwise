@@ -170,12 +170,35 @@ export function toEntry(row: EntryRow, sessions: SessionRow[] = []): Entry {
   };
 }
 
+/**
+ * Eine Messzeile als das, was der Motor über sie wissen muss.
+ *
+ * ---------------------------------------------------------------------------
+ * `note` STAND HIER NICHT, UND DAS WAR EIN STILLER VERLUST.
+ *
+ * Das Formular bietet ein Notizfeld an, die Server-Aktion schreibt es, die
+ * Spalte hält es — und diese Zuordnung liess es fallen. Damit kam die Notiz
+ * **nie wieder aus der Datenbank heraus**: nicht ins Formular, nicht in die
+ * Ansicht, nirgendwohin.
+ *
+ * Das ist schlechter als gar kein Feld. Ein Feld lädt dazu ein, Zusammenhang
+ * festzuhalten — »Schuhe an«, »nach der Arbeit« —, und dieser Zusammenhang ist
+ * genau das, was eine Zahl sechs Wochen später erklärt. Wer ihn aufschreibt und
+ * nie wiedersieht, hat ihn verloren, ohne es zu merken.
+ *
+ * Gefunden bei der Abnahme von Woche 3, nicht durch einen Test: Kein Test kann
+ * prüfen, dass etwas ANKOMMT, wenn niemand es liest. Deshalb steht die Notiz
+ * jetzt in beiden Ansichten und wird in beide Formulare zurückgeladen — erst
+ * dadurch wird sie prüfbar.
+ * ---------------------------------------------------------------------------
+ */
 export function toSelfTest(row: SelfTestRow): SelfTest {
   return {
     type: row.test_type,
     date: row.test_date,
     involved: row.involved,
     uninvolved: row.uninvolved,
+    note: row.note,
   };
 }
 

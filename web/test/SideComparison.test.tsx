@@ -86,6 +86,28 @@ describe("beide Seiten stehen absolut da, nicht nur das Verhältnis", () => {
     expect(zellen.join(" ")).not.toContain("%");
   });
 
+  it("zeigt die Notiz zu einer Messung", () => {
+    /**
+     * DER FUND AUS DER ABNAHME VON WOCHE 3.
+     *
+     * Das Formular bot ein Notizfeld an, die Datenbank hielt die Spalte — und
+     * niemand las sie je. »Neue Schuhe« zu einer Messung ist genau der
+     * Zusammenhang, der die Zahl sechs Wochen später erklärt, und er war
+     * verloren, ohne dass es jemandem aufgefallen wäre.
+     */
+    const mitNotiz: SelfTest[] = [
+      { ...MESSUNGEN[0]!, note: "Neue Schuhe" },
+      MESSUNGEN[1]!,
+    ];
+    zeichnen(mitNotiz);
+
+    const notizen = [...document.querySelectorAll("[data-note]")].map((z) => z.textContent);
+    expect(notizen).toContain("Neue Schuhe");
+    // Die Gegenprobe: Wo keine Notiz steht, steht auch nichts. Ohne sie könnte
+    // die Spalte denselben Text in jede Zeile schreiben.
+    expect(notizen.filter((n) => n === "")).toHaveLength(1);
+  });
+
   it("nennt die Einheit einmal je Tabelle, statt sie in jede Zelle zu schreiben", () => {
     zeichnen();
     const beschriftung = document.querySelector("caption")!;

@@ -247,6 +247,22 @@ describe("was schon dasteht, steht im Formular — vor dem Speichern", () => {
     expect((screen.getByLabelText(s.selfTest.uninvolved) as HTMLInputElement).value).toBe("21");
   });
 
+  it("und die Notiz mit — sonst löscht das nächste Speichern sie", () => {
+    /**
+     * DER FUND AUS DER ABNAHME VON WOCHE 3.
+     *
+     * Die Notiz stand hier fest auf "". Damit war sie doppelt verloren: Sie
+     * kam nie zurück auf den Bildschirm, UND jedes erneute Speichern desselben
+     * Tages überschrieb sie mit einem leeren Feld — gemeldet als
+     * »Gespeichert.«, genau wie die sechs Datenverluste der Härtungswoche.
+     */
+    const mitNotiz: SelfTest[] = [{ ...VORHANDEN[0]!, note: "Neue Schuhe" }];
+    zeichnen(ACHILLES, mitNotiz);
+    expect((screen.getByLabelText(s.selfTest.note) as HTMLTextAreaElement).value).toBe(
+      "Neue Schuhe",
+    );
+  });
+
   it("sagt vorher, dass Speichern ersetzt", () => {
     zeichnen(ACHILLES, VORHANDEN);
     expect(document.querySelector("[data-replacing]")).toBeTruthy();

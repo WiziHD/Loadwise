@@ -60,6 +60,8 @@ type Zeile = {
   uninvolved: number;
   /** Prozent, gerundet. Null, wenn die Bezugsseite null ist — dann gibt es keins. */
   index: number | null;
+  /** Die eigenen Worte zu dieser Messung. Siehe `toSelfTest`. */
+  note: string | null;
 };
 
 function zeilenFuer(tests: SelfTest[], type: TestType): Zeile[] {
@@ -72,6 +74,7 @@ function zeilenFuer(tests: SelfTest[], type: TestType): Zeile[] {
       // Nicht `t.involved / t.uninvolved` ohne Prüfung: Eine Bezugsseite bei
       // null ergäbe Infinity, und das stünde dann als Prozentzahl da.
       index: t.uninvolved > 0 ? Math.round((t.involved / t.uninvolved) * 100) : null,
+      note: t.note ?? null,
     }));
 }
 
@@ -149,7 +152,13 @@ export function SideComparison({
                 </caption>
                 <thead>
                   <tr>
-                    {[strings.colDate, strings.colInvolved, strings.colUninvolved, strings.colIndex].map(
+                    {[
+                      strings.colDate,
+                      strings.colInvolved,
+                      strings.colUninvolved,
+                      strings.colIndex,
+                      strings.colNote,
+                    ].map(
                       (kopf) => (
                         <th
                           key={kopf}
@@ -188,6 +197,12 @@ export function SideComparison({
                       {/* Der Index als Zahl. Kein Balken — siehe Kopf. */}
                       <td style={{ padding: "0.3rem 0.6rem 0.3rem 0" }}>
                         {z.index === null ? strings.noIndex : `${z.index} %`}
+                      </td>
+                      {/* Die eigenen Worte zu dieser Messung. Ohne diese Spalte
+                          war das Notizfeld im Formular ein Eingang ohne
+                          Ausgang. */}
+                      <td data-note="" style={{ padding: "0.3rem 0.6rem 0.3rem 0", color: "var(--muted)" }}>
+                        {z.note ?? ""}
                       </td>
                     </tr>
                   ))}

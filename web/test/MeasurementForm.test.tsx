@@ -283,6 +283,31 @@ describe("was schon dasteht, steht im Formular", () => {
     expect(liste.textContent).toContain(s.measure.unitReps);
   });
 
+  it("zeigt die Notiz zu einem Wert und laedt sie ins Formular zurueck", async () => {
+    /**
+     * DER FUND AUS DER ABNAHME VON WOCHE 3.
+     *
+     * Das Notizfeld war ein Eingang ohne Ausgang: geschrieben, gespeichert,
+     * nie wiedergesehen. Schlimmer als kein Feld -- es laedt dazu ein,
+     * Zusammenhang festzuhalten, der still verschwindet. Und beim naechsten
+     * Speichern desselben Tages haette das leere Feld die Notiz geloescht.
+     */
+    const mitNotiz: Measurement[] = [
+      { key: "Kniebeugen", date: HEUTE as Measurement["date"], value: 12, unit: "reps", note: "nach der Arbeit" },
+    ];
+    const nutzer = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    zeichnen(BEKANNT, mitNotiz);
+
+    expect(document.querySelector("[data-note]")!.textContent).toContain("nach der Arbeit");
+
+    await nutzer.type(screen.getByLabelText(s.measure.name), "Kniebeugen");
+    await waitFor(() =>
+      expect((screen.getByLabelText(s.measure.note) as HTMLTextAreaElement).value).toBe(
+        "nach der Arbeit",
+      ),
+    );
+  });
+
   it("sagt, wenn es nichts gibt", () => {
     zeichnen();
     expect(screen.getByText(s.measure.historyEmpty)).toBeTruthy();
