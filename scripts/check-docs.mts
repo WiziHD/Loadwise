@@ -182,6 +182,23 @@ const HISTORISCH: { datei: string; enthaelt: string; warum: string }[] = [
       "Beide Zahlen sind seither gewachsen. Die Zeile trägt deshalb ihr Datum im Text, damit " +
       "nicht erst diese Liste erklären muss, dass sie kein Stand von heute ist.",
   },
+  {
+    datei: "ENTSCHEIDUNGEN.md",
+    enthaelt: "222 Bauteiltests sagen für sich genommen nichts",
+    warum:
+      "E11, der Eintrag über die zwei Testumgebungen. Die Zahl ist der Stand jenes Tages, und " +
+      "die Zeile sagt das zwei Sätze später selbst: »In der Woche, in der dieser Eintrag " +
+      "entstand« und »die Liste ist seither mit jeder Karte gewachsen«. Sie nachzuziehen " +
+      "hiesse, ein Protokoll umzuschreiben, damit es wie heute aussieht.",
+  },
+  {
+    datei: "ENTSCHEIDUNGEN.md",
+    enthaelt: "Woche 3 stand mit 85 von 85 gefangenen Mutationen",
+    warum:
+      "E19, die Abnahme von Woche 3. Der ganze Satz ist eine Aussage über den Zustand AN " +
+      "jenem Tag — und der Eintrag handelt davon, dass diese grüne Bilanz trotzdem einen " +
+      "Fund verdeckt hat. Eine nachgezogene Zahl würde genau die Pointe zerstören.",
+  },
 ];
 
 function markdownDateien(dir: string): string[] {
