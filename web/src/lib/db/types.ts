@@ -36,7 +36,7 @@ import type {
   Unit,
   EverydayLoad,
 } from "loadwise-engine";
-import type { Measurement } from "loadwise-engine";
+import type { Measurement, Milestone, ProgressReport, Threshold } from "loadwise-engine";
 
 export interface EpisodeRow {
   id: string;
@@ -179,6 +179,75 @@ export function toSelfTest(row: SelfTestRow): SelfTest {
   };
 }
 
+export interface MilestoneRow {
+  id: string;
+  episode_id: string;
+  origin: "user";
+  label_text: string;
+  label_locale: string;
+  created_on: string;
+  thresholds: unknown;
+  on_distinct_days: number;
+  within_days: number | null;
+  marked_reached_on: string | null;
+}
+
+/**
+ * Eine Meilensteinzeile als das, was der Motor über sie wissen muss.
+ *
+ * ---------------------------------------------------------------------------
+ * `thresholds` KOMMT ALS `unknown` HEREIN, UND DAS IST KEINE NACHLÄSSIGKEIT.
+ *
+ * Es ist eine jsonb-Spalte. Was dort steht, hat die Server-Aktion beim
+ * Schreiben geprüft — aber diese Funktion liest, und Lesen und Schreiben
+ * können Monate auseinanderliegen. Eine Zeile aus einer älteren Fassung des
+ * Formulars, ein Import, ein Eingriff von Hand: Alles davon landet hier.
+ *
+ * Der Motor verlässt sich auf die Form (`Threshold[]`), und eine kaputte
+ * Bedingung würde `evaluateProgress` nicht zum Absturz bringen, sondern zu
+ * einer stillen Fehlmessung — `seriesOf` fände nichts und meldete
+ * »nicht im Tagebuch«, wo »nicht lesbar« richtig wäre.
+ *
+ * Deshalb wird hier gefiltert statt zugesichert: Was nicht die Form eines
+ * `Threshold` hat, fliegt raus. Ein Meilenstein mit weniger Bedingungen ist
+ * ehrlicher als einer mit einer, die niemand deuten kann — und ein Ziel, dem
+ * ALLE Bedingungen abhandenkommen, wird zu einem zum Selbstabhaken, was genau
+ * der richtige Zustand für eine Bedingung ist, die keine Regel lesen kann.
+ * ---------------------------------------------------------------------------
+ */
+export function toMilestone(row: MilestoneRow): Milestone {
+  const roh = Array.isArray(row.thresholds) ? row.thresholds : [];
+
+  const all = roh.filter((t): t is Threshold => {
+    if (t === null || typeof t !== "object") return false;
+    const k = t as { measure?: unknown; direction?: unknown; value?: unknown; unit?: unknown };
+    if (k.measure === null || typeof k.measure !== "object") return false;
+    if (typeof (k.measure as { source?: unknown }).source !== "string") return false;
+    if (k.direction !== "at_least" && k.direction !== "at_most") return false;
+    if (typeof k.value !== "number" || !Number.isFinite(k.value)) return false;
+    if (typeof k.unit !== "string") return false;
+    return true;
+  });
+
+  return {
+    id: row.id,
+    // Literal, nicht durchgereicht. Die Spalte trägt einen Aufzählungstyp mit
+    // genau einem Wert; ihn hier zu übernehmen hiesse, dem Typ zu glauben,
+    // was die Datenbank ohnehin erzwingt — und den Tag vorzubereiten, an dem
+    // ein zweiter Wert dazukommt und still durchrutscht.
+    origin: "user",
+    label: {
+      text: row.label_text,
+      locale: row.label_locale === "en" ? "en" : "de",
+    },
+    createdOn: row.created_on as Milestone["createdOn"],
+    all,
+    onDistinctDays: row.on_distinct_days,
+    ...(row.within_days === null ? {} : { withinDays: row.within_days }),
+    markedReachedOn: (row.marked_reached_on as Milestone["markedReachedOn"]) ?? null,
+  };
+}
+
 export function toMeasurement(row: MeasurementRow, key: MeasureKeyRow): Measurement {
   return {
     key: key.key,
@@ -284,6 +353,10 @@ export function toEvaluationRow(evaluation: Evaluation, laufId: string, episodeI
     coverage: evaluation.coverage,
     pending: evaluation.pending,
     problems: evaluation.problems,
+    // Der vierte Ausgang des Motors. Er ging bis 0011 beim Schreiben verloren
+    // -- berechnet bei jedem Lauf, abgelegt bei keinem. Derselbe Mechanismus
+    // wie bei `overall.blocking` in 0008.
+    progress: evaluation.progress,
     profile_key: evaluation.profile.key,
     profile_version: evaluation.profile.version,
     // Aus dem Motor, nicht von einer Flag abgelesen: Ein Lauf ganz ohne Befund
@@ -386,6 +459,7 @@ export interface EvaluationRow {
   rule_version: string;
   config: unknown;
   last_date: string | null;
+  progress: unknown;
 }
 
 /**
@@ -401,6 +475,7 @@ export interface StoredRun {
   coverage: Coverage;
   pending: Pending[];
   problems: Problem[];
+  progress: ProgressReport;
   config: Config;
   lastDate: DateStr | null;
   profileKey: string;
@@ -445,6 +520,20 @@ const BLOCKING_REASONS = new Set<string>(ALL_BLOCKING_REASONS);
  * »alles zurückliegend«, also wie eine gute Nachricht.
  * ---------------------------------------------------------------------------
  */
+/**
+ * Hat die jsonb-Spalte die Form, die `ProgressReport` verlangt?
+ *
+ * Geprüft wird die Form, nicht der Inhalt: vier Felder, drei davon Listen.
+ * Was in den Listen steht, hat der Motor erzeugt — und eine Zeile, die dort
+ * Unsinn trüge, käme aus einem Eingriff von Hand, gegen den keine Prüfung in
+ * dieser Datei hilft.
+ */
+function istFortschritt(wert: unknown): wert is ProgressReport {
+  if (wert === null || typeof wert !== "object" || Array.isArray(wert)) return false;
+  const p = wert as Record<string, unknown>;
+  return Array.isArray(p.milestones) && Array.isArray(p.records) && Array.isArray(p.pending);
+}
+
 export function toStoredRun(row: EvaluationRow, flagRows: FlagRow[]): StoredRun | null {
   if (!OVERALL_STATES.has(row.overall_status)) return null;
 
@@ -482,6 +571,22 @@ export function toStoredRun(row: EvaluationRow, flagRows: FlagRow[]): StoredRun 
     coverage: row.coverage as Coverage,
     pending: (row.pending ?? []) as Pending[],
     problems: (row.problems ?? []) as Problem[],
+    /**
+     * Der Fortschrittskanal — mit einer leeren Form als Rückfall.
+     *
+     * Anders als bei `config` oben führt eine fehlende oder kaputte Spalte
+     * hier NICHT dazu, den ganzen Lauf für unlesbar zu erklären. Der
+     * Unterschied ist, was davon abhängt: Ohne `config` rendert der Bericht
+     * gegen andere Schwellen, als geurteilt wurde — eine Falschaussage. Ohne
+     * `progress` fehlt die Zählung der eigenen Ziele, und der Rest des Laufs
+     * bleibt vollständig richtig.
+     *
+     * Ein Lauf aus der Zeit vor 0011 hat die Spalte über den Standardwert und
+     * ist damit ehrlich leer: Es gab damals keine Ziele.
+     */
+    progress: istFortschritt(row.progress)
+      ? row.progress
+      : { milestones: [], records: [], pending: [], episodeDay: null },
     config,
     lastDate: row.last_date,
     profileKey: row.profile_key,

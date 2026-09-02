@@ -343,9 +343,21 @@ Belegt, dass die Untergrenze feuert: Ein verengtes Suchmuster in `vitest.config.
 
 ### Und die Tests selbst brauchen denselben Beweis
 
-132 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
+151 Bauteiltests sagen für sich genommen nichts. `npm run check:ui-mutation --workspace=web` macht jede Zeile, die einen dokumentierten Datenverlust verhindert, wirkungslos und schaut, ob der zugehörige Test rot wird. In der Woche, in der dieser Eintrag entstand, waren es **neun von neun gefangen**, beide Richtungen der Gerätetag-Korrektur; die Liste ist seither mit jeder Karte gewachsen.
 
 Der Lauf hat sich dabei selbst bewährt: Eine Prüfung stand mit `serverToday === Gerätetag` da und konnte gar nicht fehlschlagen. Sichtbar wurde das nur daran, dass die Mutation »das Gerät korrigiert nie« lediglich EINE der beiden Prüfungen umriss.
+
+### Der Wächter hatte selbst eine Lücke — dieselbe wie die, gegen die er gebaut ist
+
+**Gefunden bei Karte 3.4.** Er meldete eine Mutation als UEBERLEBT, die von Hand nachgestellt drei Tests rot macht. Der Grund lag nicht in der Mutation, sondern im Lauf: Es kamen **weniger Testdateien zurück, als es gibt.**
+
+Das ist genau die Klasse Fehler, für die `run-tests.ts` weiter oben in diesem Eintrag existiert — ein Bauteil-Projekt, das stillschweigend nichts ausführt und mit 0 endet. `check-ui-mutation.ts` besass eine Sicherung gegen **schon rote** Tests und keine gegen Tests, die **gar nicht liefen**.
+
+Neu vergleicht es die Zahl gemeldeter Dateien gegen den Grundlagenlauf und meldet `UNVOLLSTAENDIG` statt `UEBERLEBT`. Fail-closed, und die Schwelle hebt sich mit jeder neuen Testdatei von selbst — eine feste Zahl wäre die Sorte Wert, gegen die `check:docs` gebaut wurde.
+
+**Die Fehlerrichtung war harmlos, die Lehre ist es nicht.** Ein Fehlalarm ist besser als eine stille Deckung — aber ein Wächter, der sonst nie irrt, verliert durch einen Fehlalarm genauso viel Vertrauen wie durch einen Durchlasser. Beim nächsten Mal glaubt man ihm den echten Fund nicht mehr.
+
+Im selben Lauf hat er ausserdem eine Mutation als `NICHT ANWENDBAR` gemeldet: Karte 3.4 hatte `milestones` zwischen `measurements` und `context` geschoben, und der Anker einer älteren Mutation passte nicht mehr. Auch das ist fail-closed — ein Wächter, der einen verschobenen Anker still überspringt, prüft ab dann weniger, als seine Zahl behauptet.
 
 Nicht in CI, aus demselben Grund wie `npm run mutate` im Motor: Ein Wert als Tor verleitet dazu, ihn künstlich zu heben.
 
@@ -685,3 +697,67 @@ Beides kann auseinanderfallen — die Messung gespeichert, die Neuberechnung dan
 - **Nicht beim Balken.** Dass 100 % kein Ziel ist, hängt an der Zweckbestimmung und nicht am Geschmack.
 - **Wenn eine Verlaufsdarstellung dazukommt** (eine Linie über die Zeit, wie `CourseCurve` sie für Morgenwerte zeichnet): Die darf keine Bezugslinie bei 100 % tragen. Eine Linie ohne Obergrenze ist zulässig, eine Skala, die bei 100 endet, ist der Balken in anderer Form.
 - **Wenn ein MDC für den Fersenheber gefunden wird.** Dann — und erst dann — darf die Ansicht zwischen »über dem Messfehler« und »innerhalb der Messgenauigkeit« unterscheiden. Heute steht dort bewusst nichts dergleichen.
+
+---
+
+## E17 — Eigene Ziele: Der Zieltext läuft durch keinen Filter
+
+**Entschieden 31.08.2026** · `web/src/lib/milestone-validation.ts`, `web/src/components/MilestoneList.tsx`, `supabase/migrations/0011_evaluation_progress.sql`, Karte 3.4
+
+### Die Ban-Listen enden am Zielfeld, und das ist keine Nachlässigkeit
+
+Drei Listen prüfen jeden Satz des Motors auf Imperative, Vorhersagen und Lob. Auf den Zieltext eines Menschen angewandt verböten sie das Speichern von »Ich will in sechs Wochen wieder laufen« — und damit einem Menschen, im eigenen Tagebuch über das eigene Ziel zu sprechen.
+
+Die Konstruktion, die das verhindert, ist der Typ: `Milestone.label` ist ein einfacher `string`, wo jeder Motorsatz ein `Phrase` ist. `allPhrases()` sammelt nur `Phrase`. Ein Kommentar allein hielte das nicht — jemand erweitert die Sammlung »der Vollständigkeit halber«, und ab dann lehnt die App Ziele ab.
+
+Gesichert ist es doppelt: `engine/test/wording.test.ts` hält fest, dass Nutzertext nicht eingesammelt wird, und `test/milestone-validation.test.ts` lässt **zehn Sätze durch, die als Motortext an den Listen scheitern würden** — »Du schaffst das«, »Ich sollte bis Weihnachten schmerzfrei sein«, »Fast am Ziel«, »Das wird sich bessern«, ein Emoji, ein Satz in Kleinschreibung. Die schärfste Mutation der ganzen Liste macht aus dem Feld etwas Geprüftes; sie macht 28 Prüfungen in dieser einen Datei rot.
+
+Geprüft werden Länge und Vorhandensein. Nichts sonst.
+
+### »Drei von fünf im Tagebuch belegt«
+
+Der Satz, um den es in der Karte geht — und jedes Wort darin trägt die Position:
+
+| | |
+|---|---|
+| **belegt**, nicht **erreicht** | »Belegt« ist eine Aussage über das Buch, »erreicht« eine über die Person. Der Motor benennt seine Zustände nach derselben Regel: `recorded` gegen `achieved`, `not-in-record` gegen `not-reached` |
+| **von fünf** | Die Zahl der eigenen Ziele, nicht eine Skala mit Ende. Wer ein sechstes schreibt, steht bei »drei von sechs« und ist nicht zurückgefallen |
+| **kein Balken** | Dieselbe Regel wie E16, aus demselben Grund |
+
+Gezählt werden `recorded` und `marked-by-user`. **`partly-recorded` zählt nicht** — »einzelne Tage erfüllen es, noch nicht so viele wie verlangt« als erreicht zu führen wäre eine Aussage, die das Tagebuch nicht deckt. Ebensowenig `untracked`: Ein Ziel, das kein Tagebuch sehen kann, ist erst belegt, wenn der Mensch es selbst einträgt.
+
+### Selbst abhaken gibt es nur ohne prüfbare Bedingung
+
+Ein Ziel mit Bedingung beantwortet das Tagebuch. Ein Häkchen daneben wäre eine zweite, widersprechende Antwort auf dieselbe Frage — und welche gölte, müsste dann jede lesende Stelle für sich entscheiden. `manual_tick_only_when_untracked` in 0001 setzt es durch; in der Ansicht fehlt der Knopf schlicht.
+
+**Zurücknehmen ist ausdrücklich vorgesehen.** Ein Häkchen, das bleibt, wäre eine Behauptung über einen Menschen, die er selbst nicht mehr los wird.
+
+### Ein Ziel wird wirklich gelöscht — anders als eine Episode
+
+E5 sagt: Eine Episode wird archiviert, nie gelöscht, weil Löschen ohne Export eine Falle ist. Für ein Ziel gilt das nicht, und der Unterschied ist, was verloren geht: Eine Episode trägt Monate erfasster Tage, ein zurückgezogenes Ziel trägt einen Satz, den derselbe Mensch geschrieben hat. Es weiter anzuzeigen — und sei es unter »Archiv« — hiesse, ihn an etwas zu erinnern, das er ausdrücklich zurückgenommen hat.
+
+Weil es unwiderruflich ist, gibt es eine Rückfrage.
+
+### Der vierte Ausgang des Motors ging beim Speichern verloren
+
+`Evaluation` hat vier: `flags`, `overall`, `coverage`, `progress`. Abgelegt wurden drei. Der vierte wurde bei jedem Lauf berechnet und beim Schreiben fallen gelassen.
+
+**Das ist derselbe Fund wie 0008, ein Feld weiter** — dort war es `overall.blocking`. Unsichtbar war es, weil es keine Ziele gab und der Kanal deshalb immer leer war; aufgefallen ist es erst, als 3.4 ihn anzeigen wollte und `StoredRun` kein Feld dafür hatte.
+
+**0011** behebt es. Der Standardwert ist die leere Form des Kanals und damit für bestehende Zeilen nicht erfunden, sondern richtig: Es gab bis dahin keine Ziele.
+
+Warum ablegen statt beim Anzeigen rechnen — über E12 hinaus gibt es hier einen zweiten Grund: `progress` hängt an den ZIELEN, und die ändert der Nutzer. Ein live gerechneter Stand schriebe die Vergangenheit um, sobald jemand ein Ziel löscht: »drei von fünf« würde rückwirkend zu »drei von vier«, ohne dass etwas geschehen wäre.
+
+### Eine Vorhersage, die nicht eintraf
+
+Bei 3.2 stand hier, die angepinnte Prüfung in `verdicts-measurements.test.ts` werde »rot werden, wenn 3.4 kommt«. **Sie ist grün geblieben, und das war richtig.**
+
+Ihre Aussage war bedingt — »erzeugen keinen Bestwert, solange kein Meilenstein sie nennt« — und die gilt unverändert. Was fehlte, war der Gegenzweig, der erst mit 3.4 erreichbar wurde: dass ein Ziel, das ein Mass nennt, den Bestwert tatsächlich entstehen lässt (erster Wert 8, jüngster 15). Ohne beide Richtungen bliebe offen, ob die leere Liste am fehlenden Ziel liegt oder daran, dass der Kanal überhaupt nichts baut.
+
+Festgehalten, weil die Lehre allgemein ist: Eine Prüfung, von der man erwartet, dass sie rot wird, prüft in Wahrheit oft eine Bedingung, die bestehen bleibt. Was fehlt, ist dann nicht ihre Umkehrung, sondern ihr Gegenstück.
+
+### Wann man das wieder aufmacht
+
+- **Nicht beim Zieltext.** Dass ein Mensch im eigenen Tagebuch sagen darf, was er will, hängt nicht am Geschmack.
+- **Stufe 3 — der Katalog publizierter Kriterien** — bleibt gebaut und aus, bis die Zweckbestimmung anwaltlich geprüft ist (Schritt D im Fahrplan). Erst dann stellt sich die Frage, ob die App überhaupt etwas vorschlagen darf.
+- **Wenn ein MDC vorliegt.** Dann darf der Bestwert zwischen »über dem Messfehler« und »innerhalb der Messgenauigkeit« unterscheiden. Heute sagt der Motor dazu ausdrücklich `no-mdc-established`, und dieser Satz erreicht den Bildschirm.

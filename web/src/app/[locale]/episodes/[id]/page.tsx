@@ -156,6 +156,11 @@ export default async function EpisodePage({
           <Link href={`/${locale}/episodes/${id}/measures`} style={navLink}>
             {s.measure.link}
           </Link>
+          {/* Eigene Ziele. Stufe 1: vom Nutzer geschrieben, ohne Katalog.
+              Karte 3.4. */}
+          <Link href={`/${locale}/episodes/${id}/goals`} style={navLink}>
+            {s.goal.link}
+          </Link>
           <Link href={`/${locale}/episodes/${id}/edit`} style={{ ...navLink, color: "var(--muted)" }}>
             {s.edit.link}
           </Link>

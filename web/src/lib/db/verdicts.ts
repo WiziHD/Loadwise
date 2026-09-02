@@ -2,6 +2,7 @@ import { evaluateEpisode, type Evaluation, type EpisodeContext } from "loadwise-
 import { supabaseServer } from "@/lib/supabase/server";
 import { listEntries } from "@/lib/db/entries";
 import { listMeasurements } from "@/lib/db/measurements";
+import { listMilestones } from "@/lib/db/milestones";
 import { getEpisode } from "@/lib/db/episodes";
 import { saveEvaluationRun } from "@/lib/db/verdict-write";
 import {
@@ -56,7 +57,7 @@ export async function evaluateAndStore(episodeId: string): Promise<string | null
 async function evaluate(episodeId: string, context: EpisodeContext): Promise<Evaluation> {
   const supabase = await supabaseServer();
 
-  const [entries, measurements, { data: testRows, error }] = await Promise.all([
+  const [entries, measurements, milestones, { data: testRows, error }] = await Promise.all([
     listEntries(episodeId),
     // Eigene Messungen. Sie ändern KEIN Urteil — ein Meilenstein trägt keine
     // Severity und zählt nicht in die Abdeckung, sonst schaltete ein
@@ -64,6 +65,11 @@ async function evaluate(episodeId: string, context: EpisodeContext): Promise<Eva
     // den Fortschrittskanal (`evaluateProgress`), und ohne sie stünde dort
     // dauerhaft »keine Messungen«, während welche in der Datenbank liegen.
     listMeasurements(episodeId),
+    // Die eigenen Ziele. Mit ihnen bekommen die Messungen darüber erst eine
+    // Wirkung: `progress.ts` baut Bestwerte über `measuresInUse(milestones)`,
+    // also nur für Masse, die ein Ziel nennt. Bis Karte 3.4 war das ein
+    // benannter Zustand mit einer Prüfung darauf — jetzt ist er geschlossen.
+    listMilestones(episodeId),
     // Sortiert, und das ist keine Kosmetik: `rules/asymmetry.ts` sortiert
     // stabil nach Datum und nimmt die letzte Messung. Bei gleichem Datum
     // entscheidet damit die Reihenfolge, in der die Abfrage geliefert hat —
@@ -81,13 +87,13 @@ async function evaluate(episodeId: string, context: EpisodeContext): Promise<Eva
 
   return evaluateEpisode({
     entries,
-    // Heute schreibt nichts in `self_tests` — es gibt keine Oberfläche dafür.
-    // Trotzdem gelesen: Am Tag, an dem es sie gibt, wertet der Motor sie
-    // aus, statt sie stillschweigend zu übergehen. Genau diese Sorte
-    // »geschrieben und nie gelesen« hat dieses Projekt schon mehrfach
-    // getroffen, und eine Abfrage kostet weniger als der Fund.
+    // Die Selbsttests. Diese Zeile stand hier, bevor es ein Formular dafür
+    // gab — mit der Begründung, am Tag der ersten Oberfläche solle der Motor
+    // sie auswerten statt stillschweigend zu übergehen. Seit Karte 3.1 ist
+    // dieser Tag da, und der Seitenvergleich läuft auf echten Messungen.
     tests: ((testRows ?? []) as SelfTestRow[]).map(toSelfTest),
     measurements,
+    milestones,
     context,
   });
 }

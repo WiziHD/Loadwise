@@ -234,6 +234,31 @@ describe("saveEvaluationRun — was in den Zeilen steht", () => {
     expect(zeile.rule_version).not.toBe("");
   });
 
+  it("und der Fortschrittskanal geht mit — der vierte Ausgang des Motors", async () => {
+    /**
+     * DERSELBE FUND WIE BEI `overall.blocking` IN 0008, EIN FELD WEITER.
+     *
+     * `Evaluation` hat vier Ausgänge: `flags`, `overall`, `coverage` und
+     * `progress`. Abgelegt wurden bis 0011 drei — der vierte wurde bei jedem
+     * Lauf berechnet und beim Schreiben fallen gelassen.
+     *
+     * Unsichtbar war das, weil es keine Ziele gab und der Kanal deshalb immer
+     * leer war. Aufgefallen ist es erst, als Karte 3.4 ihn anzeigen wollte.
+     *
+     * Geprüft wird auf Identität mit dem, was der Motor geliefert hat, und
+     * nicht bloss auf »vorhanden«: Eine Zeile, die ein leeres Gerüst trägt,
+     * sähe aus wie ein Lauf ohne Ziele — und wäre von einem echten nicht zu
+     * unterscheiden.
+     */
+    const auswertung = mitBefund();
+    await saveEvaluationRun("e1", auswertung);
+
+    const zeile = (aufrufe.find((a) => a.tabelle === "evaluations")?.zeilen ?? [])[0] as {
+      progress: unknown;
+    };
+    expect(zeile.progress).toEqual(auswertung.progress);
+  });
+
   it("die Regelversion steht auch bei einem Lauf ganz ohne Befund da", async () => {
     // Sie wurde einmal von `flags[0]` abgelesen. Ein Lauf ohne Befund ist aber
     // der Normalfall, und dann hätte dort `undefined` gestanden.

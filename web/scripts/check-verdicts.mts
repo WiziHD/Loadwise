@@ -524,6 +524,137 @@ async function main(): Promise<void> {
       typeof (werteZurueck as { value: unknown }[] | null)?.[0]?.value === "number",
       typeof (werteZurueck as { value: unknown }[] | null)?.[0]?.value,
     );
+
+    // ---------------------------------------------------------------------
+    // 6. EIGENE ZIELE — VIER BEDINGUNGEN AUS 0001, DIE NUR HIER SICHTBAR SIND.
+    //
+    // `test/milestone-validation.test.ts` prüft dieselben Regeln als reine
+    // Funktion. Ob die Datenbank sie AUCH durchsetzt, sagt keine Attrappe —
+    // und hier zählt das besonders, weil eine davon eine Aussage über einen
+    // Menschen verhindert: Ein Häkchen an einem Ziel, das das Tagebuch
+    // beantwortet, wäre eine zweite, widersprechende Antwort.
+    // ---------------------------------------------------------------------
+    const ziel = (patch: Record<string, unknown> = {}) => ({
+      episode_id: episodeId,
+      label_text: "Wieder dreissig Minuten gehen",
+      label_locale: "de",
+      created_on: "2026-08-01",
+      thresholds: [],
+      on_distinct_days: 1,
+      ...patch,
+    });
+
+    const { data: zielZeile, error: zielFehler } = await db
+      .from("milestones")
+      .insert(ziel())
+      .select("id, origin")
+      .single();
+    record("ein eigenes Ziel geht durch", zielFehler === null, zielFehler?.message ?? "");
+    const zielId = (zielZeile as { id: string } | null)?.id ?? "";
+
+    // `origin` wird beim Schreiben nicht übergeben. Der Standardwert und der
+    // Aufzählungstyp mit genau einem Wert sind die Konstruktion, die ein
+    // publiziertes Kriterium strukturell fernhält — dieselbe Bauform wie
+    // `Protocol.enabled: false` im Motor.
+    record(
+      "und traegt 'user', ohne dass die App es setzt",
+      (zielZeile as { origin?: string } | null)?.origin === "user",
+      String((zielZeile as { origin?: string } | null)?.origin),
+    );
+
+    // Selbst abhaken, wenn es keine Bedingung gibt.
+    const { error: hakenFehler } = await db
+      .from("milestones")
+      .update({ marked_reached_on: "2026-08-20" })
+      .eq("id", zielId);
+    record(
+      "ein Ziel ohne Bedingung laesst sich selbst abhaken",
+      hakenFehler === null,
+      hakenFehler?.message ?? "",
+    );
+
+    // Und die Gegenprobe, um die es geht: mit Bedingung nicht.
+    const { data: mitBedingung } = await db
+      .from("milestones")
+      .insert(
+        ziel({
+          label_text: "Morgenwert hoechstens 2",
+          thresholds: [
+            {
+              measure: { source: "morning_score" },
+              direction: "at_most",
+              value: 2,
+              unit: "score_0_10",
+            },
+          ],
+        }),
+      )
+      .select("id")
+      .single();
+
+    const { error: falschesHakenFehler } = await db
+      .from("milestones")
+      .update({ marked_reached_on: "2026-08-20" })
+      .eq("id", (mitBedingung as { id: string } | null)?.id ?? "");
+    record(
+      "ein Ziel MIT Bedingung nicht — das ist manual_tick_only_when_untracked",
+      falschesHakenFehler !== null,
+      falschesHakenFehler?.code ?? "durchgelassen",
+    );
+
+    // Null Tage sind kein Ziel, sondern eine Bedingung, die sofort erfüllt ist.
+    const { error: nullTageFehler } = await db
+      .from("milestones")
+      .insert(ziel({ on_distinct_days: 0 }));
+    record(
+      "null Tage lehnt die Datenbank ab",
+      nullTageFehler !== null,
+      nullTageFehler?.code ?? "durchgelassen",
+    );
+
+    // `thresholds` muss eine Liste sein. Ein Objekt dort liesse `toMilestone`
+    // auf `[]` zurückfallen — das Ziel wuerde still zu einem zum Selbstabhaken.
+    const { error: keineListeFehler } = await db
+      .from("milestones")
+      .insert(ziel({ label_text: "Kaputt", thresholds: { a: 1 } }));
+    record(
+      "und Bedingungen, die keine Liste sind, ebenso",
+      keineListeFehler !== null,
+      keineListeFehler?.code ?? "durchgelassen",
+    );
+
+    // ---------------------------------------------------------------------
+    // 7. DER FORTSCHRITTSKANAL — 0011.
+    //
+    // Der vierte Ausgang des Motors ging bis 0011 beim Schreiben verloren,
+    // derselbe Fund wie `overall.blocking` in 0008. Geprüft wird beides: dass
+    // die Spalte einen nicht leeren Kanal traegt und dass sie eine Liste
+    // ablehnt — sonst laese die Ansicht `progress.milestones` als undefined,
+    // also »keine Ziele«, wo »nicht lesbar« richtig waere.
+    // ---------------------------------------------------------------------
+    const { data: laufZeile, error: laufLeseFehler } = await db
+      .from("evaluations")
+      .select("progress")
+      .eq("id", laufId)
+      .single();
+    if (laufLeseFehler !== null) fail(`progress zuruecklesen: ${laufLeseFehler.message}`);
+
+    const gespeicherterKanal = (laufZeile as { progress: unknown }).progress;
+    record(
+      "der Fortschrittskanal steht in der Auswertungszeile",
+      abweichung(gespeicherterKanal, auswertung.progress) === null,
+      abweichung(gespeicherterKanal, auswertung.progress) ?? "identisch",
+    );
+
+    const { error: listeFehler } = await db
+      .from("evaluations")
+      .update({ progress: [] })
+      .eq("id", laufId);
+    record(
+      "und eine Liste statt eines Objekts lehnt sie ab",
+      listeFehler !== null,
+      listeFehler?.code ?? "durchgelassen",
+    );
   } finally {
     // Immer, auch nach einem Abbruch. `on delete cascade` auf episode_id nimmt
     // Flags und Auswertungen mit — sonst blieben Zeilen liegen, und die nächste

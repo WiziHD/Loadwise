@@ -15,21 +15,22 @@ import type { EvaluationInput } from "loadwise-engine";
  * Die erste Frage ist damit beantwortet: Sie werden gelesen und weitergereicht.
  *
  * ---------------------------------------------------------------------------
- * DIE ZWEITE: HEUTE ERZEUGEN SIE NICHTS, UND DAS STEHT HIER, STATT SICH ZU
- * VERSTECKEN.
+ * DIE ZWEITE: WAS BEWIRKEN SIE DORT?
  *
  * `progress.ts` baut `records` nur für Masse, die ein MEILENSTEIN nennt —
- * `measuresInUse(input.milestones)`. Ohne Meilensteine ist die Liste leer,
- * und eine eigene Messung bewirkt im Ergebnis nichts.
+ * `measuresInUse(input.milestones)`. Ohne Ziele ist die Liste leer, und eine
+ * eigene Messung bewirkt im Ergebnis nichts.
  *
- * Das ist kein Fehler, sondern die Reihenfolge der Karten: 3.2 erfasst, 3.4
- * gibt dem Nutzer die Meilensteine, gegen die gemessen wird. Aber es ist genau
- * der Zustand, den dieses Projekt sonst als »geschrieben und nie gelesen«
- * verfolgt — und ein Kommentar allein hielte ihn nicht fest.
+ * Zwischen Karte 3.2 und 3.4 war das der einzig mögliche Zustand, und er stand
+ * hier als Prüfung statt als Kommentar — genau die Sorte »geschrieben und nie
+ * gelesen«, die dieses Projekt sonst verfolgt.
  *
- * Deshalb steht er hier als Prüfung. Wenn 3.4 kommt, wird diese Datei rot und
- * muss angefasst werden; das ist die Absicht. Ein stiller Zustand, den niemand
- * mehr erklärt, wäre die Alternative.
+ * **Mit 3.4 ist der andere Zweig erreichbar geworden, und die alte Prüfung ist
+ * trotzdem grün geblieben.** Das ist kein Versehen: Ihre Aussage war bedingt
+ * (»solange kein Meilenstein sie nennt«) und gilt unverändert. Was fehlte, war
+ * die Gegenrichtung — dass ein Ziel, das ein Mass nennt, den Bestwert
+ * tatsächlich entstehen lässt. Ohne sie bliebe offen, ob die leere Liste am
+ * fehlenden Ziel liegt oder daran, dass der Kanal überhaupt nichts baut.
  * ---------------------------------------------------------------------------
  */
 
@@ -38,6 +39,7 @@ vi.mock("server-only", () => ({}));
 const getEpisode = vi.fn();
 const listEntries = vi.fn();
 const listMeasurements = vi.fn();
+const listMilestones = vi.fn();
 const saveEvaluationRun = vi.fn();
 const motorEingaben: EvaluationInput[] = [];
 
@@ -45,6 +47,9 @@ vi.mock("@/lib/db/episodes", () => ({ getEpisode: (id: string) => getEpisode(id)
 vi.mock("@/lib/db/entries", () => ({ listEntries: (id: string) => listEntries(id) }));
 vi.mock("@/lib/db/measurements", () => ({
   listMeasurements: (id: string) => listMeasurements(id),
+}));
+vi.mock("@/lib/db/milestones", () => ({
+  listMilestones: (id: string) => listMilestones(id),
 }));
 vi.mock("@/lib/db/verdict-write", () => ({
   saveEvaluationRun: (episodeId: string, auswertung: unknown) =>
@@ -111,6 +116,7 @@ beforeEach(() => {
   getEpisode.mockReset();
   listEntries.mockReset();
   listMeasurements.mockReset();
+  listMilestones.mockReset();
   saveEvaluationRun.mockReset();
 
   getEpisode.mockResolvedValue(EPISODE);
@@ -119,6 +125,7 @@ beforeEach(() => {
     { date: "2026-08-02", morningScore: 3, sessions: [] },
   ]);
   listMeasurements.mockResolvedValue(MESSUNGEN);
+  listMilestones.mockResolvedValue([]);
   saveEvaluationRun.mockResolvedValue("lauf-1");
 });
 
@@ -147,22 +154,77 @@ describe("die eigenen Masse erreichen den Motor", () => {
 
 describe("was sie heute bewirken — und was noch nicht", () => {
   it("erzeugen keinen Bestwert, solange kein Meilenstein sie nennt", async () => {
-    /**
-     * DIESE PRÜFUNG SOLL EINES TAGES ROT WERDEN.
-     *
-     * `progress.ts` baut `records` über `measuresInUse(input.milestones)`.
-     * Ohne Meilensteine ist die Liste leer — zwei erfasste Kniebeugen-Werte
-     * ergeben also keinen einzigen Eintrag.
-     *
-     * Karte 3.4 gibt dem Nutzer die Meilensteine. Dann muss diese Datei
-     * angefasst werden, und genau das ist der Zweck: Der Zustand ist damit
-     * benannt statt still.
-     */
+    // `progress.ts` baut `records` über `measuresInUse(input.milestones)`.
+    // Ohne Ziele ist die Liste leer — zwei erfasste Kniebeugen-Werte ergeben
+    // also keinen einzigen Eintrag.
     await evaluateAndStore("ep1");
     const auswertung = saveEvaluationRun.mock.calls[0]?.[1] as {
       progress: { records: unknown[] };
     };
     expect(auswertung.progress.records).toEqual([]);
+  });
+
+  it("und einen Bestwert, sobald ein Ziel das Mass nennt", async () => {
+    /**
+     * DIE GEGENRICHTUNG, ERREICHBAR SEIT KARTE 3.4.
+     *
+     * Ohne sie sagte die Prüfung darüber nur, dass `records` leer ist — und
+     * das wäre auch dann wahr, wenn der Kanal überhaupt nichts bauen könnte.
+     * Erst zusammen sagen die beiden, dass es am fehlenden Ziel liegt.
+     *
+     * Das Ziel nennt genau das Mass, das oben erfasst wurde. Die Reihe hat
+     * zwei Punkte (8 und 15), also entsteht ein Bestwert mit einem ersten und
+     * einem jüngsten Wert.
+     */
+    listMilestones.mockResolvedValue([
+      {
+        id: "m1",
+        origin: "user",
+        label: { text: "Wieder fünfzehn Kniebeugen", locale: "de" },
+        createdOn: "2026-08-01",
+        all: [
+          {
+            measure: { source: "measurement", key: "Kniebeugen" },
+            direction: "at_least",
+            value: 15,
+            unit: "reps",
+          },
+        ],
+        onDistinctDays: 1,
+        markedReachedOn: null,
+      },
+    ]);
+
+    await evaluateAndStore("ep1");
+    const auswertung = saveEvaluationRun.mock.calls[0]?.[1] as {
+      progress: { records: { series: unknown[]; first: { value: number }; latest: { value: number } }[] };
+    };
+
+    expect(auswertung.progress.records).toHaveLength(1);
+    expect(auswertung.progress.records[0]!.series).toHaveLength(2);
+    expect(auswertung.progress.records[0]!.first.value).toBe(8);
+    expect(auswertung.progress.records[0]!.latest.value).toBe(15);
+  });
+
+  it("die Ziele gehen unverändert in den Aufruf", async () => {
+    // Die Lücke, die 3.4 geschlossen hat: `EvaluationInput.milestones` gab es,
+    // die Tabelle gab es seit 0001, und der Aufruf liess das Feld weg.
+    const ziele = [
+      {
+        id: "m1",
+        origin: "user",
+        label: { text: "Wieder dreissig Minuten gehen", locale: "de" },
+        createdOn: "2026-08-01",
+        all: [],
+        onDistinctDays: 1,
+        markedReachedOn: null,
+      },
+    ];
+    listMilestones.mockResolvedValue(ziele);
+
+    await evaluateAndStore("ep1");
+    expect(listMilestones).toHaveBeenCalledWith("ep1");
+    expect(motorEingaben[0]!.milestones).toEqual(ziele);
   });
 
   it("und ändern kein Urteil — ein Mass trägt keine Severity", async () => {

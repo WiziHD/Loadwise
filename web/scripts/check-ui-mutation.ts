@@ -584,8 +584,13 @@ const MUTATIONEN: Mutation[] = [
     // geschlossen hat.
     name: "verdicts: die eigenen Masse gehen nicht in den Motor",
     datei: "src/lib/db/verdicts.ts",
-    von: "    measurements,\n    context,",
-    nach: "    measurements: [],\n    context,",
+    // Der Anker trägt die Zeile DANEBEN mit, und das ist Absicht: Karte 3.4 hat
+    // `milestones` dazwischengeschoben, der alte Anker (`measurements,` direkt
+    // vor `context,`) passte nicht mehr, und der Wächter hat es als NICHT
+    // ANWENDBAR gemeldet statt still durchzuwinken. Genau dafür ist er
+    // fail-closed.
+    von: "    measurements,\n    milestones,\n    context,",
+    nach: "    measurements: [],\n    milestones,\n    context,",
   },
 
   // -------------------------------------------------------------------------
@@ -640,6 +645,93 @@ const MUTATIONEN: Mutation[] = [
     von: "  if (tests.length === 0) return null;",
     nach: "  if (false) return null;",
   },
+
+  // -------------------------------------------------------------------------
+  // Karte 3.4 — eigene Ziele.
+  //
+  // Die erste Mutation hier ist die schärfste der ganzen Liste: Sie macht aus
+  // dem Zieltext etwas Geprüftes. Ab dann verweigert die App das Speichern von
+  // »Ich will in sechs Wochen wieder laufen« — und verbietet einem Menschen,
+  // im eigenen Tagebuch über das eigene Ziel zu sprechen.
+  // -------------------------------------------------------------------------
+  {
+    name: "validateMilestone: der Zieltext wird auf Inhalt geprueft",
+    datei: "src/lib/milestone-validation.ts",
+    von: '  if (label === "") return "label-missing";',
+    nach: '  if (label === "" || /wieder|weiter|schaffst|wird/i.test(label)) return "label-missing";',
+  },
+  {
+    // Die Einheit wird stillschweigend überschrieben statt abgelehnt.
+    // »Höchstens 3« auf einer Skala und »höchstens 3« in Minuten sind zwei
+    // verschiedene Ziele.
+    name: "validateMilestone: eine falsche Einheit wird durchgelassen",
+    datei: "src/lib/milestone-validation.ts",
+    von: '    if (zwingend !== null && t.unit !== zwingend) return "unit-mismatch";',
+    nach: '    if (false) return "unit-mismatch";',
+  },
+  {
+    // Ein Fenster, das kürzer ist als die verlangte Zahl von Tagen: Das Ziel
+    // bliebe für immer offen und sähe aus, als warte es nur.
+    name: "validateMilestone: ein unerfuellbares Fenster geht durch",
+    datei: "src/lib/milestone-validation.ts",
+    von: '    if (input.withinDays < (input.onDistinctDays as number)) return "window-too-short";',
+    nach: '    if (false) return "window-too-short";',
+  },
+  {
+    // Ein Ziel auf einen Test, den das Profil nicht führt — wartet auf eine
+    // Zahl, die nie kommt.
+    name: "validateMilestone: das Profil begrenzt die Testarten nicht",
+    datei: "src/lib/milestone-validation.ts",
+    von: '      if (!erlaubteTests.includes(t.type as TestType)) return "measure-not-in-profile";',
+    nach: '      if (false) return "measure-not-in-profile";',
+  },
+  {
+    // Die Zählung nimmt »teilweise« mit. Das wäre eine Aussage über die
+    // Person, die das Tagebuch nicht deckt.
+    name: "MilestoneList: teilweise belegte Ziele zaehlen mit",
+    datei: "src/components/MilestoneList.tsx",
+    von: '  return status.filter((s) => s.state === "recorded" || s.state === "marked-by-user").length;',
+    nach: '  return status.filter((s) => s.state !== "not-in-record").length;',
+  },
+  {
+    // Der Abhak-Knopf erscheint auch bei Zielen mit Bedingung — eine zweite,
+    // widersprechende Antwort auf dieselbe Frage.
+    name: "MilestoneList: auch Ziele mit Bedingung lassen sich abhaken",
+    datei: "src/components/MilestoneList.tsx",
+    von: "          const selbstAbhakbar = m.all.length === 0;",
+    nach: "          const selbstAbhakbar = true;",
+  },
+  {
+    // Das Zurücknehmen fällt weg: Ein Häkchen, das bleibt, wäre eine
+    // Behauptung über einen Menschen, die er nicht mehr los wird.
+    name: "MilestoneList: ein Haekchen laesst sich nicht zuruecknehmen",
+    datei: "src/components/MilestoneList.tsx",
+    von: "                            abgehakt ? null : today,",
+    nach: "                            today,",
+  },
+  {
+    // Gelöscht wird ohne Rückfrage. Was unwiderruflich ist, bekommt einen
+    // zweiten Klick.
+    name: "MilestoneList: entfernen fragt nicht nach",
+    datei: "src/components/MilestoneList.tsx",
+    von: "                    if (!window.confirm(strings.removeConfirm)) return;",
+    nach: "",
+  },
+  {
+    // Die Ziele erreichen den Motor nicht — die Lücke, die 3.4 geschlossen hat.
+    name: "verdicts: die eigenen Ziele gehen nicht in den Motor",
+    datei: "src/lib/db/verdicts.ts",
+    von: "    measurements,\n    milestones,\n    context,",
+    nach: "    measurements,\n    milestones: [],\n    context,",
+  },
+  {
+    // Der Fortschrittskanal geht beim Speichern verloren — genau der Fehler,
+    // den 0011 behoben hat, und derselbe wie bei `overall.blocking` in 0008.
+    name: "toEvaluationRow: der Fortschrittskanal wird nicht abgelegt",
+    datei: "src/lib/db/types.ts",
+    von: "    progress: evaluation.progress,",
+    nach: "    progress: { milestones: [], records: [], pending: [], episodeDay: null },",
+  },
 ];
 
 type Bericht = {
@@ -690,6 +782,14 @@ if (grundlage === null) {
   console.error("\nKein Bericht vom unmutierten Lauf. Die Suite kommt nicht durch.\n");
   process.exit(1);
 }
+/**
+ * Wie viele Testdateien ein vollständiger Lauf meldet.
+ *
+ * Aus dem Grundlagenlauf genommen, nicht festgeschrieben: Jede neue Testdatei
+ * hebt die Schwelle von selbst, und niemand muss daran denken.
+ */
+const dateienErwartet = (grundlage.testResults ?? []).length;
+
 const schonRot = (grundlage.testResults ?? []).flatMap((d) =>
   (d.assertionResults ?? []).filter((t) => t.status === "failed").map((t) => t.title ?? "(ohne Titel)"),
 );
@@ -727,6 +827,36 @@ for (const m of MUTATIONEN) {
 
   if (bericht === null) {
     zeilen.push({ name: m.name, ergebnis: "KEIN BERICHT", welche: "", offen: true });
+    continue;
+  }
+
+  // ---------------------------------------------------------------------
+  // HAT DIESER LAUF ÜBERHAUPT ALLE DATEIEN AUSGEFÜHRT?
+  //
+  // Diese Zeilen stehen hier, weil eine Mutation als UEBERLEBT gemeldet wurde,
+  // die von Hand nachgestellt drei Tests rot macht. Der Grund war nicht die
+  // Mutation, sondern der Lauf: Es kamen weniger Dateien zurück, als es gibt.
+  //
+  // Das ist dieselbe Klasse Fehler wie in E11 — ein Bauteil-Projekt, das
+  // stillschweigend nichts ausführt und mit 0 endet. `run-tests.ts` hat dafür
+  // eine Untergrenze; dieses Skript hatte keine. Es besass eine Sicherung
+  // gegen SCHON ROTE Tests und keine gegen Tests, die GAR NICHT LIEFEN.
+  //
+  // Die Richtung des Fehlers war harmlos (Fehlalarm statt stiller Deckung),
+  // die verlorene Zeit war es nicht: Ein Fehlalarm in einem Wächter, der
+  // sonst nie irrt, kostet genau so viel Vertrauen wie ein Durchlasser.
+  //
+  // Verglichen wird gegen den Grundlagenlauf und nicht gegen eine feste Zahl.
+  // Eine feste Zahl wäre die Sorte Wert, gegen die `check:docs` gebaut wurde.
+  // ---------------------------------------------------------------------
+  const dateien = (bericht.testResults ?? []).length;
+  if (dateien < dateienErwartet) {
+    zeilen.push({
+      name: m.name,
+      ergebnis: "UNVOLLSTAENDIG",
+      welche: `nur ${dateien} von ${dateienErwartet} Testdateien gelaufen — dieser Lauf sagt nichts`,
+      offen: true,
+    });
     continue;
   }
 

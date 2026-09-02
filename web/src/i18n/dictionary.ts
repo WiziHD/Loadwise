@@ -175,6 +175,79 @@ export interface Strings {
     noEpisode: string;
   };
   /**
+   * Eigene Ziele.
+   *
+   * ---------------------------------------------------------------------------
+   * HIER STEHT KEIN EINZIGES KRITERIUM, UND DAS IST DIE KARTE.
+   *
+   * Kein Katalog, kein Vorschlag, kein vorbelegter Schwellenwert. Was zu
+   * erreichen sich lohnt, entscheidet der Nutzer; die App liefert die
+   * Beschriftungen für ein leeres Formular.
+   *
+   * Die Zustandssätze — »im Tagebuch steht ein Tag, der das erfüllt« — kommen
+   * über `milestoneText` aus dem Motor und stehen deshalb nicht hier. Sie sind
+   * Aussagen über das, was aufgezeichnet ist, und unterliegen den Ban-Listen.
+   *
+   * Der ZIELTEXT des Nutzers unterliegt ihnen ausdrücklich nicht. Siehe
+   * `milestone-validation.ts`.
+   */
+  goal: {
+    link: string;
+    heading: string;
+    intro: string;
+    label: string;
+    labelHint: string;
+    /** Die Bedingung ist optional. Ohne sie hakt der Nutzer selbst ab. */
+    conditionHeading: string;
+    conditionHint: string;
+    addCondition: string;
+    removeCondition: string;
+    measure: string;
+    measureMorning: string;
+    measureSymptom: string;
+    measureSessionMinutes: string;
+    /** »Fersenheber, verletzte Seite« — zusammengesetzt aus Testname und Seite. */
+    sideInvolved: string;
+    sideUninvolved: string;
+    calfRaise: string;
+    singleHop: string;
+    rom: string;
+    direction: string;
+    atLeast: string;
+    atMost: string;
+    value: string;
+    unit: string;
+    onDistinctDays: string;
+    onDistinctDaysHint: string;
+    withinDays: string;
+    withinDaysHint: string;
+    withinDaysNone: string;
+    create: string;
+    saved: string;
+    listHeading: string;
+    listEmpty: string;
+    /** »3 von 5 erreicht« — Fortschritt gegen den selbst erklärten Massstab. */
+    reachedCount: string;
+    markReached: string;
+    unmarkReached: string;
+    remove: string;
+    removeConfirm: string;
+    createdOn: string;
+    daysFound: string;
+    labelMissing: string;
+    labelTooLong: string;
+    unknownMeasure: string;
+    measureNotInProfile: string;
+    unitMismatch: string;
+    unknownMeasureKey: string;
+    valueMissing: string;
+    daysOutOfRange: string;
+    windowTooShort: string;
+    tooManyThresholds: string;
+    invalid: string;
+    noEpisode: string;
+  };
+  /**
    * Die Asymmetrie-Ansicht.
    *
    * Nur Beschriftungen. Der Befund kommt über `verdictText` aus dem Motor, und
@@ -565,6 +638,61 @@ export const DICTIONARY: Record<Locale, Strings> = {
       invalid: "Something in the form did not come through. Please check the fields.",
       noEpisode: "This episode could not be found.",
     },
+    goal: {
+      link: "Own goals",
+      heading: "Your own goals",
+      intro:
+        "Written by you. Nothing here suggests what to aim for — a list of what is worth reaching would be a clinical criterion, and this app does not carry one.",
+      label: "The goal, in your words",
+      labelHint: "Nobody reads this but you. Write it however it makes sense to you.",
+      conditionHeading: "A condition the diary can check (optional)",
+      conditionHint:
+        "Without one, the goal stays yours to tick off. With one, the diary answers it from what you have recorded.",
+      addCondition: "Add a condition",
+      removeCondition: "Remove",
+      measure: "Measure",
+      measureMorning: "Morning score",
+      measureSymptom: "Symptom score",
+      measureSessionMinutes: "Minutes of activity",
+      sideInvolved: "injured side",
+      sideUninvolved: "other side",
+      calfRaise: "Single-leg heel raise",
+      singleHop: "Single hop for distance",
+      rom: "Ankle dorsiflexion",
+      direction: "Direction",
+      atLeast: "at least",
+      atMost: "at most",
+      value: "Value",
+      unit: "Unit",
+      onDistinctDays: "On how many separate days",
+      onDistinctDaysHint: "All conditions have to hold on the same day for it to count.",
+      withinDays: "Within a window of",
+      withinDaysHint: "Days. Leave empty for no window.",
+      withinDaysNone: "no window",
+      create: "Add goal",
+      saved: "Stored.",
+      listHeading: "Your goals",
+      listEmpty: "No goal yet.",
+      reachedCount: "{done} of {total} recorded",
+      markReached: "Mark as reached",
+      unmarkReached: "Undo",
+      remove: "Remove",
+      removeConfirm: "Remove this goal?",
+      createdOn: "set on",
+      daysFound: "{found} of {needed} days",
+      labelMissing: "The goal needs its words.",
+      labelTooLong: "That is longer than this field holds.",
+      unknownMeasure: "That measure is not one this app records.",
+      measureNotInProfile: "That test does not belong to this episode's profile.",
+      unitMismatch: "That unit does not match the measure.",
+      unknownMeasureKey: "You have not recorded that measure yet. Record it once, then set the goal.",
+      valueMissing: "The value is missing.",
+      daysOutOfRange: "The number of days has to be between 1 and 30.",
+      windowTooShort: "The window is shorter than the number of days asked for — it could never be met.",
+      tooManyThresholds: "That is more conditions than one goal holds.",
+      invalid: "Something in the form did not come through. Please check the fields.",
+      noEpisode: "This episode could not be found.",
+    },
     comparison: {
       heading: "Side by side, over time",
       calfRaise: "Single-leg heel raise",
@@ -860,6 +988,61 @@ export const DICTIONARY: Record<Locale, Strings> = {
       outOfRange: "Diese Zahl liegt ausserhalb dessen, was dieser Test hergibt. Lohnt einen zweiten Blick.",
       notInProfile: "Dieser Test gehört nicht zum Profil dieser Episode.",
       futureDate: "Dieses Datum liegt nach heute.",
+      invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
+      noEpisode: "Diese Episode wurde nicht gefunden.",
+    },
+    goal: {
+      link: "Eigene Ziele",
+      heading: "Deine eigenen Ziele",
+      intro:
+        "Von dir geschrieben. Hier schlägt nichts vor, was du erreichen sollst — eine Liste dessen, was sich zu erreichen lohnt, wäre ein klinisches Kriterium, und dieses Produkt führt keines.",
+      label: "Das Ziel, in deinen Worten",
+      labelHint: "Das liest niemand ausser dir. Schreib es so, wie es für dich Sinn ergibt.",
+      conditionHeading: "Eine Bedingung, die das Tagebuch prüfen kann (freiwillig)",
+      conditionHint:
+        "Ohne Bedingung bleibt das Abhaken bei dir. Mit Bedingung beantwortet das Tagebuch es aus dem, was du erfasst hast.",
+      addCondition: "Bedingung hinzufügen",
+      removeCondition: "Entfernen",
+      measure: "Mass",
+      measureMorning: "Morgenwert",
+      measureSymptom: "Beschwerdewert",
+      measureSessionMinutes: "Minuten Aktivität",
+      sideInvolved: "verletzte Seite",
+      sideUninvolved: "andere Seite",
+      calfRaise: "Einbeiniger Fersenheber",
+      singleHop: "Einbeinsprung auf Weite",
+      rom: "Sprunggelenk-Beweglichkeit",
+      direction: "Richtung",
+      atLeast: "mindestens",
+      atMost: "höchstens",
+      value: "Wert",
+      unit: "Einheit",
+      onDistinctDays: "An wie vielen verschiedenen Tagen",
+      onDistinctDaysHint: "Alle Bedingungen müssen am selben Tag zutreffen, damit er zählt.",
+      withinDays: "Innerhalb von",
+      withinDaysHint: "Tagen. Leer lassen für kein Fenster.",
+      withinDaysNone: "kein Fenster",
+      create: "Ziel anlegen",
+      saved: "Gespeichert.",
+      listHeading: "Deine Ziele",
+      listEmpty: "Noch kein Ziel.",
+      reachedCount: "{done} von {total} im Tagebuch belegt",
+      markReached: "Als erreicht eintragen",
+      unmarkReached: "Zurücknehmen",
+      remove: "Entfernen",
+      removeConfirm: "Dieses Ziel entfernen?",
+      createdOn: "gesetzt am",
+      daysFound: "{found} von {needed} Tagen",
+      labelMissing: "Das Ziel braucht seine Worte.",
+      labelTooLong: "Das ist länger, als dieses Feld fasst.",
+      unknownMeasure: "Dieses Mass erfasst die App nicht.",
+      measureNotInProfile: "Dieser Test gehört nicht zum Profil dieser Episode.",
+      unitMismatch: "Diese Einheit passt nicht zu diesem Mass.",
+      unknownMeasureKey: "Dieses Mass hast du noch nicht erfasst. Einmal erfassen, dann das Ziel setzen.",
+      valueMissing: "Der Wert fehlt.",
+      daysOutOfRange: "Die Zahl der Tage muss zwischen 1 und 30 liegen.",
+      windowTooShort: "Das Fenster ist kürzer als die verlangte Zahl von Tagen — so wäre es nie erfüllbar.",
+      tooManyThresholds: "Das sind mehr Bedingungen, als ein Ziel fasst.",
       invalid: "Etwas im Formular ist nicht angekommen. Bitte die Felder prüfen.",
       noEpisode: "Diese Episode wurde nicht gefunden.",
     },
