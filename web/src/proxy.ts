@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { LOCALE_HEADER, localeRouteFor } from "@/i18n/config";
 import { contentSecurityPolicy } from "@/lib/security-headers";
+import { isPrivatePath } from "@/lib/seo";
 
 /**
  * Drei Aufgaben bei jeder Anfrage: die Sitzung am Leben halten, dafür sorgen
@@ -51,6 +52,23 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request: { headers } });
   response.headers.set("content-security-policy", csp);
 
+  // ------------------------------------------------------------------------
+  // KEIN INDEX AUF ALLES, WAS EINER PERSON GEHÖRT.
+  //
+  // Hier und nicht in den Metadaten der einzelnen Seiten: Ein Header deckt
+  // JEDE Unterseite unter `/episodes` und `/account` ab, auch die, die es
+  // morgen gibt. Ein `robots`-Eintrag je Layout wäre am Tag der nächsten
+  // Unterseite still unvollständig — und niemand merkt es, weil eine fehlende
+  // Anweisung wie eine erlaubte Seite aussieht.
+  //
+  // `robots.txt` verbietet dieselben Pfade und ist trotzdem nicht dasselbe:
+  // Sie bittet darum, nicht zu CRAWLEN. Dieser Header verbietet zu INDEXIEREN,
+  // und er gilt auch für eine Adresse, die jemand woanders verlinkt hat.
+  // ------------------------------------------------------------------------
+  if (isPrivatePath(request.nextUrl.pathname)) {
+    response.headers.set("x-robots-tag", "noindex, nofollow");
+  }
+
   response = await refreshSession(request, headers, response);
   response.headers.set("content-security-policy", csp);
 
@@ -63,6 +81,11 @@ export async function proxy(request: NextRequest) {
   // the other one next time, and a permanent redirect would outlive that.
   const redirect = NextResponse.redirect(url, 307);
   for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+  // Der Redirect übernimmt die Kopfzeilen der Antwort NICHT, nur die Cookies.
+  // Ohne diese Zeile trüge `/episodes/abc` (ohne Sprache) kein `noindex`,
+  // sondern erst das Ziel — und ein Crawler, der dem Sprung nicht folgt, sähe
+  // eine Adresse mit Kennung darin ohne jede Anweisung.
+  if (isPrivatePath(url.pathname)) redirect.headers.set("x-robots-tag", "noindex, nofollow");
   return redirect;
 }
 

@@ -1026,6 +1026,70 @@ const MUTATIONEN: Mutation[] = [
     von: "        <Link href={`/${locale}/account`} style={navLink}>",
     nach: "        <Link href={`/${locale}`} style={navLink}>",
   },
+
+  // -------------------------------------------------------------------------
+  // WAS EINE SUCHMASCHINE SEHEN DARF (A3).
+  //
+  // Die Liste der Verletzungen, die jemand führt, ist das Empfindlichste, was
+  // dieses Produkt hält. Diese sechs Mutationen kippen jede einzelne Zeile,
+  // die dafür sorgt, dass sie nirgends auftaucht.
+  // -------------------------------------------------------------------------
+  {
+    // Die Sprache wird nicht abgeschnitten. `/de/episodes` beginnt nicht mit
+    // `/episodes` — also gilt JEDE private Seite plötzlich als öffentlich.
+    // Der Fehler, den man beim Durchsehen nicht sieht.
+    name: "seo: die Sprache wird nicht abgeschnitten",
+    datei: "src/lib/seo.ts",
+    von: "  const ohneSprache = pathname.replace(SPRACHE_AM_ANFANG, \"\");",
+    nach: "  const ohneSprache = pathname;",
+  },
+  {
+    // Nichts ist mehr privat.
+    name: "seo: kein Pfad gilt als privat",
+    datei: "src/lib/seo.ts",
+    von: "  return PRIVATE_PREFIXES.some((p) => pfad === p || pfad.startsWith(`${p}/`));",
+    nach: "  return false;",
+  },
+  {
+    // Vorschau-Auslieferungen werden indexiert: dieselbe App unter zwanzig
+    // Adressen, jede eine Kopie neben der echten Seite.
+    name: "seo: auch Vorschauen werden indexiert",
+    datei: "src/lib/seo.ts",
+    von: '  return env.VERCEL_ENV === "production" && siteUrl(env) !== null;',
+    nach: "  return siteUrl(env) !== null;",
+  },
+  {
+    // Der abschliessende Schrägstrich bleibt stehen — aus `${basis}/de` wird
+    // `//de`, und das ist eine andere Adresse.
+    name: "seo: der Schraegstrich bleibt stehen",
+    datei: "src/lib/seo.ts",
+    von: "  return roh.replace(SCHRAEGSTRICHE_AM_ENDE, \"\");",
+    nach: "  return roh;",
+  },
+  {
+    // Die Kopfzeile kommt nie an. Die Entscheidung waere richtig und
+    // wirkungslos.
+    name: "proxy: noindex wird nicht gesetzt",
+    datei: "src/proxy.ts",
+    von: '    response.headers.set("x-robots-tag", "noindex, nofollow");',
+    nach: "",
+  },
+  {
+    // Sie kommt auf ALLEM an — auch auf Startseite und Datenschutzerklaerung.
+    // Die Seite waere unauffindbar.
+    name: "proxy: noindex auf allem",
+    datei: "src/proxy.ts",
+    von: "  if (isPrivatePath(request.nextUrl.pathname)) {",
+    nach: "  if (true) {",
+  },
+  {
+    // Die Sprach-Weiterleitung traegt nichts mehr: Ein Crawler, der dem Sprung
+    // nicht folgt, sieht eine Adresse mit Kennung darin ohne jede Anweisung.
+    name: "proxy: die Weiterleitung traegt kein noindex",
+    datei: "src/proxy.ts",
+    von: '  if (isPrivatePath(url.pathname)) redirect.headers.set("x-robots-tag", "noindex, nofollow");',
+    nach: "",
+  },
 ];
 
 type Bericht = {

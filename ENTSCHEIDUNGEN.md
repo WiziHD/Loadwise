@@ -1129,3 +1129,60 @@ Der englische Sperrtext trug deutsche Anführungszeichen — `»Your data«`. Ge
 - **Wenn der Zähler die Fünfzig erreicht.** Dann steht die Entscheidung an, nicht der Schalter.
 - **Wenn ein zweites Merkmal dazukommen soll.** Eine Zeile in `ALL_GATED_FEATURES` — und die Frage, ob es die eigenen Daten berührt, beantwortet der Compiler.
 - **Nicht, um Export oder Löschung zu verschliessen.** Das ist keine Preisfrage.
+
+---
+
+## E25 — Was eine Suchmaschine sehen darf, und in welcher Richtung der Fehler liegen muss
+
+**Entschieden 03.09.2026** · `web/src/lib/seo.ts`, `web/src/app/robots.ts`, `web/src/app/sitemap.ts`, `web/src/proxy.ts`, Aussenspur A3
+
+A3 hing an 1.1b, und 1.1b steht seit heute: Die App ist ausgeliefert. Damit ist der Schritt fällig — und er beginnt nicht bei der Auffindbarkeit, sondern beim Gegenteil.
+
+### Eine Erlaubnisliste, keine Sperrliste
+
+Beide vergessen die Seite, die morgen dazukommt. Der Unterschied ist, was dann passiert: Eine Sperrliste lässt sie **in** den Index, eine Erlaubnisliste lässt sie **draussen**. Bei einer App, die Verletzungen und Schmerzverläufe führt, ist nur eine dieser beiden Richtungen tragbar.
+
+Dieselbe Begründung wie beim Prerender-Wächter, und derselbe Satz: Die Liste der Verletzungen, die jemand führt, ist das Empfindlichste, was dieses Produkt hält.
+
+`PUBLIC_PATHS` sind drei Pfade — Startseite, Anmeldung, Datenschutzerklärung. `PRIVATE_PREFIXES` sind zwei — `/episodes` und `/account` —, und zwar als **Präfix**: `/episodes/<id>/report` ist genauso privat wie `/episodes`, und eine Liste einzelner Adressen wäre am Tag der nächsten Unterseite still unvollständig.
+
+### Die Prüfung, die etwas über morgen sagt
+
+Zwei Listen genügen nicht, wenn eine neue Seite in keiner von beiden auftaucht. Sie wäre weder in der Sitemap noch mit `noindex` versehen — eine Lücke, die wie eine Entscheidung aussieht.
+
+`test/seo.test.ts` liest deshalb `src/app` und verlangt für **jede** Route eine Zuordnung. Gegenprobe gemacht: eine Seite `/preise` angelegt, der Test wird rot und nennt sie beim Namen; entfernt, er wird grün. Dazu eine zweite Prüfung, die verlangt, dass der Dateibaum überhaupt Routen findet — ein Dateibaum-Test, der nichts findet, ist grün und wertlos.
+
+### `noindex` steht im Proxy, nicht in den Metadaten
+
+Ein `robots`-Eintrag je Layout wäre am Tag der nächsten Unterseite still unvollständig. Eine Kopfzeile im Proxy deckt jede Adresse unter den Präfixen ab, auch die, die es morgen gibt.
+
+`robots.txt` verbietet dieselben Pfade und ist trotzdem nicht dasselbe: Sie bittet darum, nicht zu **crawlen**. Der Header verbietet zu **indexieren**, und er gilt auch für eine Adresse, die jemand woanders verlinkt hat.
+
+Keines von beidem ist der eigentliche Schutz — das sind der zeilenbasierte Zugriffsschutz und die Anmeldung. Was hier verhindert wird, ist etwas anderes: dass `/de/episodes/<uuid>` in einem Suchergebnis steht und die Kennung verrät, auch wenn dahinter nichts zu sehen ist.
+
+**Beim Schreiben des Tests fiel eine Lücke auf:** Eine Sprach-Weiterleitung baut eine neue Antwort und übernimmt nur die Cookies. `/episodes/abc` ohne Sprache trug deshalb kein `noindex` — nur das Ziel, dem ein Crawler nicht folgen muss. Eine Zeile, gefunden weil der Test sie verlangt hat und nicht weil jemand darauf gekommen wäre.
+
+### Indexiert wird nur die produktive Auslieferung
+
+Vercel gibt jeder Vorschau eine eigene Adresse. Dieselbe App unter zwanzig Adressen ist für eine Suchmaschine nicht dieselbe App, sondern zwanzig Kopien — und die Vorschau einer noch nicht entschiedenen Fassung stünde neben der echten Seite.
+
+Geprüft wird auf `VERCEL_ENV === "production"` **und** eine gesetzte Adresse. Fehlt eines von beidem, verbietet `robots.txt` alles und die Sitemap ist leer. Eine Umgebung, die ihre eigene Adresse nicht kennt, kann keine kanonische Adresse angeben — und ohne die ist Indexieren raten.
+
+### Titel und Beschreibung hingen am Wurzellayout, auf Englisch, auch auf jeder deutschen Seite
+
+Dieselbe Sorte Fehler wie `lang="en"` eine Ebene höher (E-Eintrag zum Wurzellayout): Niemand sieht es beim Benutzen, und genau deshalb bleibt es stehen. Die Metadaten hängen jetzt an der Sprachebene und kommen aus dem Wörterbuch — kein neuer String, `appName` und `tagline` standen längst da.
+
+Dazu `canonical` und `hreflang` für beide Sprachen mit `x-default` auf Englisch, wie das Konzept es festlegt. Ohne `hreflang` hält eine Suchmaschine `/de/privacy` und `/en/privacy` für zwei konkurrierende Seiten statt für dieselbe in zwei Sprachen — und zeigt womöglich die falsche.
+
+Ohne gesetzte Adresse bleibt `metadataBase` weg: Eine kanonische Adresse, die auf `localhost` zeigt, wäre schlimmer als gar keine.
+
+### Nebenbei: zwei Regexe haben Namen bekommen
+
+Beim Schreiben der Mutationen liessen sich zwei Zeilen nicht ansprechen, weil ihre Regex-Literale beim Escaping zerfielen. Der Ausweg war der bessere Code: `SCHRAEGSTRICHE_AM_ENDE` und `SPRACHE_AM_ANFANG` statt zweier eingebauter Muster, die man beim Lesen entziffern muss.
+
+Ein Werkzeug, das sich an einer Zeile die Zähne ausbeisst, sagt manchmal etwas über die Zeile.
+
+### Wann man das wieder aufmacht
+
+- **Wenn eine öffentliche Seite dazukommt** — eine Landingpage (A2), Inhalte (A4). Dann wächst `PUBLIC_PATHS` um eine Zeile, und der Dateibaum-Test verlangt genau das.
+- **Nicht, um eine private Seite auffindbar zu machen.** Das ist keine SEO-Frage.
